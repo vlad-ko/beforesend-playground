@@ -85,6 +85,12 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'healthy', sdk: 'javascript' });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`JavaScript SDK service listening on port ${PORT}`);
-});
+// Only start the server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`JavaScript SDK service listening on port ${PORT}`);
+  });
+}
+
+// Export app for testing
+export { app };
