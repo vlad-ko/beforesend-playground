@@ -276,6 +276,56 @@ npm run logs:python
 2. Create beforeSend code: `api/examples/my-example-beforesend.js`
 3. (Optional) Add Python version: `api/examples/my-example-beforesend.py`
 
+### Testing
+
+We follow **Test-Driven Development (TDD)** principles. Always write tests BEFORE implementing features.
+
+**Running Tests:**
+
+```bash
+# Run all API Gateway tests
+cd api && npm test
+
+# Run tests in watch mode
+cd api && npm run test:watch
+
+# Run tests with coverage
+cd api && npm run test:coverage
+
+# Run JavaScript SDK tests
+cd sdks/javascript && npm test
+
+# Run Python SDK tests
+cd sdks/python && pytest
+
+# Run with coverage
+cd sdks/python && pytest --cov
+```
+
+**Test Coverage Requirements:**
+- Minimum 80% code coverage
+- 100% coverage for critical paths (transformation logic)
+- All new features must include tests
+
+**Writing Tests:**
+
+1. Write failing test first (Red)
+2. Implement minimum code to pass (Green)
+3. Refactor while keeping tests green (Refactor)
+
+Example:
+```typescript
+// test/my-feature.test.ts
+describe('MyFeature', () => {
+  it('should do something', () => {
+    const result = myFeature();
+    expect(result).toBe(expected);
+  });
+});
+```
+
+**See `CLAUDE.md` for detailed testing guidelines and TDD workflow.**
+
 ### Troubleshooting
 
 **SDK container won't start:**
