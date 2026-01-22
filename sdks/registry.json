@@ -1,0 +1,85 @@
+{
+  "sdks": {
+    "javascript": {
+      "name": "JavaScript",
+      "language": "javascript",
+      "default": true,
+      "status": "available",
+      "port": 5000,
+      "dockerfile": "./sdks/javascript/Dockerfile",
+      "entrypoint": "src/index.ts",
+      "packageManager": "npm",
+      "packages": ["@sentry/node"],
+      "description": "Official Sentry JavaScript/Node.js SDK"
+    },
+    "python": {
+      "name": "Python",
+      "language": "python",
+      "default": true,
+      "status": "available",
+      "port": 5001,
+      "dockerfile": "./sdks/python/Dockerfile",
+      "entrypoint": "app.py",
+      "packageManager": "pip",
+      "packages": ["sentry-sdk"],
+      "description": "Official Sentry Python SDK"
+    },
+    "dotnet": {
+      "name": ".NET",
+      "language": "csharp",
+      "default": false,
+      "status": "not-installed",
+      "port": 5002,
+      "template": "dotnet",
+      "packageManager": "nuget",
+      "packages": ["Sentry"],
+      "description": "Official Sentry .NET SDK",
+      "notes": "Requires template-based approach (compiled language)"
+    },
+    "java": {
+      "name": "Java",
+      "language": "java",
+      "default": false,
+      "status": "not-installed",
+      "port": 5003,
+      "template": "java",
+      "packageManager": "maven",
+      "packages": ["io.sentry:sentry"],
+      "description": "Official Sentry Java SDK",
+      "notes": "Requires template-based approach (compiled language)"
+    },
+    "ruby": {
+      "name": "Ruby",
+      "language": "ruby",
+      "default": false,
+      "status": "not-installed",
+      "port": 5004,
+      "template": "ruby",
+      "packageManager": "gem",
+      "packages": ["sentry-ruby"],
+      "description": "Official Sentry Ruby SDK"
+    },
+    "php": {
+      "name": "PHP",
+      "language": "php",
+      "default": false,
+      "status": "not-installed",
+      "port": 5005,
+      "template": "php",
+      "packageManager": "composer",
+      "packages": ["sentry/sentry"],
+      "description": "Official Sentry PHP SDK"
+    },
+    "go": {
+      "name": "Go",
+      "language": "go",
+      "default": false,
+      "status": "not-installed",
+      "port": 5006,
+      "template": "go",
+      "packageManager": "go",
+      "packages": ["github.com/getsentry/sentry-go"],
+      "description": "Official Sentry Go SDK"
+    }
+  }
+}

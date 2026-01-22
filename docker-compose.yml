@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # React Web UI
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./ui:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:4000
+    depends_on:
+      - api
+
+  # API Gateway
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    environment:
+      - JAVASCRIPT_SDK_URL=http://sdk-javascript:5000
+      - PYTHON_SDK_URL=http://sdk-python:5001
+    depends_on:
+      - sdk-javascript
+      - sdk-python
+
+  # JavaScript SDK Container (Default - Always Available)
+  sdk-javascript:
+    build:
+      context: ./sdks/javascript
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./sdks/javascript:/app
+      - /app/node_modules
+    profiles:
+      - default
+      - javascript
+
+  # Python SDK Container (Default - Always Available)
+  sdk-python:
+    build:
+      context: ./sdks/python
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./sdks/python:/app
+    profiles:
+      - default
+      - python
+
+networks:
+  default:
+    name: beforesend-network

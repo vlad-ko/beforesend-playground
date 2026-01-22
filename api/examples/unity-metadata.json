@@ -1,0 +1,36 @@
+{
+  "event_id": "4ac65cab-f83d-4727-b1c5-82a35f9a31d3",
+  "timestamp": "2026-01-22T12:30:00.000Z",
+  "platform": "other",
+  "level": "fatal",
+  "exception": {
+    "values": [
+      {
+        "type": "Error",
+        "value": "FATAL EXCEPTION [Thread-94] Unity version : 6000.2.14f1 Device model : realme RMX3151 Device fingerprint: realme/RMX3151RU/RE54B4L1:13/SP1A.210812.016/R.18a3aa1-4194:user/release-keys CPU supported ABI : [arm64-v8a, armeabi-v7a, armeabi] Build Type : Release Scripting Backend : IL2CPP Libs loaded from : Unknown Strip Engine Code : Undefined android.content.res.Resources$NotFoundException: Unable to find resource ID #0x7f080123",
+        "mechanism": {
+          "type": "generic",
+          "handled": false
+        }
+      }
+    ]
+  },
+  "contexts": {
+    "device": {
+      "name": "realme RMX3151",
+      "family": "realme",
+      "model": "RMX3151",
+      "model_id": "RMX3151"
+    },
+    "os": {
+      "name": "Android",
+      "version": "13"
+    },
+    "app": {
+      "app_start_time": "2026-01-22T12:29:50.000Z"
+    }
+  },
+  "tags": {
+    "unity_version": "6000.2.14f1"
+  }
+}

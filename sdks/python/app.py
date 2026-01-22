@@ -1,0 +1,88 @@
+from flask import Flask, request, jsonify
+import json
+import sys
+import traceback
+
+app = Flask(__name__)
+
+@app.route('/transform', methods=['POST'])
+def transform():
+    """
+    Transform endpoint
+    Receives an event and beforeSend code, applies the transformation
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'event' not in data or 'beforeSendCode' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Missing event or beforeSendCode'
+            }), 400
+
+        event = data['event']
+        before_send_code = data['beforeSendCode']
+
+        # Execute the beforeSend code
+        try:
+            # Create a local namespace for the beforeSend function
+            local_namespace = {}
+
+            # Execute the code to define the beforeSend function
+            exec(before_send_code, {}, local_namespace)
+
+            # Find the function (usually named 'before_send' or similar)
+            before_send_fn = None
+            for key, value in local_namespace.items():
+                if callable(value) and not key.startswith('__'):
+                    before_send_fn = value
+                    break
+
+            if before_send_fn is None:
+                return jsonify({
+                    'success': False,
+                    'error': 'Could not find a callable function in beforeSend code'
+                }), 400
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to parse beforeSend code: {str(e)}'
+            }), 400
+
+        # Apply the transformation
+        try:
+            # Clone the event to avoid mutation issues
+            event_clone = json.loads(json.dumps(event))
+
+            # Execute the beforeSend function
+            # Sentry's before_send receives (event, hint) but hint is optional
+            transformed_event = before_send_fn(event_clone, {})
+
+            return jsonify({
+                'success': True,
+                'transformedEvent': transformed_event
+            })
+        except Exception as e:
+            error_trace = traceback.format_exc()
+            return jsonify({
+                'success': False,
+                'error': f'Transformation error: {str(e)}',
+                'traceback': error_trace,
+                'transformedEvent': None
+            }), 500
+
+    except Exception as e:
+        error_trace = traceback.format_exc()
+        print(f'Unexpected error: {error_trace}', file=sys.stderr)
+        return jsonify({
+            'success': False,
+            'error': f'Unexpected error: {str(e)}'
+        }), 500
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint"""
+    return jsonify({'status': 'healthy', 'sdk': 'python'})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001, debug=True)

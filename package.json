@@ -1,0 +1,29 @@
+{
+  "name": "beforesend-playground",
+  "version": "1.0.0",
+  "description": "Test Sentry beforeSend transformations across multiple SDKs",
+  "private": true,
+  "scripts": {
+    "setup": "npm install && cd cli && npm install && npm run build",
+    "start": "node cli/dist/sdk-manager.js start",
+    "stop": "node cli/dist/sdk-manager.js stop",
+    "sdk:list": "node cli/dist/sdk-manager.js list",
+    "sdk:start": "node cli/dist/sdk-manager.js start",
+    "sdk:stop": "node cli/dist/sdk-manager.js stop",
+    "sdk:install": "node cli/dist/sdk-manager.js install",
+    "logs": "docker-compose logs -f",
+    "logs:api": "docker-compose logs -f api",
+    "logs:ui": "docker-compose logs -f ui",
+    "logs:js": "docker-compose logs -f sdk-javascript",
+    "logs:python": "docker-compose logs -f sdk-python",
+    "clean": "docker-compose down -v && rm -rf */node_modules */dist"
+  },
+  "keywords": [
+    "sentry",
+    "beforeSend",
+    "testing",
+    "sdk"
+  ],
+  "author": "Sentry Solutions Engineering",
+  "license": "MIT"
+}

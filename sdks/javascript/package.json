@@ -1,0 +1,23 @@
+{
+  "name": "beforesend-playground-sdk-javascript",
+  "version": "1.0.0",
+  "description": "JavaScript SDK transformation service",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@sentry/node": "^8.41.0",
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.5",
+    "@types/cors": "^2.8.17",
+    "typescript": "^5.7.3",
+    "ts-node": "^10.9.2"
+  }
+}
