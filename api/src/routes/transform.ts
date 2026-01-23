@@ -2,13 +2,14 @@ import { Router, Request, Response } from 'express';
 import { validateJSON, validateSentryEvent } from '../parsers/json';
 import { transformWithJavaScript } from '../sdk-clients/javascript';
 import { transformWithPython } from '../sdk-clients/python';
+import { transformWithRuby } from '../sdk-clients/ruby';
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
 
 interface TransformRequest {
-  sdk: 'javascript' | 'python';
+  sdk: 'javascript' | 'python' | 'ruby';
   event: string | Record<string, any>;
   beforeSendCode: string;
 }
@@ -96,6 +97,9 @@ router.post('/', async (req: Request<{}, {}, TransformRequest>, res: Response<Tr
           break;
         case 'python':
           result = await transformWithPython(event, beforeSendCode);
+          break;
+        case 'ruby':
+          result = await transformWithRuby(event, beforeSendCode);
           break;
         default:
           return res.status(400).json({

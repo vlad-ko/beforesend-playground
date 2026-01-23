@@ -61,6 +61,7 @@ The playground will be available at:
 - **🔌 API Gateway:** http://localhost:4000
 - **📦 JavaScript SDK:** http://localhost:5000
 - **🐍 Python SDK:** http://localhost:5001
+- **💎 Ruby SDK:** http://localhost:5004
 
 ### Basic Usage
 
@@ -148,15 +149,15 @@ docker-compose stop sdk-python
 docker-compose restart sdk-javascript
 ```
 
-### Current SDKs (Phase 1)
+### Current SDKs
 
 - ✅ **JavaScript** (Node.js) - Port 5000
 - ✅ **Python** - Port 5001
+- ✅ **Ruby** - Port 5004
 
-### Install Additional SDKs (Coming in Phase 2+)
+### Additional SDKs (In Progress)
 
 Support for additional SDKs is planned:
-- 🔲 Ruby (Phase 2)
 - 🔲 PHP (Phase 2)
 - 🔲 Go (Phase 2)
 - 🔲 .NET (Phase 3)
@@ -385,8 +386,9 @@ docker-compose exec ui npm test
 - ✅ API Gateway: 37 tests
 - ✅ JavaScript SDK: 11 tests
 - ✅ Python SDK: 10 tests (86% coverage)
+- ✅ Ruby SDK: 10 tests (86% coverage)
 - ✅ React UI: 39 tests (95% coverage)
-- **Total: 97 tests, all passing**
+- **Total: 107 tests, all passing**
 
 **Test Coverage Requirements:**
 - Minimum 80% code coverage (enforced)

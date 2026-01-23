@@ -26,6 +26,7 @@ describe('SdkSelector', () => {
 
     expect(screen.getByRole('option', { name: 'JavaScript - @sentry/node 8.55.0' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'Python - sentry-sdk 2.20.0' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Ruby - sentry-ruby 5.22.0' })).toBeInTheDocument();
   });
 
   it('calls onChange when SDK is selected', async () => {

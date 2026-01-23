@@ -52,9 +52,10 @@
       "name": "Ruby",
       "language": "ruby",
       "default": false,
-      "status": "not-installed",
+      "status": "available",
       "port": 5004,
-      "template": "ruby",
+      "dockerfile": "./sdks/ruby/Dockerfile",
+      "entrypoint": "app.rb",
       "packageManager": "gem",
       "packages": ["sentry-ruby"],
       "description": "Official Sentry Ruby SDK"
