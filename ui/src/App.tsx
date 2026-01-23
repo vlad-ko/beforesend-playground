@@ -48,6 +48,19 @@ const DEFAULT_BEFORESEND_PY = `def before_send(event, hint):
 
     return event`;
 
+const DEFAULT_BEFORESEND_RUBY = `lambda do |event, hint|
+  # Transform error message to Transformers theme 🤖
+  if event['exception'] && event['exception']['values']
+    event['exception']['values'][0]['value'] = 'Transformers by Sentry 🤖'
+    event['exception']['values'][0]['type'] = 'TransformerError'
+  end
+
+  # Add custom tag
+  event['tags'] = { 'transformed' => true }
+
+  event
+end`;
+
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);
   const [beforeSendCode, setBeforeSendCode] = useState(DEFAULT_BEFORESEND_JS);
@@ -61,6 +74,8 @@ function App() {
     // Update default beforeSend code based on SDK
     if (sdk === 'python') {
       setBeforeSendCode(DEFAULT_BEFORESEND_PY);
+    } else if (sdk === 'ruby') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_RUBY);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }

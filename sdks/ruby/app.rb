@@ -54,8 +54,13 @@ post '/transform' do
       event_clone = JSON.parse(JSON.generate(event))
 
       # Execute the beforeSend function
-      # Sentry's before_send receives (event, hint) but hint is optional
-      transformed_event = before_send_fn.call(event_clone, {})
+      # Ruby lambdas enforce arity, so we need to check and call appropriately
+      # beforeSend can accept (event, hint) or just (event)
+      transformed_event = if before_send_fn.arity == 1
+                            before_send_fn.call(event_clone)
+                          else
+                            before_send_fn.call(event_clone, {})
+                          end
 
       { success: true, transformedEvent: transformed_event }.to_json
     rescue StandardError => e

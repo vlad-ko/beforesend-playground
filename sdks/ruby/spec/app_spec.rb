@@ -133,7 +133,35 @@ RSpec.describe 'Ruby SDK Transform Service' do
         expect(data['transformedEvent']['extra']).to eq({ 'info' => 'data' })
       end
 
-      it 'handles complex Unity metadata cleanup' do
+      it 'handles single-argument lambda (flexible arity)' do
+      event = {
+        'exception' => {
+          'values' => [{
+            'type' => 'StandardError',
+            'value' => 'Original error'
+          }]
+        }
+      }
+
+      # Single argument lambda (event only, no hint)
+      before_send_code = <<~RUBY
+        lambda do |event|
+          event['exception']['values'][0]['value'] = 'Modified by single-arg lambda!'
+          event
+        end
+      RUBY
+
+      post '/transform',
+           { event: event, beforeSendCode: before_send_code }.to_json,
+           { 'CONTENT_TYPE' => 'application/json' }
+
+      expect(last_response.status).to eq(200)
+      data = JSON.parse(last_response.body)
+      expect(data['success']).to be true
+      expect(data['transformedEvent']['exception']['values'][0]['value']).to eq('Modified by single-arg lambda!')
+    end
+
+    it 'handles complex Unity metadata cleanup' do
         event = {
           'exception' => {
             'values' => [{
