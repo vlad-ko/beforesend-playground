@@ -160,7 +160,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={selectedSdk === 'python' ? 'python' : 'javascript'}
+              language={selectedSdk as 'javascript' | 'python' | 'ruby'}
             />
           </div>
         </div>

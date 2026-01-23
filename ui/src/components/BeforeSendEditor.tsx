@@ -3,7 +3,7 @@ import Editor from '@monaco-editor/react';
 interface BeforeSendEditorProps {
   value: string;
   onChange: (value: string) => void;
-  language: 'javascript' | 'python';
+  language: 'javascript' | 'python' | 'ruby';
 }
 
 function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) {
