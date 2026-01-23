@@ -11,7 +11,7 @@ import path from 'path';
 const router = Router();
 
 interface TransformRequest {
-  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go';
+  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'react-native';
   event: string | Record<string, any>;
   beforeSendCode: string;
 }
@@ -95,6 +95,8 @@ router.post('/', async (req: Request<{}, {}, TransformRequest>, res: Response<Tr
     try {
       switch (sdk) {
         case 'javascript':
+        case 'react-native':
+          // React Native uses the JavaScript SDK runtime
           result = await transformWithJavaScript(event, beforeSendCode);
           break;
         case 'python':

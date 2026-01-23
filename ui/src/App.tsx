@@ -89,6 +89,28 @@ event["tags"] = map[string]bool{"transformed": true}
 
 return event`;
 
+const DEFAULT_BEFORESEND_RN = `(event, hint) => {
+  // Strip device identifiers for privacy
+  if (event.contexts && event.contexts.device) {
+    delete event.contexts.device.model;
+    delete event.contexts.device.family;
+  }
+
+  // Add React Native app info
+  event.tags = {
+    ...event.tags,
+    platform: event.contexts?.os?.name || 'unknown',
+    app_version: event.contexts?.app?.app_version || 'unknown',
+  };
+
+  // Filter dev-only errors in production
+  if (event.message?.includes('Warning: ')) {
+    return null; // Drop React Native development warnings
+  }
+
+  return event;
+}`;
+
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);
   const [beforeSendCode, setBeforeSendCode] = useState(DEFAULT_BEFORESEND_JS);
@@ -108,6 +130,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_PHP);
     } else if (sdk === 'go') {
       setBeforeSendCode(DEFAULT_BEFORESEND_GO);
+    } else if (sdk === 'react-native') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_RN);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }

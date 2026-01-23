@@ -9,6 +9,7 @@ const AVAILABLE_SDKS = [
   { key: 'ruby', name: 'Ruby', language: 'ruby', package: 'sentry-ruby', version: '5.22.0' },
   { key: 'php', name: 'PHP', language: 'php', package: 'sentry/sentry', version: '4.12.0' },
   { key: 'go', name: 'Go', language: 'go', package: 'github.com/getsentry/sentry-go', version: '0.29.1' },
+  { key: 'react-native', name: 'React Native', language: 'javascript', package: '@sentry/react-native', version: '6.3.0' },
 ];
 
 function SdkSelector({ value, onChange }: SdkSelectorProps) {

@@ -83,6 +83,17 @@
       "packageManager": "go",
       "packages": ["github.com/getsentry/sentry-go"],
       "description": "Official Sentry Go SDK"
+    },
+    "react-native": {
+      "name": "React Native",
+      "language": "javascript",
+      "default": false,
+      "status": "available",
+      "port": 5000,
+      "usesContainer": "javascript",
+      "packageManager": "npm",
+      "packages": ["@sentry/react-native"],
+      "description": "Official Sentry React Native SDK (uses JavaScript runtime)"
     }
   }
 }
