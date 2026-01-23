@@ -52,12 +52,23 @@ app.MapPost("/transform", async (TransformRequest request) =>
             .AddReferences(typeof(SentryEvent).Assembly)
             .AddImports("System", "System.Collections.Generic", "System.Linq", "Sentry", "Sentry.Protocol");
 
+        // Wrap user code to ensure it returns the modified event
+        // This prevents silent data loss when users forget "return ev;"
+        // Only wrap if code doesn't contain 'return' keyword (explicit return takes precedence)
+        var trimmedCode = request.BeforeSendCode.TrimEnd();
+        var hasReturn = trimmedCode.Contains("return");
+        var wrappedCode = hasReturn
+            ? trimmedCode  // Don't wrap if user has explicit return
+            : (trimmedCode.EndsWith(";")
+                ? $"{trimmedCode}(ev)"
+                : $"{trimmedCode};(ev)");
+
         // Compile the script
         Script<SentryEvent?> script;
         try
         {
             script = CSharpScript.Create<SentryEvent?>(
-                request.BeforeSendCode,
+                wrappedCode,
                 scriptOptions,
                 globalsType: typeof(ScriptGlobals)
             );
@@ -89,6 +100,10 @@ app.MapPost("/transform", async (TransformRequest request) =>
         {
             var globals = new ScriptGlobals { ev = sentryEvent };
             var result = await script.RunAsync(globals);
+
+            // With code wrapping, we always get a return value:
+            // - If user forgot return, wrapping adds (ev) so ReturnValue = modified event
+            // - If user wrote return, ReturnValue = their explicit return value (including null)
             var transformedEvent = result.ReturnValue;
 
             // Convert back to JSON for response
