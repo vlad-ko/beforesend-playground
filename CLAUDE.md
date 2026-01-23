@@ -246,14 +246,26 @@ Closes #12"
 git push origin feature/add-timeout-handling
 gh pr create --title "Add timeout handling for SDK requests" --body "Closes #12"
 
-# 6. Wait for review, address feedback
+# 6. Wait for Seer code review to complete (REQUIRED)
+# Check status: gh pr view <PR#> --json statusCheckRollup
+# Seer must show: status="COMPLETED", conclusion="SUCCESS"
 
-# 7. Merge PR (squash merge preferred)
+# 7. Address any Seer feedback if needed
 
-# 8. Delete feature branch
-git branch -d feature/add-timeout-handling
-git push origin --delete feature/add-timeout-handling
+# 8. Merge PR after Seer approval (squash merge preferred)
+gh pr merge <PR#> --squash --delete-branch --admin
+
+# 9. Switch back to main
+git checkout main
+git pull origin main
 ```
+
+**Seer Code Review Requirement:**
+- **CRITICAL:** All PRs MUST pass Seer code review before merging
+- Wait for Seer to complete (usually 30-60 seconds)
+- Review any comments/suggestions from Seer
+- Address critical issues before merging
+- Seer checks code quality, security, best practices
 
 ### 4. GitHub Issues
 
@@ -505,16 +517,25 @@ docker system prune -a            # Clean Docker system
 
 ### 9. Code Review Checklist
 
-Before creating a PR, ensure:
+**Before Creating a PR:**
 
 - [ ] Tests written BEFORE implementation (TDD)
-- [ ] All tests pass (`npm test`)
+- [ ] All tests pass in Docker containers
 - [ ] Code coverage ≥ 80%
 - [ ] No console.log statements (use proper logging)
 - [ ] Documentation updated (README.md, code comments)
 - [ ] No hardcoded values (use env vars or config)
 - [ ] Error handling implemented
 - [ ] TypeScript strict mode passes
+- [ ] All tests run via Docker (never on host)
+
+**Before Merging a PR:**
+
+- [ ] **Seer code review completed successfully (REQUIRED)**
+- [ ] All status checks passing
+- [ ] Seer feedback addressed (if any)
+- [ ] PR description includes issue reference (Closes #X)
+- [ ] Conventional commit message format used
 - [ ] Linting passes (if configured)
 - [ ] Commit messages follow convention
 - [ ] PR description includes issue reference
