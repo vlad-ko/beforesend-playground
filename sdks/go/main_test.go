@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -333,6 +334,74 @@ func TestAddCustomProperties(t *testing.T) {
 
 	if transformedEvent["user"] == nil {
 		t.Error("User not added")
+	}
+}
+
+// TestBackticksInEventData tests that events containing backticks are handled correctly
+func TestBackticksInEventData(t *testing.T) {
+	router := setupRouter()
+
+	event := map[string]interface{}{
+		"event_id": "test123",
+		"exception": map[string]interface{}{
+			"values": []map[string]interface{}{
+				{
+					"type":  "CommandError",
+					"value": "Command failed: `npm install` returned error",
+				},
+			},
+		},
+		"extra": map[string]interface{}{
+			"command": "Run `docker build` with backticks",
+		},
+	}
+
+	beforeSendCode := `if exception, ok := event["exception"].(map[string]interface{}); ok {
+		if values, ok := exception["values"].([]interface{}); ok && len(values) > 0 {
+			if firstValue, ok := values[0].(map[string]interface{}); ok {
+				firstValue["value"] = "Modified: " + firstValue["value"].(string)
+			}
+		}
+	}
+	return event`
+
+	payload := map[string]interface{}{
+		"event":          event,
+		"beforeSendCode": beforeSendCode,
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "/transform", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d. Error: %s", w.Code, w.Body.String())
+	}
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	if response["success"] != true {
+		t.Errorf("Expected success=true, got %v. Error: %v", response["success"], response["error"])
+	}
+
+	transformedEvent := response["transformedEvent"].(map[string]interface{})
+	exception := transformedEvent["exception"].(map[string]interface{})
+	values := exception["values"].([]interface{})
+	firstValue := values[0].(map[string]interface{})
+
+	expectedValue := "Modified: Command failed: `npm install` returned error"
+	if firstValue["value"] != expectedValue {
+		t.Errorf("Expected value to contain backticks and be modified, got: %v", firstValue["value"])
+	}
+
+	// Verify extra field with backticks is preserved
+	extra := transformedEvent["extra"].(map[string]interface{})
+	if !strings.Contains(extra["command"].(string), "`docker build`") {
+		t.Error("Backticks in extra field should be preserved")
 	}
 }
 

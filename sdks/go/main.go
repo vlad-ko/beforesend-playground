@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -67,6 +68,10 @@ func transformHandler(c *gin.Context) {
 	programPath := filepath.Join(tmpDir, "transform.go")
 	eventJSON, _ := json.Marshal(req.Event)
 
+	// Use strconv.Quote to properly escape the JSON for Go source code
+	// This handles backticks, quotes, newlines, and all special characters
+	quotedEventJSON := strconv.Quote(string(eventJSON))
+
 	program := fmt.Sprintf(`package main
 
 import (
@@ -102,7 +107,7 @@ func main() {
 
 	fmt.Println(string(result))
 }
-`, "`"+string(eventJSON)+"`", req.BeforeSendCode)
+`, quotedEventJSON, req.BeforeSendCode)
 
 	// Write the program to file
 	if err := ioutil.WriteFile(programPath, []byte(program), 0644); err != nil {
