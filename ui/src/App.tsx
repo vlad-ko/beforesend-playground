@@ -101,23 +101,14 @@ ev.SetExtra("robot", "🤖");
 return ev;`;
 
 const DEFAULT_BEFORESEND_RN = `(event, hint) => {
-  // Strip device identifiers for privacy
-  if (event.contexts && event.contexts.device) {
-    delete event.contexts.device.model;
-    delete event.contexts.device.family;
+  // Transform error message to Transformers theme 🤖
+  if (event.exception && event.exception.values) {
+    event.exception.values[0].value = 'Transformers by Sentry 🤖';
+    event.exception.values[0].type = 'TransformerError';
   }
 
-  // Add React Native app info
-  event.tags = {
-    ...event.tags,
-    platform: event.contexts?.os?.name || 'unknown',
-    app_version: event.contexts?.app?.app_version || 'unknown',
-  };
-
-  // Filter dev-only errors in production
-  if (event.message?.includes('Warning: ')) {
-    return null; // Drop React Native development warnings
-  }
+  // Add custom tag
+  event.tags = { ...event.tags, transformed: true };
 
   return event;
 }`;
