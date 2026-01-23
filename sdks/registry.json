@@ -28,13 +28,14 @@
       "name": ".NET",
       "language": "csharp",
       "default": false,
-      "status": "not-installed",
+      "status": "available",
       "port": 5002,
+      "dockerfile": "./sdks/dotnet/Dockerfile",
+      "entrypoint": "Program.cs",
       "template": "dotnet",
       "packageManager": "nuget",
       "packages": ["Sentry"],
-      "description": "Official Sentry .NET SDK",
-      "notes": "Requires template-based approach (compiled language)"
+      "description": "Official Sentry .NET SDK"
     },
     "java": {
       "name": "Java",

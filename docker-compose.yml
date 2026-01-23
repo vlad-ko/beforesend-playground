@@ -32,12 +32,14 @@ services:
       - RUBY_SDK_URL=http://sdk-ruby:5004
       - PHP_SDK_URL=http://sdk-php:5005
       - GO_SDK_URL=http://sdk-go:5006
+      - DOTNET_SDK_URL=http://sdk-dotnet:5002
     depends_on:
       - sdk-javascript
       - sdk-python
       - sdk-ruby
       - sdk-php
       - sdk-go
+      - sdk-dotnet
 
   # JavaScript SDK Container (Default - Always Available)
   sdk-javascript:
@@ -89,6 +91,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5006:5006"
+
+  # .NET SDK Container (Tier 2 - High Priority)
+  sdk-dotnet:
+    build:
+      context: ./sdks/dotnet
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5002"
 
 networks:
   default:
