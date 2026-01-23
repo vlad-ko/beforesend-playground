@@ -64,9 +64,10 @@
       "name": "PHP",
       "language": "php",
       "default": false,
-      "status": "not-installed",
+      "status": "available",
       "port": 5005,
-      "template": "php",
+      "dockerfile": "./sdks/php/Dockerfile",
+      "entrypoint": "index.php",
       "packageManager": "composer",
       "packages": ["sentry/sentry"],
       "description": "Official Sentry PHP SDK"
