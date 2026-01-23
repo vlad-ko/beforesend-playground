@@ -8,6 +8,7 @@ const AVAILABLE_SDKS = [
   { key: 'python', name: 'Python', language: 'python', package: 'sentry-sdk', version: '2.20.0' },
   { key: 'ruby', name: 'Ruby', language: 'ruby', package: 'sentry-ruby', version: '5.22.0' },
   { key: 'php', name: 'PHP', language: 'php', package: 'sentry/sentry', version: '4.12.0' },
+  { key: 'go', name: 'Go', language: 'go', package: 'github.com/getsentry/sentry-go', version: '0.29.1' },
 ];
 
 function SdkSelector({ value, onChange }: SdkSelectorProps) {

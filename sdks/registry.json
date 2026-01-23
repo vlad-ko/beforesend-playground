@@ -76,9 +76,10 @@
       "name": "Go",
       "language": "go",
       "default": false,
-      "status": "not-installed",
+      "status": "available",
       "port": 5006,
-      "template": "go",
+      "dockerfile": "./sdks/go/Dockerfile",
+      "entrypoint": "main.go",
       "packageManager": "go",
       "packages": ["github.com/getsentry/sentry-go"],
       "description": "Official Sentry Go SDK"
