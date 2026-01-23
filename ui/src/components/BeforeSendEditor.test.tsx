@@ -94,4 +94,28 @@ describe('BeforeSendEditor', () => {
     const editor = screen.getByTestId('monaco-editor') as HTMLTextAreaElement;
     expect(editor.value).toBe(pyCode);
   });
+
+  it('uses ruby language', () => {
+    const mockOnChange = vi.fn();
+    render(
+      <BeforeSendEditor value="" onChange={mockOnChange} language="ruby" />
+    );
+
+    const editor = screen.getByTestId('monaco-editor');
+    expect(editor.getAttribute('data-language')).toBe('ruby');
+  });
+
+  it('handles Ruby code', () => {
+    const mockOnChange = vi.fn();
+    const rubyCode = `lambda do |event, hint|
+  event
+end`;
+
+    render(
+      <BeforeSendEditor value={rubyCode} onChange={mockOnChange} language="ruby" />
+    );
+
+    const editor = screen.getByTestId('monaco-editor') as HTMLTextAreaElement;
+    expect(editor.value).toBe(rubyCode);
+  });
 });

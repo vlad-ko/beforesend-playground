@@ -265,6 +265,59 @@ describe('App', () => {
     });
   });
 
+  describe('SDK-Specific Code Examples', () => {
+    it('updates beforeSend code when switching to Python SDK', async () => {
+      const user = userEvent.setup();
+      render(<App />);
+
+      // Initially shows JavaScript code
+      expect(screen.getByText(/event, hint/)).toBeInTheDocument();
+
+      // Switch to Python SDK
+      const select = screen.getByRole('combobox');
+      await user.selectOptions(select, 'python');
+
+      // Should now show Python code
+      await waitFor(() => {
+        expect(screen.getByText(/def before_send/)).toBeInTheDocument();
+      });
+    });
+
+    it('updates beforeSend code when switching to Ruby SDK', async () => {
+      const user = userEvent.setup();
+      render(<App />);
+
+      // Switch to Ruby SDK
+      const select = screen.getByRole('combobox');
+      await user.selectOptions(select, 'ruby');
+
+      // Should now show Ruby code
+      await waitFor(() => {
+        expect(screen.getByText(/lambda do/)).toBeInTheDocument();
+      });
+    });
+
+    it('updates beforeSend code when switching back to JavaScript', async () => {
+      const user = userEvent.setup();
+      render(<App />);
+
+      // Switch to Python
+      const select = screen.getByRole('combobox');
+      await user.selectOptions(select, 'python');
+
+      await waitFor(() => {
+        expect(screen.getByText(/def before_send/)).toBeInTheDocument();
+      });
+
+      // Switch back to JavaScript
+      await user.selectOptions(select, 'javascript');
+
+      await waitFor(() => {
+        expect(screen.getByText(/event, hint/)).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('UI Enhancements', () => {
     it('displays helper text for Event JSON section', () => {
       render(<App />);

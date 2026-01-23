@@ -29,9 +29,11 @@ services:
     environment:
       - JAVASCRIPT_SDK_URL=http://sdk-javascript:5000
       - PYTHON_SDK_URL=http://sdk-python:5001
+      - RUBY_SDK_URL=http://sdk-ruby:5004
     depends_on:
       - sdk-javascript
       - sdk-python
+      - sdk-ruby
 
   # JavaScript SDK Container (Default - Always Available)
   sdk-javascript:
@@ -54,6 +56,16 @@ services:
       - "5001:5001"
     volumes:
       - ./sdks/python:/app
+
+  # Ruby SDK Container (Tier 2 - High Priority)
+  sdk-ruby:
+    build:
+      context: ./sdks/ruby
+      dockerfile: Dockerfile
+    ports:
+      - "5004:5004"
+    volumes:
+      - ./sdks/ruby:/app
 
 networks:
   default:
