@@ -50,7 +50,7 @@ app.MapPost("/transform", async (TransformRequest request) =>
         // Create script options with Sentry references
         var scriptOptions = ScriptOptions.Default
             .AddReferences(typeof(SentryEvent).Assembly)
-            .AddImports("Sentry", "Sentry.Protocol");
+            .AddImports("System", "System.Collections.Generic", "System.Linq", "Sentry", "Sentry.Protocol");
 
         // Compile the script
         Script<SentryEvent?> script;

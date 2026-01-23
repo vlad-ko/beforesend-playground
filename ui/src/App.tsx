@@ -89,6 +89,24 @@ event["tags"] = map[string]bool{"transformed": true}
 
 return event`;
 
+const DEFAULT_BEFORESEND_DOTNET = `// Add custom tags
+ev.SetTag("environment", "production");
+ev.SetTag("transformed", "true");
+ev.SetTag("sdk", "dotnet");
+
+// Add extra data
+ev.SetExtra("processor", "C# Roslyn");
+ev.SetExtra("language", "csharp");
+ev.SetExtra("compiled", true);
+
+// Set platform
+ev.Platform = "csharp";
+
+// Add fingerprint for grouping
+ev.Fingerprint = new[] { "custom-grouping", "dotnet-transformed" };
+
+return ev;`;
+
 const DEFAULT_BEFORESEND_RN = `(event, hint) => {
   // Strip device identifiers for privacy
   if (event.contexts && event.contexts.device) {
@@ -130,6 +148,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_PHP);
     } else if (sdk === 'go') {
       setBeforeSendCode(DEFAULT_BEFORESEND_GO);
+    } else if (sdk === 'dotnet') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_DOTNET);
     } else if (sdk === 'react-native') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RN);
     } else {
@@ -216,7 +236,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={selectedSdk as 'javascript' | 'python' | 'ruby'}
+              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp'}
             />
           </div>
         </div>
