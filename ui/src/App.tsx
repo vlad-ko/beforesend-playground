@@ -4,7 +4,7 @@ import BeforeSendEditor from './components/BeforeSendEditor';
 import SdkSelector from './components/SdkSelector';
 import OutputViewer from './components/OutputViewer';
 import { apiClient, TransformResponse } from './api/client';
-import { SentryLogo } from './assets/SentryLogo';
+import sentryLogo from './assets/sentry-logo.png';
 
 const DEFAULT_EVENT = JSON.stringify(
   {
@@ -101,7 +101,7 @@ function App() {
       <header className="bg-sentry-purple text-white py-4 px-6 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="data:image/svg+xml,%3Csvg viewBox='0 0 200 200' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='100' cy='100' r='90' fill='white' opacity='0.1'/%3E%3Cpath d='M100 40C77.909 40 60 57.909 60 80C60 84.971 61.013 89.709 62.863 94.026L75.625 80.625C78.458 77.708 82.5 76 86.875 76H100V40Z' fill='white'/%3E%3Cpath d='M100 124V160C122.091 160 140 142.091 140 120C140 115.029 138.987 110.291 137.137 105.974L124.375 119.375C121.542 122.292 117.5 124 113.125 124H100Z' fill='white'/%3E%3Cpath d='M80 100C80 94.477 84.477 90 90 90H110C115.523 90 120 94.477 120 100C120 105.523 115.523 110 110 110H90C84.477 110 80 105.523 80 100Z' fill='white'/%3E%3C/svg%3E" alt="Sentry Logo" className="w-10 h-10" />
+            <img src={sentryLogo} alt="Sentry Logo" className="w-10 h-10" />
             <div>
               <h1 className="text-2xl font-bold">beforeSend Testing Playground</h1>
               <p className="text-sm text-gray-300 mt-1">
