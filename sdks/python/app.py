@@ -25,11 +25,18 @@ def transform():
 
         # Execute the beforeSend code
         try:
-            # Create a local namespace for the beforeSend function
+            # Create a namespace with common imports available
+            # This allows beforeSend code to use re, json, etc.
+            import re
+            global_namespace = {
+                're': re,
+                'json': json,
+                '__builtins__': __builtins__
+            }
             local_namespace = {}
 
             # Execute the code to define the beforeSend function
-            exec(before_send_code, {}, local_namespace)
+            exec(before_send_code, global_namespace, local_namespace)
 
             # Find the function (usually named 'before_send' or similar)
             before_send_fn = None
