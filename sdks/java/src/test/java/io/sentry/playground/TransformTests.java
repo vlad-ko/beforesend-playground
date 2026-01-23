@@ -331,4 +331,89 @@ class TransformTests {
         assertTrue(result.get("error").asText().contains("must return the event object or null"));
         assertTrue(result.get("error").asText().contains("Integer"));
     }
+
+    @Test
+    void transformWithReturnInComment() throws Exception {
+        // Arrange - "return" in comment should not be detected as a return statement
+        Map<String, Object> request = new HashMap<>();
+        Map<String, Object> event = new HashMap<>();
+        event.put("event_id", "test-comment");
+
+        request.put("event", event);
+        request.put("beforeSendCode", """
+            // This will return the event with tags
+            event.setTag("test", "value");
+        """);
+
+        // Act
+        ResponseEntity<String> response = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String.class
+        );
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        JsonNode result = objectMapper.readTree(response.getBody());
+        assertTrue(result.get("success").asBoolean());
+        assertNotNull(result.get("transformedEvent"));
+        assertEquals("value", result.get("transformedEvent").get("tags").get("test").asText());
+    }
+
+    @Test
+    void transformWithReturnInVariableName() throws Exception {
+        // Arrange - "return" in variable name should not be detected as a return statement
+        Map<String, Object> request = new HashMap<>();
+        Map<String, Object> event = new HashMap<>();
+        event.put("event_id", "test-varname");
+
+        request.put("event", event);
+        request.put("beforeSendCode", """
+            String returnValue = "test";
+            event.setTag("result", returnValue);
+        """);
+
+        // Act
+        ResponseEntity<String> response = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String.class
+        );
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        JsonNode result = objectMapper.readTree(response.getBody());
+        assertTrue(result.get("success").asBoolean());
+        assertNotNull(result.get("transformedEvent"));
+        assertEquals("test", result.get("transformedEvent").get("tags").get("result").asText());
+    }
+
+    @Test
+    void transformWithActualReturnStatement() throws Exception {
+        // Arrange - Actual return statement with variable containing "return" in name
+        Map<String, Object> request = new HashMap<>();
+        Map<String, Object> event = new HashMap<>();
+        event.put("event_id", "test-actual-return");
+
+        request.put("event", event);
+        request.put("beforeSendCode", """
+            int returnCode = 200;
+            event.setTag("code", String.valueOf(returnCode));
+            return event;
+        """);
+
+        // Act
+        ResponseEntity<String> response = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String.class
+        );
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        JsonNode result = objectMapper.readTree(response.getBody());
+        assertTrue(result.get("success").asBoolean());
+        assertNotNull(result.get("transformedEvent"));
+        assertEquals("200", result.get("transformedEvent").get("tags").get("code").asText());
+    }
 }

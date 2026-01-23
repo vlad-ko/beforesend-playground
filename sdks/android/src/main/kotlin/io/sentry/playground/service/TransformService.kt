@@ -69,8 +69,9 @@ class TransformService {
     private fun wrapUserCode(userCode: String): String {
         val trimmedCode = userCode.trim()
 
-        // Check if user code contains explicit return statement
-        val hasReturn = trimmedCode.contains("return")
+        // Check for return as a standalone keyword using word boundaries
+        // This prevents false positives from "return" in comments, strings, or variable names
+        val hasReturn = Regex("\\breturn\\b").containsMatchIn(trimmedCode)
 
         return if (hasReturn) {
             // User has explicit return, use code as-is

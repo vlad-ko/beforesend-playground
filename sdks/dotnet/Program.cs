@@ -54,9 +54,10 @@ app.MapPost("/transform", async (TransformRequest request) =>
 
         // Wrap user code to ensure it returns the modified event
         // This prevents silent data loss when users forget "return ev;"
-        // Only wrap if code doesn't contain 'return' keyword (explicit return takes precedence)
+        // Check for return as a standalone keyword using word boundaries
+        // This prevents false positives from "return" in comments, strings, or variable names
         var trimmedCode = request.BeforeSendCode.TrimEnd();
-        var hasReturn = trimmedCode.Contains("return");
+        var hasReturn = System.Text.RegularExpressions.Regex.IsMatch(trimmedCode, @"\breturn\b");
         var wrappedCode = hasReturn
             ? trimmedCode  // Don't wrap if user has explicit return
             : (trimmedCode.EndsWith(";")

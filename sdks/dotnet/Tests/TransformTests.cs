@@ -244,6 +244,79 @@ public class TransformTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal("healthy", result.Status);
         Assert.Equal("dotnet", result.Sdk);
     }
+
+    [Fact]
+    public async Task TransformWithReturnInComment()
+    {
+        // Arrange - "return" in comment should not be detected as a return statement
+        var request = new
+        {
+            @event = new { event_id = "test-comment" },
+            beforeSendCode = @"
+                // This will return the event with tags
+                ev.SetTag(""test"", ""value"");
+            "
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/transform", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<TransformResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.TransformedEvent);
+    }
+
+    [Fact]
+    public async Task TransformWithReturnInVariableName()
+    {
+        // Arrange - "return" in variable name should not be detected as a return statement
+        var request = new
+        {
+            @event = new { event_id = "test-varname" },
+            beforeSendCode = @"
+                string returnValue = ""test"";
+                ev.SetTag(""result"", returnValue);
+            "
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/transform", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<TransformResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.TransformedEvent);
+    }
+
+    [Fact]
+    public async Task TransformWithActualReturnStatement()
+    {
+        // Arrange - Actual return statement with variable containing "return" in name
+        var request = new
+        {
+            @event = new { event_id = "test-actual-return" },
+            beforeSendCode = @"
+                int returnCode = 200;
+                ev.SetTag(""code"", returnCode.ToString());
+                return ev;
+            "
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/transform", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<TransformResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.TransformedEvent);
+    }
 }
 
 public record TransformResponse(bool Success, object? TransformedEvent, string? Error, string? Traceback);

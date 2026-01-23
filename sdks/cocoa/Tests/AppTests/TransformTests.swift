@@ -229,4 +229,77 @@ final class TransformTests: XCTestCase {
             XCTAssertEqual(tags["device_name"], "iPhone 14")
         }
     }
+
+    // Test 11: "return" in comment should not prevent auto-return
+    func testReturnInComment() throws {
+        let event: [String: Any] = [
+            "event_id": "test-comment"
+        ]
+
+        let beforeSendCode = """
+        // This will return the event with tags
+        event.tags = { test: "value" };
+        """
+
+        let result = try TransformService.transform(event: event, beforeSendCode: beforeSendCode)
+
+        XCTAssertTrue(result.success)
+        XCTAssertNotNil(result.transformedEvent)
+
+        let transformedEvent = result.transformedEvent!
+        if let tags = transformedEvent["tags"] as? [String: String] {
+            XCTAssertEqual(tags["test"], "value")
+        } else {
+            XCTFail("Tags should be present - auto-return should have been added")
+        }
+    }
+
+    // Test 12: "return" in variable name should not prevent auto-return
+    func testReturnInVariableName() throws {
+        let event: [String: Any] = [
+            "event_id": "test-varname"
+        ]
+
+        let beforeSendCode = """
+        var returnValue = "test";
+        event.tags = { result: returnValue };
+        """
+
+        let result = try TransformService.transform(event: event, beforeSendCode: beforeSendCode)
+
+        XCTAssertTrue(result.success)
+        XCTAssertNotNil(result.transformedEvent)
+
+        let transformedEvent = result.transformedEvent!
+        if let tags = transformedEvent["tags"] as? [String: String] {
+            XCTAssertEqual(tags["result"], "test")
+        } else {
+            XCTFail("Tags should be present - auto-return should have been added")
+        }
+    }
+
+    // Test 13: Actual return statement should work
+    func testActualReturnStatement() throws {
+        let event: [String: Any] = [
+            "event_id": "test-actual-return"
+        ]
+
+        let beforeSendCode = """
+        var returnCode = 200;
+        event.tags = { code: returnCode };
+        return event;
+        """
+
+        let result = try TransformService.transform(event: event, beforeSendCode: beforeSendCode)
+
+        XCTAssertTrue(result.success)
+        XCTAssertNotNil(result.transformedEvent)
+
+        let transformedEvent = result.transformedEvent!
+        if let tags = transformedEvent["tags"] as? [String: String] {
+            XCTAssertEqual(tags["code"], "200")
+        } else {
+            XCTFail("Tags should be present")
+        }
+    }
 }

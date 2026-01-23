@@ -79,8 +79,9 @@ public class TransformService {
     private String wrapUserCode(String userCode) {
         String trimmedCode = userCode.trim();
 
-        // Check if user code contains explicit return statement
-        boolean hasReturn = trimmedCode.contains("return");
+        // Check for return as a standalone keyword using word boundaries
+        // This prevents false positives from "return" in comments, strings, or variable names
+        boolean hasReturn = trimmedCode.matches(".*\\breturn\\b.*");
 
         if (hasReturn) {
             // User has explicit return, use code as-is

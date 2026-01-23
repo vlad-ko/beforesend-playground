@@ -302,4 +302,83 @@ class TransformTests {
         assertTrue(response.body!!.contains("healthy"))
         assertTrue(response.body!!.contains("android"))
     }
+
+    @Test
+    fun `transform with return in comment should not prevent auto-return`() {
+        // Arrange - "return" in comment should not be detected as a return statement
+        val request = mapOf(
+            "event" to mapOf("event_id" to "test-comment"),
+            "beforeSendCode" to """
+                // This will return the event with tags
+                event.setTag("test", "value")
+            """.trimIndent()
+        )
+
+        // Act
+        val response: ResponseEntity<String> = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String::class.java
+        )
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.statusCode)
+        val result = objectMapper.readTree(response.body)
+        assertTrue(result["success"].asBoolean())
+        assertNotNull(result["transformedEvent"])
+        assertEquals("value", result["transformedEvent"]["tags"]["test"].asText())
+    }
+
+    @Test
+    fun `transform with return in variable name should not prevent auto-return`() {
+        // Arrange - "return" in variable name should not be detected as a return statement
+        val request = mapOf(
+            "event" to mapOf("event_id" to "test-varname"),
+            "beforeSendCode" to """
+                val returnValue = "test"
+                event.setTag("result", returnValue)
+            """.trimIndent()
+        )
+
+        // Act
+        val response: ResponseEntity<String> = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String::class.java
+        )
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.statusCode)
+        val result = objectMapper.readTree(response.body)
+        assertTrue(result["success"].asBoolean())
+        assertNotNull(result["transformedEvent"])
+        assertEquals("test", result["transformedEvent"]["tags"]["result"].asText())
+    }
+
+    @Test
+    fun `transform with actual return statement should work`() {
+        // Arrange - Actual return statement with variable containing "return" in name
+        val request = mapOf(
+            "event" to mapOf("event_id" to "test-actual-return"),
+            "beforeSendCode" to """
+                val returnCode = 200
+                event.setTag("code", returnCode.toString())
+                return event
+            """.trimIndent()
+        )
+
+        // Act
+        val response: ResponseEntity<String> = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String::class.java
+        )
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.statusCode)
+        val result = objectMapper.readTree(response.body)
+        assertTrue(result["success"].asBoolean())
+        assertNotNull(result["transformedEvent"])
+        assertEquals("200", result["transformedEvent"]["tags"]["code"].asText())
+    }
 }

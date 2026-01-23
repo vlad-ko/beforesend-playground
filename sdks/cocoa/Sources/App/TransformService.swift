@@ -102,8 +102,12 @@ class TransformService {
     private static func wrapUserCode(_ userCode: String) -> String {
         let trimmedCode = userCode.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Check if user code has explicit return statement
-        let hasReturn = trimmedCode.contains("return")
+        // Check for return as a standalone keyword using word boundaries
+        // This prevents false positives from "return" in comments, strings, or variable names
+        let hasReturn = trimmedCode.range(
+            of: "\\breturn\\b",
+            options: .regularExpression
+        ) != nil
 
         if hasReturn {
             // User has explicit return, use code as-is
