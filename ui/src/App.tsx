@@ -22,17 +22,28 @@ const DEFAULT_EVENT = JSON.stringify(
 );
 
 const DEFAULT_BEFORESEND_JS = `(event, hint) => {
-  // Modify the event here
-  // Return null to drop the event
-  // Return event to send it
+  // Transform error message to Transformers theme 🤖
+  if (event.exception && event.exception.values) {
+    event.exception.values[0].value = 'Transformers by Sentry 🤖';
+    event.exception.values[0].type = 'TransformerError';
+  }
+
+  // Add custom tag
+  event.tags = { ...event.tags, transformed: true };
 
   return event;
 }`;
 
 const DEFAULT_BEFORESEND_PY = `def before_send(event, hint):
-    # Modify the event here
-    # Return None to drop the event
-    # Return event to send it
+    # Transform error message to Transformers theme 🤖
+    if event.get('exception') and event['exception'].get('values'):
+        event['exception']['values'][0]['value'] = 'Transformers by Sentry 🤖'
+        event['exception']['values'][0]['type'] = 'TransformerError'
+
+    # Add custom tag
+    if 'tags' not in event:
+        event['tags'] = {}
+    event['tags']['transformed'] = True
 
     return event`;
 

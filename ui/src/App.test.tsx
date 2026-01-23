@@ -60,6 +60,16 @@ describe('App', () => {
     expect(codeEditor.value).toContain('return event');
   });
 
+  it('has Transformers theme in default JavaScript beforeSend', () => {
+    render(<App />);
+    const editors = screen.getAllByTestId('monaco-editor');
+    const codeEditor = editors[1] as HTMLTextAreaElement;
+
+    expect(codeEditor.value).toContain('Transformers by Sentry 🤖');
+    expect(codeEditor.value).toContain('TransformerError');
+    expect(codeEditor.value).toContain('transformed: true');
+  });
+
   it('changes beforeSend code when SDK changes', async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -72,6 +82,21 @@ describe('App', () => {
 
     expect(codeEditor.value).toContain('def before_send');
     expect(codeEditor.value).toContain('return event');
+  });
+
+  it('has Transformers theme in default Python beforeSend', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const sdkSelect = screen.getByRole('combobox');
+    await user.selectOptions(sdkSelect, 'python');
+
+    const editors = screen.getAllByTestId('monaco-editor');
+    const codeEditor = editors[1] as HTMLTextAreaElement;
+
+    expect(codeEditor.value).toContain('Transformers by Sentry 🤖');
+    expect(codeEditor.value).toContain('TransformerError');
+    expect(codeEditor.value).toContain("['transformed'] = True");
   });
 
   it('shows loading state during transformation', async () => {
