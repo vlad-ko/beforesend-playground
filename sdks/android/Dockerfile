@@ -1,6 +1,6 @@
 # Multi-stage build for Android SDK
 # Stage 1: Build with Gradle
-FROM gradle:8.5-jdk21-alpine AS build
+FROM gradle:8.5-jdk21 AS build
 
 WORKDIR /app
 

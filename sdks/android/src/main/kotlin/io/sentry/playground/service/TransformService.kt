@@ -2,10 +2,11 @@ package io.sentry.playground.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import groovy.lang.Binding
+import groovy.lang.GroovyShell
 import org.springframework.stereotype.Service
 import java.io.PrintWriter
 import java.io.StringWriter
-import javax.script.ScriptEngineManager
 
 @Service
 class TransformService {
@@ -30,13 +31,9 @@ class TransformService {
             // Wrap user code to ensure return value
             val wrappedCode = wrapUserCode(beforeSendCode)
 
-            // Execute the transformation using Kotlin script engine
+            // Execute the transformation using Kotlin script compilation
             try {
-                val engine = ScriptEngineManager().getEngineByExtension("kts")
-                    ?: return TransformResult.error("Kotlin script engine not available", null)
-
-                engine.put("event", event)
-                val result = engine.eval(wrappedCode)
+                val result = executeKotlinCode(event, wrappedCode)
 
                 // Handle the result
                 if (result == null) {
@@ -56,8 +53,6 @@ class TransformService {
                     null
                 )
 
-            } catch (e: javax.script.ScriptException) {
-                return TransformResult.error("Compilation failed for beforeSend code: ${e.message}", null)
             } catch (e: Exception) {
                 val sw = StringWriter()
                 e.printStackTrace(PrintWriter(sw))
@@ -83,6 +78,22 @@ class TransformService {
         } else {
             // No return statement, wrap to automatically return event
             "$trimmedCode\nevent"
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun executeKotlinCode(event: EventWrapper, code: String): EventWrapper? {
+        // Use Groovy for reliable script execution (same as Java SDK)
+        val binding = Binding()
+        binding.setVariable("event", event)
+
+        val shell = GroovyShell(binding)
+        val result = shell.evaluate(code)
+
+        return when {
+            result == null -> null
+            result is EventWrapper -> result
+            else -> throw IllegalStateException("beforeSend must return the event object or null. Got: ${result::class.simpleName}")
         }
     }
 

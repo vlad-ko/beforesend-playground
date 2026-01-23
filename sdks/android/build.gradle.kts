@@ -22,13 +22,11 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    // Sentry Android SDK
-    implementation("io.sentry:sentry-android:7.16.0")
+    // Sentry SDK (using Java SDK for server-side simulation of Android behavior)
+    implementation("io.sentry:sentry:7.16.0")
 
-    // Kotlin scripting
-    implementation("org.jetbrains.kotlin:kotlin-scripting-jsr223")
-    implementation("org.jetbrains.kotlin:kotlin-script-runtime")
-    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable")
+    // Groovy for script execution (more reliable than Kotlin scripting in Docker)
+    implementation("org.apache.groovy:groovy:4.0.15")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
