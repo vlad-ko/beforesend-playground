@@ -34,6 +34,7 @@ services:
       - GO_SDK_URL=http://sdk-go:5006
       - DOTNET_SDK_URL=http://sdk-dotnet:5002
       - JAVA_SDK_URL=http://sdk-java:5007
+      - ANDROID_SDK_URL=http://sdk-android:5008
     depends_on:
       - sdk-javascript
       - sdk-python
@@ -42,6 +43,7 @@ services:
       - sdk-go
       - sdk-dotnet
       - sdk-java
+      - sdk-android
 
   # JavaScript SDK Container (Default - Always Available)
   sdk-javascript:
@@ -109,6 +111,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5007:5007"
+
+  # Android SDK Container (Mobile - Tier 3)
+  sdk-android:
+    build:
+      context: ./sdks/android
+      dockerfile: Dockerfile
+    ports:
+      - "5008:5008"
 
 networks:
   default:

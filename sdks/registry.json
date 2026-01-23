@@ -50,6 +50,19 @@
       "packages": ["io.sentry:sentry"],
       "description": "Official Sentry Java SDK"
     },
+    "android": {
+      "name": "Android",
+      "language": "kotlin",
+      "default": false,
+      "status": "available",
+      "port": 5008,
+      "dockerfile": "./sdks/android/Dockerfile",
+      "entrypoint": "Application.kt",
+      "template": "android",
+      "packageManager": "gradle",
+      "packages": ["io.sentry:sentry-android"],
+      "description": "Official Sentry Android SDK with Kotlin"
+    },
     "ruby": {
       "name": "Ruby",
       "language": "ruby",

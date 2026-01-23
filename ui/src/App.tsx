@@ -107,6 +107,17 @@ event.setTag("transformed_by", "Java SDK");
 
 return event;`;
 
+const DEFAULT_BEFORESEND_ANDROID = `// Transform error message to Transformers theme 🤖
+event.setException("TransformerError", "Transformers by Sentry 🤖")
+
+// Add custom tag indicating which SDK transformed this
+event.setTag("transformed_by", "Android SDK")
+
+// Add Android-specific context
+event.setExtra("platform", "android")
+
+return event`;
+
 const DEFAULT_BEFORESEND_RN = `(event, hint) => {
   // Transform error message to Transformers theme 🤖
   if (event.exception && event.exception.values) {
@@ -143,6 +154,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_DOTNET);
     } else if (sdk === 'java') {
       setBeforeSendCode(DEFAULT_BEFORESEND_JAVA);
+    } else if (sdk === 'android') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_ANDROID);
     } else if (sdk === 'react-native') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RN);
     } else {
@@ -229,7 +242,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java'}
+              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin'}
             />
           </div>
         </div>
