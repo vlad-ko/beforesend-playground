@@ -14,6 +14,8 @@ struct TransformResult {
 
 class TransformService {
     static func transform(event: [String: Any], beforeSendCode: String) throws -> TransformResult {
+        print("[Transform] Called with event keys: \(event.keys), code length: \(beforeSendCode.count)")
+
         // Validate input
         guard !beforeSendCode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return TransformResult(
@@ -25,9 +27,11 @@ class TransformService {
         }
 
         #if canImport(JavaScriptCore)
+        print("[Transform] Using native JavaScriptCore")
         // Use native JavaScriptCore on macOS/iOS
         return executeWithJavaScriptCore(event: event, beforeSendCode: beforeSendCode)
         #else
+        print("[Transform] Using JXKit")
         // Use JXKit on Linux
         return executeWithJXKit(event: event, beforeSendCode: beforeSendCode)
         #endif
@@ -125,20 +129,26 @@ class TransformService {
             let eventJSON = try JSONSerialization.data(withJSONObject: event, options: [])
             let eventJSONString = String(data: eventJSON, encoding: .utf8)!
 
+            print("[JXKit] Event JSON: \(eventJSONString)")
+
             // Inject the event into JavaScript context
             try context.eval("var event = \(eventJSONString);")
 
             // Wrap user code to handle implicit returns
             let wrappedCode = wrapUserCode(beforeSendCode)
+            print("[JXKit] Wrapped code: \(wrappedCode)")
 
             // Execute the beforeSend code and store result in a variable
             try context.eval("var __result = (function() { \(wrappedCode) })();")
 
-            // Check if result is null/undefined
-            let isNullOrUndefined = try context.eval("__result === null || __result === undefined").bool
+            // Try to stringify the result - will be "null" or "undefined" if that's what was returned
+            let jsonStringResult = try context.eval("typeof __result === 'undefined' || __result === null ? null : JSON.stringify(__result)")
 
-            // Handle null/undefined return (drop event)
-            if isNullOrUndefined {
+            print("[JXKit] JSON string result isNull: \(jsonStringResult.isNullOrUndefined)")
+
+            // Check if result was null/undefined
+            if jsonStringResult.isNullOrUndefined {
+                print("[JXKit] Result was null/undefined")
                 return TransformResult(
                     success: true,
                     transformedEvent: nil,
@@ -147,28 +157,34 @@ class TransformService {
                 )
             }
 
-            // Convert result back to Swift dictionary via JSON.stringify
-            let jsonStringResult = try context.eval("JSON.stringify(__result)")
-
-            if let jsonString = try? jsonStringResult.string,
-               let jsonData = jsonString.data(using: .utf8),
-               let resultDict = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
-                return TransformResult(
-                    success: true,
-                    transformedEvent: resultDict,
-                    error: nil,
-                    traceback: nil
-                )
+            // Convert result back to Swift dictionary
+            if let jsonString = try? jsonStringResult.string {
+                print("[JXKit] JSON string: \(jsonString)")
+                if let jsonData = jsonString.data(using: .utf8),
+                   let resultDict = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
+                    print("[JXKit] Successfully parsed result")
+                    return TransformResult(
+                        success: true,
+                        transformedEvent: resultDict,
+                        error: nil,
+                        traceback: nil
+                    )
+                } else {
+                    print("[JXKit] Failed to parse JSON data")
+                }
             } else {
-                return TransformResult(
-                    success: false,
-                    transformedEvent: nil,
-                    error: "beforeSend must return an event object or null",
-                    traceback: nil
-                )
+                print("[JXKit] Failed to get string from result")
             }
+
+            return TransformResult(
+                success: false,
+                transformedEvent: nil,
+                error: "beforeSend must return an event object or null",
+                traceback: nil
+            )
 
         } catch {
+            print("[JXKit] Exception: \(error)")
             return TransformResult(
                 success: false,
                 transformedEvent: nil,

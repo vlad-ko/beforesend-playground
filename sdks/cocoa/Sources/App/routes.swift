@@ -10,6 +10,21 @@ struct TransformResponse: Content {
     let transformedEvent: [String: AnyCodable]?
     let error: String?
     let traceback: String?
+
+    enum CodingKeys: String, CodingKey {
+        case success
+        case transformedEvent
+        case error
+        case traceback
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(success, forKey: .success)
+        try container.encode(transformedEvent, forKey: .transformedEvent)
+        try container.encode(error, forKey: .error)
+        try container.encode(traceback, forKey: .traceback)
+    }
 }
 
 struct HealthResponse: Content {
@@ -86,16 +101,21 @@ func routes(_ app: Application) throws {
 
     // Transform endpoint
     app.post("transform") { req -> TransformResponse in
+        req.logger.info("Transform endpoint called")
         let transformReq = try req.content.decode(TransformRequest.self)
+        req.logger.info("Decoded request, event keys: \(transformReq.event.keys)")
 
         // Convert AnyCodable to [String: Any]
         let event = transformReq.event.mapValues { $0.value }
+        req.logger.info("Converted event to [String: Any]")
 
         do {
+            req.logger.info("Calling TransformService.transform")
             let result = try TransformService.transform(
                 event: event,
                 beforeSendCode: transformReq.beforeSendCode
             )
+            req.logger.info("Transform result: success=\(result.success), hasEvent=\(result.transformedEvent != nil)")
 
             let transformedEvent: [String: AnyCodable]? = result.transformedEvent?.mapValues { AnyCodable($0) }
 
