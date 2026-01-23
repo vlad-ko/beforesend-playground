@@ -281,4 +281,54 @@ class TransformTests {
         assertTrue(response.getBody().contains("healthy"));
         assertTrue(response.getBody().contains("java"));
     }
+
+    @Test
+    void invalidReturnTypeString() throws Exception {
+        // Arrange - beforeSend returns a string instead of event
+        Map<String, Object> request = new HashMap<>();
+        Map<String, Object> event = new HashMap<>();
+        event.put("event_id", "test123");
+
+        request.put("event", event);
+        request.put("beforeSendCode", "return \"hello world\";");
+
+        // Act
+        ResponseEntity<String> response = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String.class
+        );
+
+        // Assert - should return error, not success
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        JsonNode result = objectMapper.readTree(response.getBody());
+        assertFalse(result.get("success").asBoolean());
+        assertTrue(result.get("error").asText().contains("must return the event object or null"));
+        assertTrue(result.get("error").asText().contains("String"));
+    }
+
+    @Test
+    void invalidReturnTypeInteger() throws Exception {
+        // Arrange - beforeSend returns an integer instead of event
+        Map<String, Object> request = new HashMap<>();
+        Map<String, Object> event = new HashMap<>();
+        event.put("event_id", "test123");
+
+        request.put("event", event);
+        request.put("beforeSendCode", "return 42;");
+
+        // Act
+        ResponseEntity<String> response = restTemplate.postForEntity(
+            "/transform",
+            request,
+            String.class
+        );
+
+        // Assert - should return error, not success
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        JsonNode result = objectMapper.readTree(response.getBody());
+        assertFalse(result.get("success").asBoolean());
+        assertTrue(result.get("error").asText().contains("must return the event object or null"));
+        assertTrue(result.get("error").asText().contains("Integer"));
+    }
 }

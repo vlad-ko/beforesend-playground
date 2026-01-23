@@ -49,15 +49,17 @@ public class TransformService {
                     return TransformResult.success(null);
                 }
 
-                // Convert the wrapped event back to JsonNode
+                // Only accept EventWrapper as valid return type
                 if (result instanceof EventWrapper) {
                     JsonNode transformedJson = objectMapper.valueToTree(((EventWrapper) result).getEventMap());
                     return TransformResult.success(transformedJson);
                 }
 
-                // Fallback: convert whatever was returned
-                JsonNode transformedJson = objectMapper.valueToTree(result);
-                return TransformResult.success(transformedJson);
+                // Invalid return type - user must return event or null
+                return TransformResult.error(
+                    "beforeSend must return the event object or null. Got: " + result.getClass().getSimpleName(),
+                    null
+                );
 
             } catch (org.codehaus.groovy.control.CompilationFailedException e) {
                 return TransformResult.error("Compilation failed for beforeSend code: " + e.getMessage(), null);
