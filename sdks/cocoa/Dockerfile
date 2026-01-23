@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Copy Package files first for dependency caching
 COPY Package.swift ./
-COPY Package.resolved ./
 
 # Resolve dependencies
 RUN swift package resolve
