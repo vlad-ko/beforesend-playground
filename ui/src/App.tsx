@@ -99,6 +99,14 @@ ev.SetExtra("robot", "🤖");
 
 return ev;`;
 
+const DEFAULT_BEFORESEND_JAVA = `// Transform error message to Transformers theme 🤖
+event.setException("TransformerError", "Transformers by Sentry 🤖");
+
+// Add custom tag indicating which SDK transformed this
+event.setTag("transformed_by", "Java SDK");
+
+return event;`;
+
 const DEFAULT_BEFORESEND_RN = `(event, hint) => {
   // Transform error message to Transformers theme 🤖
   if (event.exception && event.exception.values) {
@@ -133,6 +141,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_GO);
     } else if (sdk === 'dotnet') {
       setBeforeSendCode(DEFAULT_BEFORESEND_DOTNET);
+    } else if (sdk === 'java') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_JAVA);
     } else if (sdk === 'react-native') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RN);
     } else {
@@ -219,7 +229,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp'}
+              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java'}
             />
           </div>
         </div>
