@@ -4,7 +4,12 @@ These tests describe the desired behavior - implement to make them pass!
 """
 import pytest
 import json
+import sys
+import os
 from flask import Flask
+
+# Add parent directory to Python path to import app
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 @pytest.fixture
@@ -15,8 +20,9 @@ def client():
         app.config['TESTING'] = True
         with app.test_client() as client:
             yield client
-    except Exception:
+    except Exception as e:
         # App not yet properly structured - return mock
+        print(f"Failed to import app: {e}")
         app = Flask(__name__)
 
         @app.route('/transform', methods=['POST'])
