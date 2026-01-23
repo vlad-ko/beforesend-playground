@@ -7,13 +7,14 @@ import { transformWithPHP } from '../sdk-clients/php';
 import { transformWithGo } from '../sdk-clients/go';
 import { transformWithDotNet } from '../sdk-clients/dotnet';
 import { transformWithJava } from '../sdk-clients/java';
+import { transformWithAndroid } from '../sdk-clients/android';
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
 
 interface TransformRequest {
-  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'dotnet' | 'java' | 'react-native';
+  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'dotnet' | 'java' | 'android' | 'react-native';
   event: string | Record<string, any>;
   beforeSendCode: string;
 }
@@ -118,6 +119,9 @@ router.post('/', async (req: Request<{}, {}, TransformRequest>, res: Response<Tr
           break;
         case 'java':
           result = await transformWithJava(event, beforeSendCode);
+          break;
+        case 'android':
+          result = await transformWithAndroid(event, beforeSendCode);
           break;
         default:
           return res.status(400).json({
