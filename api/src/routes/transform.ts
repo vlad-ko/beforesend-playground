@@ -3,13 +3,14 @@ import { validateJSON, validateSentryEvent } from '../parsers/json';
 import { transformWithJavaScript } from '../sdk-clients/javascript';
 import { transformWithPython } from '../sdk-clients/python';
 import { transformWithRuby } from '../sdk-clients/ruby';
+import { transformWithPHP } from '../sdk-clients/php';
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
 
 interface TransformRequest {
-  sdk: 'javascript' | 'python' | 'ruby';
+  sdk: 'javascript' | 'python' | 'ruby' | 'php';
   event: string | Record<string, any>;
   beforeSendCode: string;
 }
@@ -100,6 +101,9 @@ router.post('/', async (req: Request<{}, {}, TransformRequest>, res: Response<Tr
           break;
         case 'ruby':
           result = await transformWithRuby(event, beforeSendCode);
+          break;
+        case 'php':
+          result = await transformWithPHP(event, beforeSendCode);
           break;
         default:
           return res.status(400).json({

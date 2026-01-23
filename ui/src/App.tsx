@@ -61,6 +61,19 @@ const DEFAULT_BEFORESEND_RUBY = `lambda do |event, hint|
   event
 end`;
 
+const DEFAULT_BEFORESEND_PHP = `function($event, $hint) {
+    // Transform error message to Transformers theme 🤖
+    if (isset($event['exception']['values'])) {
+        $event['exception']['values'][0]['value'] = 'Transformers by Sentry 🤖';
+        $event['exception']['values'][0]['type'] = 'TransformerError';
+    }
+
+    // Add custom tag
+    $event['tags'] = ['transformed' => true];
+
+    return $event;
+}`;
+
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);
   const [beforeSendCode, setBeforeSendCode] = useState(DEFAULT_BEFORESEND_JS);
@@ -76,6 +89,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_PY);
     } else if (sdk === 'ruby') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RUBY);
+    } else if (sdk === 'php') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_PHP);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
