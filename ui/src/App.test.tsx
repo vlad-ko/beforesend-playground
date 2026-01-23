@@ -281,11 +281,14 @@ describe('App', () => {
       expect(screen.getByText(/Click Transform to see the result/i)).toBeInTheDocument();
     });
 
-    it('displays Sentry logo in header', () => {
+    it('displays Sentry logo in header with visible background', () => {
       render(<App />);
       const logo = screen.getByAltText('Sentry Logo');
       expect(logo).toBeInTheDocument();
       expect(logo).toHaveAttribute('src');
+      // Logo should be visible on light background
+      const header = logo.closest('header');
+      expect(header).toHaveClass('bg-white');
     });
 
     it('displays GitHub link in header', () => {
