@@ -24,7 +24,7 @@ interface TransformResponse {
 // Load SDK registry to check what's available
 function loadSDKRegistry() {
   try {
-    const registryPath = path.join(__dirname, '../../../sdks/registry.json');
+    const registryPath = path.join(__dirname, '../../sdks/registry.json');
     const content = fs.readFileSync(registryPath, 'utf-8');
     return JSON.parse(content);
   } catch (error) {

@@ -68,12 +68,20 @@ cd sdks/python && pip install -r requirements.txt && pytest
 
 **CRITICAL:** Always write tests BEFORE implementing features.
 
+**NO EXCEPTIONS:** This applies to:
+- ✅ Backend code (API, SDKs)
+- ✅ Frontend code (React components, UI)
+- ✅ Utility functions
+- ✅ Configuration logic
+- ❌ No "we'll add tests later" - tests FIRST, always
+
 **TDD Process:**
 1. Write a failing test that describes the desired behavior
 2. Run the test to verify it fails (Red)
 3. Write the minimum code to make the test pass (Green)
 4. Refactor code while keeping tests green (Refactor)
-5. Commit with tests included
+5. **Run tests in Docker** (never on host)
+6. Commit with tests included
 
 **Example TDD Workflow:**
 ```bash
@@ -528,6 +536,30 @@ docker system prune -a            # Clean Docker system
 - [ ] Error handling implemented
 - [ ] TypeScript strict mode passes
 - [ ] All tests run via Docker (never on host)
+
+**Before Pushing Code (MANDATORY):**
+
+- [ ] **All tests pass in Docker** (run commands below)
+- [ ] Code coverage ≥ 80% in all components
+- [ ] No failing tests
+- [ ] Build succeeds in Docker
+
+**Required Test Commands (Run Before Every Push):**
+```bash
+# API Gateway
+docker run --rm beforesend-playground-api npm test
+
+# JavaScript SDK
+docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
+
+# Python SDK
+docker run --rm beforesend-playground-sdk-python pytest
+
+# UI (if applicable)
+docker run --rm beforesend-playground-ui npm test
+```
+
+**If ANY test fails, DO NOT PUSH. Fix the issue first.**
 
 **Before Merging a PR:**
 

@@ -23,7 +23,9 @@ services:
       - "4000:4000"
     volumes:
       - ./api:/app
+      - ./sdks:/app/sdks
       - /app/node_modules
+      - /app/dist
     environment:
       - JAVASCRIPT_SDK_URL=http://sdk-javascript:5000
       - PYTHON_SDK_URL=http://sdk-python:5001
@@ -41,6 +43,7 @@ services:
     volumes:
       - ./sdks/javascript:/app
       - /app/node_modules
+      - /app/dist
 
   # Python SDK Container (Default - Always Available)
   sdk-python:
