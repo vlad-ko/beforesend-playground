@@ -31,11 +31,13 @@ services:
       - PYTHON_SDK_URL=http://sdk-python:5001
       - RUBY_SDK_URL=http://sdk-ruby:5004
       - PHP_SDK_URL=http://sdk-php:5005
+      - GO_SDK_URL=http://sdk-go:5006
     depends_on:
       - sdk-javascript
       - sdk-python
       - sdk-ruby
       - sdk-php
+      - sdk-go
 
   # JavaScript SDK Container (Default - Always Available)
   sdk-javascript:
@@ -79,6 +81,16 @@ services:
     volumes:
       - ./sdks/php:/app
       - /app/vendor
+
+  # Go SDK Container (Tier 2 - High Priority)
+  sdk-go:
+    build:
+      context: ./sdks/go
+      dockerfile: Dockerfile
+    ports:
+      - "5006:5006"
+    volumes:
+      - ./sdks/go:/app
 
 networks:
   default:
