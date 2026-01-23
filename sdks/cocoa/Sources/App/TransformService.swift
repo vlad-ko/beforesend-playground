@@ -1,5 +1,9 @@
 import Foundation
+#if canImport(JavaScriptCore)
 import JavaScriptCore
+#else
+import JXKit
+#endif
 
 struct TransformResult {
     let success: Bool
@@ -20,6 +24,17 @@ class TransformService {
             )
         }
 
+        #if canImport(JavaScriptCore)
+        // Use native JavaScriptCore on macOS/iOS
+        return executeWithJavaScriptCore(event: event, beforeSendCode: beforeSendCode)
+        #else
+        // Use JXKit on Linux
+        return executeWithJXKit(event: event, beforeSendCode: beforeSendCode)
+        #endif
+    }
+
+    #if canImport(JavaScriptCore)
+    private static func executeWithJavaScriptCore(event: [String: Any], beforeSendCode: String) -> TransformResult {
         // Create JavaScript context
         guard let context = JSContext() else {
             return TransformResult(
@@ -98,6 +113,71 @@ class TransformService {
             )
         }
     }
+    #endif
+
+    #if !canImport(JavaScriptCore)
+    private static func executeWithJXKit(event: [String: Any], beforeSendCode: String) -> TransformResult {
+        do {
+            // Create JXKit context
+            let context = JXContext()
+
+            // Convert Swift dictionary to JSON string
+            let eventJSON = try JSONSerialization.data(withJSONObject: event, options: [])
+            let eventJSONString = String(data: eventJSON, encoding: .utf8)!
+
+            // Inject the event into JavaScript context
+            try context.eval("var event = \(eventJSONString);")
+
+            // Wrap user code to handle implicit returns
+            let wrappedCode = wrapUserCode(beforeSendCode)
+
+            // Execute the beforeSend code and store result in a variable
+            try context.eval("var __result = (function() { \(wrappedCode) })();")
+
+            // Check if result is null/undefined
+            let isNullOrUndefined = try context.eval("__result === null || __result === undefined").bool
+
+            // Handle null/undefined return (drop event)
+            if isNullOrUndefined {
+                return TransformResult(
+                    success: true,
+                    transformedEvent: nil,
+                    error: nil,
+                    traceback: nil
+                )
+            }
+
+            // Convert result back to Swift dictionary via JSON.stringify
+            let jsonStringResult = try context.eval("JSON.stringify(__result)")
+
+            if let jsonString = try? jsonStringResult.string,
+               let jsonData = jsonString.data(using: .utf8),
+               let resultDict = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
+                return TransformResult(
+                    success: true,
+                    transformedEvent: resultDict,
+                    error: nil,
+                    traceback: nil
+                )
+            } else {
+                return TransformResult(
+                    success: false,
+                    transformedEvent: nil,
+                    error: "beforeSend must return an event object or null",
+                    traceback: nil
+                )
+            }
+
+        } catch {
+            return TransformResult(
+                success: false,
+                transformedEvent: nil,
+                error: "JavaScript error: \(error.localizedDescription)",
+                traceback: nil
+            )
+        }
+    }
+    #endif
 
     private static func wrapUserCode(_ userCode: String) -> String {
         let trimmedCode = userCode.trimmingCharacters(in: .whitespacesAndNewlines)
