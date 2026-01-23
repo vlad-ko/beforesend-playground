@@ -4,8 +4,8 @@ interface SdkSelectorProps {
 }
 
 const AVAILABLE_SDKS = [
-  { key: 'javascript', name: 'JavaScript', language: 'javascript' },
-  { key: 'python', name: 'Python', language: 'python' },
+  { key: 'javascript', name: 'JavaScript', language: 'javascript', package: '@sentry/node', version: '8.55.0' },
+  { key: 'python', name: 'Python', language: 'python', package: 'sentry-sdk', version: '2.20.0' },
 ];
 
 function SdkSelector({ value, onChange }: SdkSelectorProps) {
@@ -22,7 +22,7 @@ function SdkSelector({ value, onChange }: SdkSelectorProps) {
       >
         {AVAILABLE_SDKS.map((sdk) => (
           <option key={sdk.key} value={sdk.key}>
-            {sdk.name}
+            {sdk.name} - {sdk.package} {sdk.version}
           </option>
         ))}
       </select>

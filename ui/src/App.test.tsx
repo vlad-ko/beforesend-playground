@@ -264,4 +264,52 @@ describe('App', () => {
       expect(screen.queryByText(/"event_id": "first"/)).not.toBeInTheDocument();
     });
   });
+
+  describe('UI Enhancements', () => {
+    it('displays helper text for Event JSON section', () => {
+      render(<App />);
+      expect(screen.getByText(/Paste your Sentry event JSON/i)).toBeInTheDocument();
+    });
+
+    it('displays helper text for beforeSend Code section', () => {
+      render(<App />);
+      expect(screen.getByText(/Write your beforeSend callback/i)).toBeInTheDocument();
+    });
+
+    it('displays helper text for Result section', () => {
+      render(<App />);
+      expect(screen.getByText(/Click Transform to see the result/i)).toBeInTheDocument();
+    });
+
+    it('displays Sentry logo in header with visible background', () => {
+      render(<App />);
+      const logo = screen.getByAltText('Sentry Logo');
+      expect(logo).toBeInTheDocument();
+      expect(logo).toHaveAttribute('src');
+      // Logo should be visible on light background
+      const header = logo.closest('header');
+      expect(header).toHaveClass('bg-white');
+    });
+
+    it('displays GitHub link in header', () => {
+      render(<App />);
+      const githubLink = screen.getByRole('link', { name: /GitHub/i });
+      expect(githubLink).toBeInTheDocument();
+      expect(githubLink).toHaveAttribute('href', 'https://github.com/vlad-ko/beforesend-playground');
+    });
+
+    it('SDK selector shows version for JavaScript', () => {
+      render(<App />);
+      const select = screen.getByRole('combobox');
+      expect(select.textContent).toContain('JavaScript');
+      expect(select.textContent).toContain('@sentry/node 8.55.0');
+    });
+
+    it('SDK selector shows version for Python', () => {
+      render(<App />);
+      const select = screen.getByRole('combobox');
+      expect(select.textContent).toContain('Python');
+      expect(select.textContent).toContain('sentry-sdk 2.20.0');
+    });
+  });
 });
