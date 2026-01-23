@@ -302,14 +302,14 @@ describe('App', () => {
       render(<App />);
       const select = screen.getByRole('combobox');
       expect(select.textContent).toContain('JavaScript');
-      expect(select.textContent).toContain('@sentry/node');
+      expect(select.textContent).toContain('@sentry/node 8.55.0');
     });
 
     it('SDK selector shows version for Python', () => {
       render(<App />);
       const select = screen.getByRole('combobox');
       expect(select.textContent).toContain('Python');
-      expect(select.textContent).toContain('sentry-sdk');
+      expect(select.textContent).toContain('sentry-sdk 2.20.0');
     });
   });
 });

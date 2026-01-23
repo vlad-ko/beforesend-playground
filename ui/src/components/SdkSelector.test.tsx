@@ -20,12 +20,12 @@ describe('SdkSelector', () => {
     expect(select.value).toBe('javascript');
   });
 
-  it('shows all available SDKs as options', () => {
+  it('shows all available SDKs as options with versions', () => {
     const mockOnChange = vi.fn();
     render(<SdkSelector value="javascript" onChange={mockOnChange} />);
 
-    expect(screen.getByRole('option', { name: 'JavaScript (@sentry/node)' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Python (sentry-sdk)' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'JavaScript - @sentry/node 8.55.0' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Python - sentry-sdk 2.20.0' })).toBeInTheDocument();
   });
 
   it('calls onChange when SDK is selected', async () => {
