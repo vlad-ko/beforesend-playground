@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "9xCZD1Sn0y+2kon+FUk+12HstXMmAnmEZ4AFYrqM7wA=",
+  "Source": "SentryBeforeSendTransform",
+  "BasePath": "_content/SentryBeforeSendTransform",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

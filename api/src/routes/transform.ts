@@ -5,13 +5,14 @@ import { transformWithPython } from '../sdk-clients/python';
 import { transformWithRuby } from '../sdk-clients/ruby';
 import { transformWithPHP } from '../sdk-clients/php';
 import { transformWithGo } from '../sdk-clients/go';
+import { transformWithDotNet } from '../sdk-clients/dotnet';
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
 
 interface TransformRequest {
-  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'react-native';
+  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'dotnet' | 'react-native';
   event: string | Record<string, any>;
   beforeSendCode: string;
 }
@@ -110,6 +111,9 @@ router.post('/', async (req: Request<{}, {}, TransformRequest>, res: Response<Tr
           break;
         case 'go':
           result = await transformWithGo(event, beforeSendCode);
+          break;
+        case 'dotnet':
+          result = await transformWithDotNet(event, beforeSendCode);
           break;
         default:
           return res.status(400).json({

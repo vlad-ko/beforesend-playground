@@ -29,8 +29,8 @@ const DEFAULT_BEFORESEND_JS = `(event, hint) => {
     event.exception.values[0].type = 'TransformerError';
   }
 
-  // Add custom tag
-  event.tags = { ...event.tags, transformed: true };
+  // Add custom tag indicating which SDK transformed this
+  event.tags = { ...event.tags, transformed_by: 'JavaScript SDK' };
 
   return event;
 }`;
@@ -41,10 +41,10 @@ const DEFAULT_BEFORESEND_PY = `def before_send(event, hint):
         event['exception']['values'][0]['value'] = 'Transformers by Sentry 🤖'
         event['exception']['values'][0]['type'] = 'TransformerError'
 
-    # Add custom tag
+    # Add custom tag indicating which SDK transformed this
     if 'tags' not in event:
         event['tags'] = {}
-    event['tags']['transformed'] = True
+    event['tags']['transformed_by'] = 'Python SDK'
 
     return event`;
 
@@ -55,8 +55,8 @@ const DEFAULT_BEFORESEND_RUBY = `lambda do |event, hint|
     event['exception']['values'][0]['type'] = 'TransformerError'
   end
 
-  # Add custom tag
-  event['tags'] = { 'transformed' => true }
+  # Add custom tag indicating which SDK transformed this
+  event['tags'] = { 'transformed_by' => 'Ruby SDK' }
 
   event
 end`;
@@ -68,8 +68,8 @@ const DEFAULT_BEFORESEND_PHP = `function($event, $hint) {
         $event['exception']['values'][0]['type'] = 'TransformerError';
     }
 
-    // Add custom tag
-    $event['tags'] = ['transformed' => true];
+    // Add custom tag indicating which SDK transformed this
+    $event['tags'] = ['transformed_by' => 'PHP SDK'];
 
     return $event;
 }`;
@@ -84,29 +84,30 @@ if exception, ok := event["exception"].(map[string]interface{}); ok {
     }
 }
 
-// Add custom tag
-event["tags"] = map[string]bool{"transformed": true}
+// Add custom tag indicating which SDK transformed this
+event["tags"] = map[string]string{"transformed_by": "Go SDK"}
 
 return event`;
 
+const DEFAULT_BEFORESEND_DOTNET = `// Transform error message to Transformers theme 🤖
+// Note: ev.Message is a complex type in .NET SDK
+ev.SetTag("transformed_by", ".NET SDK");
+
+// Add extra data
+ev.SetExtra("message", "Transformers by Sentry 🤖");
+ev.SetExtra("robot", "🤖");
+
+return ev;`;
+
 const DEFAULT_BEFORESEND_RN = `(event, hint) => {
-  // Strip device identifiers for privacy
-  if (event.contexts && event.contexts.device) {
-    delete event.contexts.device.model;
-    delete event.contexts.device.family;
+  // Transform error message to Transformers theme 🤖
+  if (event.exception && event.exception.values) {
+    event.exception.values[0].value = 'Transformers by Sentry 🤖';
+    event.exception.values[0].type = 'TransformerError';
   }
 
-  // Add React Native app info
-  event.tags = {
-    ...event.tags,
-    platform: event.contexts?.os?.name || 'unknown',
-    app_version: event.contexts?.app?.app_version || 'unknown',
-  };
-
-  // Filter dev-only errors in production
-  if (event.message?.includes('Warning: ')) {
-    return null; // Drop React Native development warnings
-  }
+  // Add custom tag indicating which SDK transformed this
+  event.tags = { ...event.tags, transformed_by: 'React Native SDK' };
 
   return event;
 }`;
@@ -130,6 +131,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_PHP);
     } else if (sdk === 'go') {
       setBeforeSendCode(DEFAULT_BEFORESEND_GO);
+    } else if (sdk === 'dotnet') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_DOTNET);
     } else if (sdk === 'react-native') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RN);
     } else {
@@ -216,7 +219,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={selectedSdk as 'javascript' | 'python' | 'ruby'}
+              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp'}
             />
           </div>
         </div>
