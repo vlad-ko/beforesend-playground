@@ -100,11 +100,10 @@ ev.SetExtra("robot", "🤖");
 return ev;`;
 
 const DEFAULT_BEFORESEND_JAVA = `// Transform error message to Transformers theme 🤖
-event.setTag("transformed_by", "Java SDK");
+event.setException("TransformerError", "Transformers by Sentry 🤖");
 
-// Add extra data
-event.setExtra("message", "Transformers by Sentry 🤖");
-event.setExtra("robot", "🤖");
+// Add custom tag indicating which SDK transformed this
+event.setTag("transformed_by", "Java SDK");
 
 return event;`;
 
