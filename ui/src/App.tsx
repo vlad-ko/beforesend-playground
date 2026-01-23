@@ -89,21 +89,14 @@ event["tags"] = map[string]bool{"transformed": true}
 
 return event`;
 
-const DEFAULT_BEFORESEND_DOTNET = `// Add custom tags
-ev.SetTag("environment", "production");
+const DEFAULT_BEFORESEND_DOTNET = `// Transform error message to Transformers theme 🤖
+// Note: ev.Message is a complex type in .NET SDK
+ev.SetTag("theme", "transformers");
 ev.SetTag("transformed", "true");
-ev.SetTag("sdk", "dotnet");
 
 // Add extra data
-ev.SetExtra("processor", "C# Roslyn");
-ev.SetExtra("language", "csharp");
-ev.SetExtra("compiled", true);
-
-// Set platform
-ev.Platform = "csharp";
-
-// Add fingerprint for grouping
-ev.Fingerprint = new[] { "custom-grouping", "dotnet-transformed" };
+ev.SetExtra("message", "Transformers by Sentry 🤖");
+ev.SetExtra("robot", "🤖");
 
 return ev;`;
 
