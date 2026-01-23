@@ -99,6 +99,19 @@
       "packages": ["github.com/getsentry/sentry-go"],
       "description": "Official Sentry Go SDK"
     },
+    "cocoa": {
+      "name": "Cocoa (iOS/macOS)",
+      "language": "swift",
+      "default": false,
+      "status": "available",
+      "port": 5009,
+      "dockerfile": "./sdks/cocoa/Dockerfile",
+      "entrypoint": "main.swift",
+      "template": "cocoa",
+      "packageManager": "swift",
+      "packages": ["Sentry"],
+      "description": "Official Sentry Cocoa SDK for iOS and macOS with Swift"
+    },
     "react-native": {
       "name": "React Native",
       "language": "javascript",
