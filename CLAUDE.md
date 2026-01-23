@@ -12,6 +12,56 @@ The beforeSend Testing Playground is a Docker-based tool for testing Sentry `bef
 - Infrastructure: Docker + Docker Compose
 - Testing: Jest (TypeScript), pytest (Python), React Testing Library
 
+## Core Architecture Principles
+
+### 🐳 Docker-First Architecture (CRITICAL)
+
+**RULE: NEVER pollute the local environment. Everything runs in Docker.**
+
+This is a **non-negotiable** architectural principle:
+
+- ✅ **DO:** Run all tests inside Docker containers
+- ✅ **DO:** Execute all code within Docker
+- ✅ **DO:** Install dependencies in Docker only
+- ✅ **DO:** Use `docker run` or `docker-compose exec` for commands
+- ❌ **DON'T:** Install language runtimes locally (no `pip install`, `npm install` on host)
+- ❌ **DON'T:** Run tests directly on host machine
+- ❌ **DON'T:** Execute any code outside of containers
+
+**Why?**
+1. **Isolation:** Each SDK has specific runtime requirements
+2. **Consistency:** Same environment for dev, test, and production
+3. **Clean:** No version conflicts, no leftover dependencies
+4. **Portable:** Works on any machine with Docker installed
+5. **Realistic:** Tests run in actual deployment environment
+
+**Correct Usage:**
+```bash
+# ✅ Run tests in Docker
+docker run --rm beforesend-playground-api npm test
+docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
+docker run --rm beforesend-playground-sdk-python pytest
+
+# ✅ Install dependencies via Docker rebuild
+docker-compose build api
+
+# ✅ Execute commands in running containers
+docker-compose exec api npm install new-package
+docker-compose exec sdk-python pip install new-package
+
+# ✅ Start all services
+docker-compose up
+```
+
+**Incorrect Usage:**
+```bash
+# ❌ NEVER do this on host machine
+cd api && npm install && npm test
+cd sdks/python && pip install -r requirements.txt && pytest
+```
+
+**Exception:** Only the CLI tools (`cli/sdk-manager.ts`) may run on host for convenience, but they must only orchestrate Docker commands, never execute SDK code directly.
+
 ## Development Principles
 
 ### 1. Test-Driven Development (TDD)
@@ -33,16 +83,22 @@ git checkout -b feature/add-validation
 # 2. Write failing test
 # test/parsers/json.test.ts - Test that doesn't pass yet
 
-# 3. Run test (should fail)
-npm test
+# 3. Rebuild container with new test
+docker-compose build api
 
-# 4. Implement feature
+# 4. Run test in Docker (should fail - RED)
+docker run --rm beforesend-playground-api npm test
+
+# 5. Implement feature
 # src/parsers/json.ts - Add validation logic
 
-# 5. Run test (should pass)
-npm test
+# 6. Rebuild container
+docker-compose build api
 
-# 6. Refactor if needed, commit
+# 7. Run test in Docker (should pass - GREEN)
+docker run --rm beforesend-playground-api npm test
+
+# 8. Refactor if needed, commit
 git add test/ src/
 git commit -m "feat: add JSON validation with tests"
 ```
@@ -54,22 +110,31 @@ git commit -m "feat: add JSON validation with tests"
 - Integration tests for API endpoints
 - E2E tests for complete transformation flows
 
-**Testing Commands:**
+**Testing Commands (Docker-First):**
 ```bash
-# Run all tests
-npm test
+# Build containers first
+docker-compose build
 
-# Run tests in watch mode
-npm run test:watch
+# Run API Gateway tests
+docker run --rm beforesend-playground-api npm test
 
-# Run tests with coverage
-npm run test:coverage
+# Run JavaScript SDK tests
+docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
+
+# Run Python SDK tests
+docker run --rm beforesend-playground-sdk-python pytest
+
+# Run with coverage
+docker run --rm beforesend-playground-api npm run test:coverage
+docker run --rm beforesend-playground-sdk-python pytest --cov
 
 # Run specific test file
-npm test -- json.test.ts
+docker run --rm beforesend-playground-api npm test -- json.test.ts
 
-# Run Python tests
-cd sdks/python && pytest
+# Run in watch mode (requires docker-compose up for hot reload)
+docker-compose up api
+# In another terminal:
+docker-compose exec api npm run test:watch
 ```
 
 ### 2. SOLID Principles
@@ -402,34 +467,40 @@ npm test
 
 **5. Update API Documentation in README**
 
-### 8. Common Commands
+### 8. Common Commands (Docker-First)
 
 ```bash
-# Development
-npm run setup              # Initial setup
-npm start                  # Start default SDKs
-npm run logs               # View all logs
-npm run logs:api           # View API logs
+# Development (Docker)
+docker-compose build              # Build all containers
+docker-compose up                 # Start all services
+docker-compose up -d              # Start in background
+docker-compose logs -f            # View all logs
+docker-compose logs -f api        # View API logs only
+docker-compose down               # Stop all services
 
-# Testing
-npm test                   # Run all tests
-npm run test:watch         # Watch mode
-npm run test:coverage      # Coverage report
-cd sdks/python && pytest   # Python tests
+# Testing (Docker - NEVER run tests on host)
+docker run --rm beforesend-playground-api npm test
+docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
+docker run --rm beforesend-playground-sdk-python pytest
+
+# Testing with running containers
+docker-compose exec api npm test
+docker-compose exec sdk-python pytest
 
 # Git
-git checkout -b feature/X  # Create feature branch
-git commit -m "feat: X"    # Commit with message
-gh pr create               # Create PR
-gh issue create            # Create issue
+git checkout -b feature/X         # Create feature branch
+git commit -m "feat: X"           # Commit with message
+gh pr create                      # Create PR
+gh issue create                   # Create issue
 
-# SDK Management
-npm run sdk:list           # List SDKs
-npm run sdk:start python   # Start specific SDK
-npm run sdk:stop           # Stop all
+# SDK Management (via npm scripts - orchestrate Docker)
+npm run sdk:list                  # List SDKs (CLI tool)
+npm run sdk:start python          # Start specific SDK (docker-compose)
+npm run sdk:stop                  # Stop all (docker-compose down)
 
 # Cleanup
-npm run clean              # Remove containers and deps
+docker-compose down -v            # Remove containers and volumes
+docker system prune -a            # Clean Docker system
 ```
 
 ### 9. Code Review Checklist
