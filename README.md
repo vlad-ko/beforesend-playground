@@ -8,11 +8,11 @@ The beforeSend Testing Playground is a Docker-based local tool for testing how `
 
 **Key Features:**
 - ✅ Test `beforeSend` transformations with real Sentry SDKs
-- ✅ Support for JavaScript and Python SDKs (default)
-- ✅ Dynamic SDK loading for additional languages (.NET, Java, Ruby, PHP, Go)
-- ✅ JSON event input with Monaco editor
+- ✅ Support for 6 SDKs: JavaScript, Python, Ruby, PHP, Go, React Native
+- ✅ Dynamic SDK loading for additional languages (.NET, Java)
+- ✅ Monaco editor with syntax highlighting per language
 - ✅ See before/after transformation results
-- ✅ Built-in examples (Unity metadata cleanup, etc.)
+- ✅ Built-in SDK-specific examples
 - ✅ Docker-isolated execution (safe for arbitrary code)
 
 ## Architecture
@@ -62,6 +62,9 @@ The playground will be available at:
 - **📦 JavaScript SDK:** http://localhost:5000
 - **🐍 Python SDK:** http://localhost:5001
 - **💎 Ruby SDK:** http://localhost:5004
+- **🐘 PHP SDK:** http://localhost:5005
+- **🔷 Go SDK:** http://localhost:5006
+- **📱 React Native:** Uses JavaScript SDK (port 5000)
 
 ### Basic Usage
 
@@ -457,14 +460,15 @@ npm start
 - [x] Unity metadata example
 - [x] Transformers demo 🤖
 
-**Phase 1 is production-ready!** The tool is fully functional for JavaScript and Python SDKs.
+**Phase 1 & 2 Complete!** The tool is fully functional for 6 SDKs.
 
-### 🚧 Phase 2: Additional SDKs (Next)
-- [ ] Ruby SDK support
-- [ ] PHP SDK support
-- [ ] Go SDK support
-- [ ] SDK health checks and monitoring
-- [ ] Enhanced error messages with stack traces
+### ✅ Phase 2: Additional SDKs (Completed)
+- [x] Ruby SDK support
+- [x] PHP SDK support
+- [x] Go SDK support
+- [x] React Native SDK support (uses JavaScript runtime)
+- [x] SDK health checks and monitoring
+- [x] Enhanced error messages with stack traces
 
 ### 📋 Phase 3: Enhanced UI
 - [ ] Diff viewer (side-by-side before/after)
