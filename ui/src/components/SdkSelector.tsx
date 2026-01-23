@@ -7,6 +7,7 @@ const AVAILABLE_SDKS = [
   { key: 'javascript', name: 'JavaScript', language: 'javascript', package: '@sentry/node', version: '8.55.0' },
   { key: 'python', name: 'Python', language: 'python', package: 'sentry-sdk', version: '2.20.0' },
   { key: 'ruby', name: 'Ruby', language: 'ruby', package: 'sentry-ruby', version: '5.22.0' },
+  { key: 'php', name: 'PHP', language: 'php', package: 'sentry/sentry', version: '4.12.0' },
 ];
 
 function SdkSelector({ value, onChange }: SdkSelectorProps) {

@@ -78,6 +78,7 @@ services:
       - "5005:5005"
     volumes:
       - ./sdks/php:/app
+      - /app/vendor
 
 networks:
   default:
