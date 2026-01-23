@@ -89,8 +89,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5006:5006"
-    volumes:
-      - ./sdks/go:/app
 
 networks:
   default:

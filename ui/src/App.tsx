@@ -74,6 +74,21 @@ const DEFAULT_BEFORESEND_PHP = `function($event, $hint) {
     return $event;
 }`;
 
+const DEFAULT_BEFORESEND_GO = `// Transform error message to Transformers theme 🤖
+if exception, ok := event["exception"].(map[string]interface{}); ok {
+    if values, ok := exception["values"].([]interface{}); ok && len(values) > 0 {
+        if firstValue, ok := values[0].(map[string]interface{}); ok {
+            firstValue["value"] = "Transformers by Sentry 🤖"
+            firstValue["type"] = "TransformerError"
+        }
+    }
+}
+
+// Add custom tag
+event["tags"] = map[string]bool{"transformed": true}
+
+return event`;
+
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);
   const [beforeSendCode, setBeforeSendCode] = useState(DEFAULT_BEFORESEND_JS);
@@ -91,6 +106,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_RUBY);
     } else if (sdk === 'php') {
       setBeforeSendCode(DEFAULT_BEFORESEND_PHP);
+    } else if (sdk === 'go') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_GO);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
