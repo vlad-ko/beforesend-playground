@@ -24,8 +24,8 @@ describe('SdkSelector', () => {
     const mockOnChange = vi.fn();
     render(<SdkSelector value="javascript" onChange={mockOnChange} />);
 
-    expect(screen.getByRole('option', { name: 'JavaScript' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Python' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'JavaScript (@sentry/node)' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Python (sentry-sdk)' })).toBeInTheDocument();
   });
 
   it('calls onChange when SDK is selected', async () => {

@@ -4,11 +4,13 @@ interface SdkSelectorProps {
 }
 
 const AVAILABLE_SDKS = [
-  { key: 'javascript', name: 'JavaScript', language: 'javascript' },
-  { key: 'python', name: 'Python', language: 'python' },
+  { key: 'javascript', name: 'JavaScript', language: 'javascript', package: '@sentry/node' },
+  { key: 'python', name: 'Python', language: 'python', package: 'sentry-sdk' },
 ];
 
 function SdkSelector({ value, onChange }: SdkSelectorProps) {
+  const selectedSdk = AVAILABLE_SDKS.find(sdk => sdk.key === value);
+
   return (
     <div className="flex items-center gap-2">
       <label htmlFor="sdk-select" className="font-medium text-gray-700">
@@ -22,10 +24,15 @@ function SdkSelector({ value, onChange }: SdkSelectorProps) {
       >
         {AVAILABLE_SDKS.map((sdk) => (
           <option key={sdk.key} value={sdk.key}>
-            {sdk.name}
+            {sdk.name} ({sdk.package})
           </option>
         ))}
       </select>
+      {selectedSdk && (
+        <span className="text-sm text-gray-500">
+          {selectedSdk.package}
+        </span>
+      )}
     </div>
   );
 }
