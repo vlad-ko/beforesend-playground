@@ -41,13 +41,14 @@
       "name": "Java",
       "language": "java",
       "default": false,
-      "status": "not-installed",
-      "port": 5003,
+      "status": "available",
+      "port": 5007,
+      "dockerfile": "./sdks/java/Dockerfile",
+      "entrypoint": "Application.java",
       "template": "java",
       "packageManager": "maven",
       "packages": ["io.sentry:sentry"],
-      "description": "Official Sentry Java SDK",
-      "notes": "Requires template-based approach (compiled language)"
+      "description": "Official Sentry Java SDK"
     },
     "ruby": {
       "name": "Ruby",

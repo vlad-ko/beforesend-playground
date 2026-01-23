@@ -33,6 +33,7 @@ services:
       - PHP_SDK_URL=http://sdk-php:5005
       - GO_SDK_URL=http://sdk-go:5006
       - DOTNET_SDK_URL=http://sdk-dotnet:5002
+      - JAVA_SDK_URL=http://sdk-java:5007
     depends_on:
       - sdk-javascript
       - sdk-python
@@ -40,6 +41,7 @@ services:
       - sdk-php
       - sdk-go
       - sdk-dotnet
+      - sdk-java
 
   # JavaScript SDK Container (Default - Always Available)
   sdk-javascript:
@@ -99,6 +101,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5002:5002"
+
+  # Java SDK Container (Tier 2 - High Priority)
+  sdk-java:
+    build:
+      context: ./sdks/java
+      dockerfile: Dockerfile
+    ports:
+      - "5007:5007"
 
 networks:
   default:

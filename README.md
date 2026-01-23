@@ -8,8 +8,7 @@ The beforeSend Testing Playground is a Docker-based local tool for testing how `
 
 **Key Features:**
 - ✅ Test `beforeSend` transformations with real Sentry SDKs
-- ✅ Support for 6 SDKs: JavaScript, Python, Ruby, PHP, Go, React Native
-- ✅ Dynamic SDK loading for additional languages (.NET, Java)
+- ✅ Support for 8 SDKs: JavaScript, Python, Ruby, PHP, Go, .NET, Java, React Native
 - ✅ Monaco editor with syntax highlighting per language
 - ✅ See before/after transformation results
 - ✅ Built-in SDK-specific examples
@@ -61,9 +60,11 @@ The playground will be available at:
 - **🔌 API Gateway:** http://localhost:4000
 - **📦 JavaScript SDK:** http://localhost:5000
 - **🐍 Python SDK:** http://localhost:5001
+- **💠 .NET SDK:** http://localhost:5002
 - **💎 Ruby SDK:** http://localhost:5004
 - **🐘 PHP SDK:** http://localhost:5005
 - **🔷 Go SDK:** http://localhost:5006
+- **☕ Java SDK:** http://localhost:5007
 - **📱 React Native:** Uses JavaScript SDK (port 5000)
 
 ### Basic Usage
