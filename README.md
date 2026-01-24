@@ -4,13 +4,14 @@
 
 ## Overview
 
-**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, and master `beforeSend` patterns across 9 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
+**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, and master `beforeSend` patterns across 10 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
 
 **Key Features:**
-- ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa)
-- ✅ **16 pre-built example templates** across 9 SDKs
+- ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, **Rust**)
+- ✅ **19 pre-built example templates** across 10 SDKs
 - ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
-- ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers
+- ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers (JavaScript, Python, Ruby, PHP, Go, .NET, Rust)
+- ✅ **Compile-on-the-fly** - Go and Rust SDKs compile and execute user code for authentic behavior
 - ✅ Monaco editor with syntax highlighting
 - ✅ Docker-isolated execution (safe for arbitrary code)
 
@@ -92,17 +93,37 @@ def before_send(event, hint):
 }
 ```
 
+### Example 4: Service Metadata (Rust)
+
+**beforeSend (Rust):**
+```rust
+use serde_json::json;
+
+// Add service version and build information
+if !event.as_object()?.contains_key("tags") {
+    event["tags"] = json!({});
+}
+
+let tags = event["tags"].as_object_mut()?;
+tags.insert("service_version".to_string(), json!("1.2.3"));
+tags.insert("build_number".to_string(), json!("42"));
+tags.insert("rust_version".to_string(), json!("1.75.0"));
+
+Some(event)
+```
+
 ## Using the Playground
 
 ### 1. Load an Example (Recommended)
 
-Click **"Load Example"** to browse **16 pre-built templates**:
-- PII Scrubbing (JavaScript, Python, .NET, Ruby)
-- Conditional Event Dropping (JavaScript, PHP, Go)
-- Custom Tags & Context (JavaScript, Java, Cocoa)
-- Custom Fingerprinting (JavaScript)
-- Unity Metadata Cleanup (Android)
-- iOS Lifecycle Tags (Cocoa)
+Click **"Load Example"** to browse **19 pre-built templates**:
+- **PII Scrubbing** - JavaScript, Python, .NET, Ruby, Rust
+- **Conditional Event Dropping** - JavaScript, PHP, Go, Rust
+- **Service Metadata Enrichment** - Go, Rust
+- **Custom Tags & Context** - JavaScript, Java, Cocoa
+- **Custom Fingerprinting** - JavaScript
+- **Unity Metadata Cleanup** - Android
+- **iOS Lifecycle Tags** - Cocoa
 - And more!
 
 See **[Example Templates Guide](docs/examples.md)** for full catalog.
@@ -147,12 +168,27 @@ Tags: thread: RxComputationThreadPool-1, device_model: samsung SM-A022M
 
 **Solution:** Load the "Unity Metadata Cleanup" example from the templates library, or see **[full example](docs/examples.md#unity-metadata-cleanup)**.
 
+## Validation Features
+
+Real-time syntax validation is available for 7 SDKs:
+
+- **JavaScript/React Native** - ESLint + syntax checking
+- **Python** - `ast.parse()` syntax validation
+- **Ruby** - `ruby -c` syntax checking
+- **PHP** - `php -l` linting
+- **Go** - `go build` compilation
+- **.NET** - `dotnet build` compilation
+- **Rust** - `cargo check` fast compilation checking
+
+When you type, the editor will show red squiggles for syntax errors before you even click Transform!
+
 ## Documentation
 
 ### Getting Started
-- **[Examples Library](docs/examples.md)** - Complete guide to 16 pre-built templates
+- **[Examples Library](docs/examples.md)** - Complete guide to 19 pre-built templates
 - **[Diff Viewer](docs/diff-viewer.md)** - Using the side-by-side comparison view
 - **[SDK Support](docs/sdk-support.md)** - Available SDKs and versions
+- **[Validation Guide](docs/validation.md)** - How real-time validation works
 
 ### Advanced
 - **[API Reference](docs/api-reference.md)** - API endpoints and usage

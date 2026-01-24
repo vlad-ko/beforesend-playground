@@ -1,0 +1,27 @@
+{
+  "id": "conditional-dropping-rust",
+  "name": "Conditional Event Dropping (Rust)",
+  "description": "Filter out noisy errors in Rust services - health checks, test environments, and specific error types",
+  "sdk": "rust",
+  "event": {
+    "event_id": "rust-drop-123",
+    "message": "Health check endpoint accessed",
+    "exception": {
+      "values": [
+        {
+          "type": "HttpError",
+          "value": "404 Not Found: /health"
+        }
+      ]
+    },
+    "request": {
+      "url": "https://api.example.com/health",
+      "method": "GET"
+    },
+    "tags": {
+      "environment": "test"
+    },
+    "level": "warning"
+  },
+  "beforeSendCode": "// Drop events from test environment\nif let Some(tags) = event.get(\"tags\") {\n    if let Some(env) = tags.get(\"environment\") {\n        if env == \"test\" {\n            // Don't send test events to production Sentry\n            return None;\n        }\n    }\n}\n\n// Drop debug and info level events\nif let Some(level) = event.get(\"level\") {\n    if level == \"debug\" || level == \"info\" {\n        // Only send warnings and errors\n        return None;\n    }\n}\n\n// Add tag indicating filtering was applied\nif !event.as_object()?.contains_key(\"tags\") {\n    event[\"tags\"] = serde_json::json!({});\n}\nevent[\"tags\"][\"filtered\"] = serde_json::json!(\"true\");\n\nSome(event)"
+}

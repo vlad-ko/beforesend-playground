@@ -145,6 +145,26 @@ event.tags.platform = 'iOS';
 
 return event;`;
 
+const DEFAULT_BEFORESEND_RUST = `// Transform error message to Transformers theme 🤖
+if let Some(exception) = event.get_mut("exception") {
+    if let Some(values) = exception.get_mut("values") {
+        if let Some(arr) = values.as_array_mut() {
+            if let Some(first) = arr.first_mut() {
+                first["value"] = serde_json::json!("Transformers by Sentry 🤖");
+                first["type"] = serde_json::json!("TransformerError");
+            }
+        }
+    }
+}
+
+// Add custom tag indicating which SDK transformed this
+if !event.as_object()?.contains_key("tags") {
+    event["tags"] = serde_json::json!({});
+}
+event["tags"]["transformed_by"] = serde_json::json!("Rust SDK");
+
+Some(event)`;
+
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);
   const [beforeSendCode, setBeforeSendCode] = useState(DEFAULT_BEFORESEND_JS);
@@ -175,6 +195,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_RN);
     } else if (sdk === 'cocoa') {
       setBeforeSendCode(DEFAULT_BEFORESEND_COCOA);
+    } else if (sdk === 'rust') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_RUST);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
@@ -221,6 +243,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_RN);
     } else if (selectedSdk === 'cocoa') {
       setBeforeSendCode(DEFAULT_BEFORESEND_COCOA);
+    } else if (selectedSdk === 'rust') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_RUST);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
@@ -326,7 +350,7 @@ function App() {
               Write your beforeSend callback to transform the event
             </p>
             <div className="h-7 mb-1">
-              {!['javascript', 'python', 'ruby', 'php', 'go', 'dotnet', 'react-native'].includes(selectedSdk) && (
+              {!['javascript', 'python', 'ruby', 'php', 'go', 'dotnet', 'react-native', 'rust'].includes(selectedSdk) && (
                 <div className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded border border-yellow-200 inline-block">
                   ⚠️ Real-time syntax validation not yet available for this SDK
                 </div>
@@ -335,7 +359,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk === 'cocoa' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin'}
+              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk === 'cocoa' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin' | 'rust'}
               sdk={selectedSdk}
             />
           </div>

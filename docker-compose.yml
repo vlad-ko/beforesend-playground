@@ -36,6 +36,7 @@ services:
       - JAVA_SDK_URL=http://sdk-java:5007
       - ANDROID_SDK_URL=http://sdk-android:5008
       - COCOA_SDK_URL=http://sdk-cocoa:5009
+      - RUST_SDK_URL=http://sdk-rust:5010
     depends_on:
       - sdk-javascript
       - sdk-python
@@ -46,6 +47,7 @@ services:
       - sdk-java
       - sdk-android
       - sdk-cocoa
+      - sdk-rust
 
   # JavaScript SDK Container (Default - Always Available)
   sdk-javascript:
@@ -129,6 +131,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5009:5009"
+
+  # Rust SDK Container (Tier 1 - High Performance)
+  sdk-rust:
+    build:
+      context: ./sdks/rust
+      dockerfile: Dockerfile
+    ports:
+      - "5010:5010"
 
 networks:
   default:

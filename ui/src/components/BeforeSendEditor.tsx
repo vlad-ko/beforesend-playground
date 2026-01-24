@@ -6,7 +6,7 @@ import { apiClient } from '../api/client';
 interface BeforeSendEditorProps {
   value: string;
   onChange: (value: string) => void;
-  language: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin';
+  language: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin' | 'rust';
   sdk: string;
 }
 
@@ -19,6 +19,7 @@ const VALIDATION_SUPPORTED_SDKS = [
   'go',
   'dotnet',
   'react-native', // uses JavaScript validation
+  'rust',
 ];
 
 function BeforeSendEditor({ value, onChange, language, sdk }: BeforeSendEditorProps) {
