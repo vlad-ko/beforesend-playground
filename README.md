@@ -10,6 +10,7 @@ The beforeSend Testing Playground is a Docker-based tool for testing how `before
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa)
 - ✅ Example templates library with pre-built transformations
 - ✅ Monaco editor with syntax highlighting
+- ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
 - ✅ See before/after transformation results
 - ✅ Docker-isolated execution (safe for arbitrary code)
 
@@ -262,6 +263,57 @@ Examples are stored in `api/examples/` as JSON files. Each file contains:
 ```
 
 Add your own examples by creating a new JSON file in `api/examples/` - they'll automatically appear in the dropdown.
+
+## Diff Viewer
+
+The playground includes a **side-by-side diff viewer** to help you understand exactly what your beforeSend code changed.
+
+### Features
+
+- **Toggle Views**: Switch between "Full Output" (complete transformed event) and "Diff View" (side-by-side comparison)
+- **Color-Coded Changes**:
+  - 🟢 **Green**: Added properties or modified values
+  - 🔴 **Red**: Removed properties or original values
+- **Split View**: Original event on the left, transformed event on the right
+- **Line-by-Line Comparison**: See changes at a granular level
+- **JSON Formatting**: Both views show properly formatted JSON
+
+### Using the Diff Viewer
+
+1. Paste an event JSON and beforeSend code
+2. Click **"Transform"** to execute the transformation
+3. By default, you'll see the **Full Output** tab showing the complete transformed event
+4. Click the **"Diff View"** tab to see a side-by-side comparison
+5. Review the highlighted changes to understand what your code modified
+
+### When to Use Each View
+
+**Full Output (Default)**
+- Copy the complete transformed event
+- Verify the entire event structure
+- See all properties in one place
+
+**Diff View**
+- Understand what changed during transformation
+- Debug unexpected modifications
+- Learn how your beforeSend code affects events
+- Verify only intended properties were modified
+
+### Example
+
+When transforming an event with PII scrubbing:
+
+**Diff View shows:**
+```diff
+  "user": {
+-   "email": "user@example.com"     ← Original value (red)
++   "email": "[REDACTED]"            ← New value (green)
+-   "ip_address": "192.168.1.1"
++   "ip_address": null
+  }
+```
+
+This makes it immediately clear that the email was redacted and IP address was removed.
 
 ## Documentation
 
