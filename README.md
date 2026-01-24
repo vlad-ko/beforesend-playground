@@ -10,6 +10,7 @@
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa)
 - ✅ **16 pre-built example templates** across 9 SDKs
 - ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
+- ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers
 - ✅ Monaco editor with syntax highlighting
 - ✅ Docker-isolated execution (safe for arbitrary code)
 

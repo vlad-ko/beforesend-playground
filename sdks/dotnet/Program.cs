@@ -144,6 +144,78 @@ app.MapPost("/transform", async (TransformRequest request) =>
     }
 });
 
+app.MapPost("/validate", async (ValidationRequest request) =>
+{
+    try
+    {
+        if (string.IsNullOrEmpty(request?.Code))
+        {
+            return Results.Json(new {
+                valid = false,
+                errors = new[] { new { message = "Missing code parameter" } }
+            }, statusCode: 400);
+        }
+
+        // Create script options with Sentry references
+        var scriptOptions = ScriptOptions.Default
+            .AddReferences(typeof(SentryEvent).Assembly)
+            .AddImports("System", "System.Collections.Generic", "System.Linq", "Sentry", "Sentry.Protocol");
+
+        try
+        {
+            // Compile the script to check for syntax/compilation errors
+            var script = CSharpScript.Create<object>(
+                request.Code,
+                scriptOptions,
+                globalsType: typeof(ScriptGlobals)
+            );
+
+            var diagnostics = script.Compile();
+
+            // Check for errors
+            var errors = diagnostics
+                .Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
+                .ToList();
+
+            if (errors.Any())
+            {
+                var validationErrors = errors.Select(d => {
+                    var lineSpan = d.Location.GetLineSpan();
+                    return new {
+                        line = lineSpan.StartLinePosition.Line + 1,
+                        column = lineSpan.StartLinePosition.Character + 1,
+                        message = d.GetMessage()
+                    };
+                }).ToArray();
+
+                return Results.Json(new {
+                    valid = false,
+                    errors = validationErrors
+                });
+            }
+
+            return Results.Json(new {
+                valid = true,
+                errors = Array.Empty<object>()
+            });
+        }
+        catch (Exception ex)
+        {
+            return Results.Json(new {
+                valid = false,
+                errors = new[] { new { message = ex.Message } }
+            });
+        }
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new {
+            valid = false,
+            errors = new[] { new { message = $"Validation service error: {ex.Message}" } }
+        }, statusCode: 500);
+    }
+});
+
 app.MapGet("/health", () =>
 {
     return Results.Json(new { status = "healthy", sdk = "dotnet" }, jsonOptions);
@@ -156,6 +228,7 @@ public partial class Program { }
 
 public record TransformRequest(JsonNode? Event, string? BeforeSendCode);
 public record TransformResponse(bool Success, object? TransformedEvent, string? Error, string? Traceback);
+public record ValidationRequest(string? Code);
 public record HealthResponse(string Status, string Sdk);
 
 public class ScriptGlobals

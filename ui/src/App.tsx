@@ -325,11 +325,18 @@ function App() {
             <p className="text-sm text-gray-600 mb-2">
               Write your beforeSend callback to transform the event
             </p>
-            <div className="h-7 mb-1"></div>
+            <div className="h-7 mb-1">
+              {!['javascript', 'python', 'ruby', 'php', 'go', 'dotnet', 'react-native'].includes(selectedSdk) && (
+                <div className="text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded border border-yellow-200 inline-block">
+                  ⚠️ Real-time syntax validation not yet available for this SDK
+                </div>
+              )}
+            </div>
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
               language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk === 'cocoa' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin'}
+              sdk={selectedSdk}
             />
           </div>
         </div>
