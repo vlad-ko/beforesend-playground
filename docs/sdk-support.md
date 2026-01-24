@@ -12,6 +12,7 @@
 | **.NET** | C# / .NET 8.0 | 5002 | ✅ Available | Sentry 5.0.0 |
 | **Java** | Java 21 | 5007 | ✅ Available | io.sentry:sentry 7.16.0 |
 | **Android** | Kotlin / Groovy | 5008 | ✅ Available | io.sentry:sentry 7.16.0 |
+| **Cocoa** | Swift / JavaScript | 5009 | ✅ Available | Sentry 8.40.1 |
 | **React Native** | JavaScript | 5000 | ✅ Available | @sentry/react-native 6.3.0 |
 
 ## SDK Management
@@ -54,6 +55,7 @@ All SDKs expose a health endpoint:
 curl http://localhost:5000/health  # JavaScript
 curl http://localhost:5001/health  # Python
 curl http://localhost:5004/health  # Ruby
+curl http://localhost:5009/health  # Cocoa
 # etc.
 ```
 
@@ -98,6 +100,12 @@ curl http://localhost:5004/health  # Ruby
 - Kotlin/Groovy syntax
 - Simulates Android SDK behavior
 - EventWrapper API for transformations
+
+### Cocoa (iOS/macOS)
+- Swift-based with JavaScript execution via JXKit
+- Plain JavaScript syntax (no arrow functions)
+- Cross-platform: JavaScriptCore on macOS, JXKit on Linux
+- Direct `event` object manipulation
 
 ### React Native
 - Uses JavaScript SDK runtime

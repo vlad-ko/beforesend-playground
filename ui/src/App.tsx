@@ -131,6 +131,19 @@ const DEFAULT_BEFORESEND_RN = `(event, hint) => {
   return event;
 }`;
 
+const DEFAULT_BEFORESEND_COCOA = `// Transform error message to Transformers theme 🤖
+if (event.exception && event.exception.values) {
+  event.exception.values[0].value = 'Transformers by Sentry 🤖';
+  event.exception.values[0].type = 'TransformerError';
+}
+
+// Add custom tag indicating which SDK transformed this
+if (!event.tags) event.tags = {};
+event.tags.transformed_by = 'Cocoa SDK';
+event.tags.platform = 'iOS';
+
+return event;`;
+
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);
   const [beforeSendCode, setBeforeSendCode] = useState(DEFAULT_BEFORESEND_JS);
@@ -158,6 +171,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_ANDROID);
     } else if (sdk === 'react-native') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RN);
+    } else if (sdk === 'cocoa') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_COCOA);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
@@ -242,7 +257,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin'}
+              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk === 'cocoa' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin'}
             />
           </div>
         </div>

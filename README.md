@@ -7,7 +7,7 @@
 The beforeSend Testing Playground is a Docker-based tool for testing how `beforeSend` callbacks transform Sentry events across different SDK languages. Perfect for Solutions Engineers helping customers debug complex event transformations.
 
 **Key Features:**
-- ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android)
+- ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa)
 - ✅ Monaco editor with syntax highlighting
 - ✅ See before/after transformation results
 - ✅ Docker-isolated execution (safe for arbitrary code)
