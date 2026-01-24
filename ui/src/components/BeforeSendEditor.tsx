@@ -1,4 +1,5 @@
 import Editor from '@monaco-editor/react';
+import type * as Monaco from 'monaco-editor';
 
 interface BeforeSendEditorProps {
   value: string;
@@ -7,6 +8,26 @@ interface BeforeSendEditorProps {
 }
 
 function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) {
+  const handleEditorWillMount = (monaco: typeof Monaco) => {
+    // Configure TypeScript/JavaScript compiler options to suppress deprecation warnings
+    monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.ESNext,
+      allowNonTsExtensions: true,
+      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      module: monaco.languages.typescript.ModuleKind.CommonJS,
+      noEmit: true,
+      esModuleInterop: true,
+      lib: ['es2020'], // Don't include 'dom' lib which has deprecated Window.event
+    });
+
+    // Disable diagnostics for deprecation warnings
+    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: false,
+      noSyntaxValidation: false,
+      diagnosticCodesToIgnore: [6385], // Suppress deprecation warnings (code 6385)
+    });
+  };
+
   return (
     <div className="border border-gray-300 rounded">
       <Editor
@@ -16,6 +37,7 @@ function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) 
         value={value}
         onChange={(newValue) => onChange(newValue || '')}
         theme="vs-dark"
+        beforeMount={handleEditorWillMount}
         options={{
           minimap: { enabled: false },
           fontSize: 14,
