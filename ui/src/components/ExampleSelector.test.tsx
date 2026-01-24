@@ -40,6 +40,16 @@ describe('ExampleSelector', () => {
     const mockOnSelect = vi.fn();
     render(<ExampleSelector onSelect={mockOnSelect} />);
 
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.getByText('Load Example')).toBeInTheDocument();
+    });
+
+    // Open dropdown
+    const selectButton = screen.getByRole('button');
+    fireEvent.click(selectButton);
+
+    // Examples should now be visible
     await waitFor(() => {
       expect(screen.getByText('Unity Metadata Cleanup')).toBeInTheDocument();
     });
@@ -73,13 +83,16 @@ describe('ExampleSelector', () => {
     const mockOnSelect = vi.fn();
     render(<ExampleSelector onSelect={mockOnSelect} />);
 
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Unity Metadata Cleanup')).toBeInTheDocument();
+      expect(screen.getByText('Load Example')).toBeInTheDocument();
     });
 
+    // Open dropdown
     const selectButton = screen.getByRole('button');
     fireEvent.click(selectButton);
 
+    // Wait for examples to be visible and click one
     await waitFor(() => {
       const option = screen.getByText('Unity Metadata Cleanup');
       fireEvent.click(option);
@@ -94,14 +107,19 @@ describe('ExampleSelector', () => {
     const mockOnSelect = vi.fn();
     render(<ExampleSelector onSelect={mockOnSelect} />);
 
+    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('Unity Metadata Cleanup')).toBeInTheDocument();
+      expect(screen.getByText('Load Example')).toBeInTheDocument();
     });
 
+    // Open dropdown
     const selectButton = screen.getByRole('button');
     fireEvent.click(selectButton);
 
-    expect(screen.getByText(/Extract actual exception/)).toBeInTheDocument();
+    // Description should now be visible
+    await waitFor(() => {
+      expect(screen.getByText(/Extract actual exception/)).toBeInTheDocument();
+    });
   });
 
   it('handles empty examples list', async () => {
@@ -113,5 +131,35 @@ describe('ExampleSelector', () => {
     await waitFor(() => {
       expect(screen.getByText(/no examples/i)).toBeInTheDocument();
     });
+  });
+
+  it('displays selected example name in button after selection', async () => {
+    (apiClient.apiClient.getExamples as any).mockResolvedValue({ examples: mockExamples });
+
+    const mockOnSelect = vi.fn();
+    render(<ExampleSelector onSelect={mockOnSelect} />);
+
+    // Initially shows "Load Example"
+    await waitFor(() => {
+      expect(screen.getByText('Load Example')).toBeInTheDocument();
+    });
+
+    // Open dropdown
+    const selectButton = screen.getByRole('button');
+    fireEvent.click(selectButton);
+
+    // Select an example
+    await waitFor(() => {
+      const option = screen.getByText('Unity Metadata Cleanup');
+      fireEvent.click(option);
+    });
+
+    // Button should now show the selected example name
+    await waitFor(() => {
+      expect(screen.getByText('Unity Metadata Cleanup')).toBeInTheDocument();
+    });
+
+    // "Load Example" should no longer be visible
+    expect(screen.queryByText('Load Example')).not.toBeInTheDocument();
   });
 });

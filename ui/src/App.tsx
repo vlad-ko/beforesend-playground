@@ -152,6 +152,7 @@ function App() {
   const [result, setResult] = useState<TransformResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedExampleName, setSelectedExampleName] = useState<string | null>(null);
 
   const handleSdkChange = (sdk: string) => {
     setSelectedSdk(sdk);
@@ -188,6 +189,9 @@ function App() {
 
     // Update SDK selector to match example
     setSelectedSdk(example.sdk);
+
+    // Track selected example name
+    setSelectedExampleName(example.name);
 
     // Clear previous results
     setResult(null);
@@ -259,7 +263,13 @@ function App() {
           <div className="bg-white rounded-lg shadow-md p-4">
             <h2 className="text-lg font-semibold mb-1">Event JSON</h2>
             <p className="text-sm text-gray-600 mb-3">
-              Paste your Sentry event JSON or use the default example
+              {selectedExampleName ? (
+                <>
+                  Loaded example: <span className="font-medium text-sentry-purple">{selectedExampleName}</span>
+                </>
+              ) : (
+                'Paste your Sentry event JSON or use the default example'
+              )}
             </p>
             <EventInput value={eventJson} onChange={setEventJson} />
           </div>
