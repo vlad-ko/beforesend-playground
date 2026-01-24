@@ -15,6 +15,8 @@
 
 ## Quick Start
 
+**Requirements:** Docker & Docker Compose (that's it!)
+
 ```bash
 # 1. Clone and navigate to the repository
 cd beforesend-playground
@@ -32,6 +34,61 @@ The playground will be available at **http://localhost:3000** 🎉
 
 ```bash
 docker-compose down
+```
+
+## Simple Examples
+
+### Example 1: Add Custom Tags
+
+**Event JSON:**
+```json
+{
+  "event_id": "test-1",
+  "message": "Payment failed"
+}
+```
+
+**beforeSend (JavaScript):**
+```javascript
+(event, hint) => {
+  event.tags = { ...event.tags, payment_type: 'credit_card' };
+  return event;
+}
+```
+
+### Example 2: Scrub Sensitive Data
+
+**Event JSON:**
+```json
+{
+  "event_id": "test-2",
+  "user": {
+    "email": "user@example.com",
+    "ip_address": "192.168.1.1"
+  }
+}
+```
+
+**beforeSend (Python):**
+```python
+def before_send(event, hint):
+    if 'user' in event:
+        event['user']['email'] = '[REDACTED]'
+        event['user']['ip_address'] = None
+    return event
+```
+
+### Example 3: Drop Noisy Errors
+
+**beforeSend (JavaScript):**
+```javascript
+(event, hint) => {
+  // Don't send 404 errors to Sentry
+  if (event.message && event.message.includes('404')) {
+    return null;  // Event dropped
+  }
+  return event;
+}
 ```
 
 ## Using the Playground
