@@ -1,0 +1,23 @@
+{
+  "id": "add-custom-tags-java",
+  "name": "Add Custom Tags & Context (Java)",
+  "description": "Enrich Java backend events with custom tags, business context, and request metadata for better filtering and debugging",
+  "sdk": "java",
+  "event": {
+    "event_id": "java-context-555",
+    "message": "Payment processing failed",
+    "exception": {
+      "values": [
+        {
+          "type": "PaymentException",
+          "value": "Transaction declined: insufficient funds"
+        }
+      ]
+    },
+    "request": {
+      "url": "https://api.example.com/v1/payments",
+      "method": "POST"
+    }
+  },
+  "beforeSendCode": "// Add custom tags for filtering in Sentry UI\nevent.setTag(\"payment_processor\", \"stripe\")\nevent.setTag(\"payment_method\", \"credit_card\")\nevent.setTag(\"api_version\", \"v1\")\nevent.setTag(\"service_name\", \"payment-service\")\nevent.setTag(\"error_category\", \"payment_declined\")\nevent.setTag(\"business_impact\", \"revenue_loss\")\n\n// Add extra context for debugging\nevent.setExtra(\"transaction_id\", \"txn_\" + System.currentTimeMillis())\nevent.setExtra(\"retry_count\", 0)\nevent.setExtra(\"client_version\", \"2.1.0\")\nevent.setExtra(\"deployment_version\", \"1.5.3\")\n\n// Add feature flags context\ndef featureFlags = [\n    \"new_checkout_flow\": true,\n    \"auto_retry_payments\": false,\n    \"fraud_detection_v2\": true\n]\nevent.setExtra(\"feature_flags\", featureFlags)\n\n// Add business context\ndef businessContext = [\n    \"customer_tier\": \"premium\",\n    \"account_age_days\": 365,\n    \"lifetime_value\": 5000.00\n]\nevent.setExtra(\"business_context\", businessContext)\n\n// Add server context\nevent.setExtra(\"server_hostname\", \"payment-api-1\")\nevent.setExtra(\"server_region\", \"us-east-1\")\nevent.setExtra(\"pod_name\", \"payment-service-abc123\")\n\n// Set user context if not already set\nif (!event.get(\"user\")) {\n    def userContext = [\n        \"id\": \"user_12345\",\n        \"segment\": \"enterprise\",\n        \"subscription\": \"premium\"\n    ]\n    event.put(\"user\", userContext)\n}\n\nreturn event"
+}

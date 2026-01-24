@@ -1,0 +1,23 @@
+{
+  "id": "pii-scrubbing",
+  "name": "PII Scrubbing",
+  "description": "Remove personally identifiable information (emails, phone numbers, SSNs) from events before sending to Sentry",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "test-pii-123",
+    "message": "User login failed for user@example.com with phone +1-555-123-4567",
+    "user": {
+      "id": "user-123",
+      "email": "john.doe@example.com",
+      "username": "johndoe",
+      "ip_address": "192.168.1.100"
+    },
+    "extra": {
+      "request_body": "email=admin@company.com&phone=555-987-6543&ssn=123-45-6789"
+    },
+    "tags": {
+      "environment": "production"
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  // Helper function to redact text\n  const redact = (text) => {\n    if (typeof text !== 'string') return text;\n    \n    // Redact emails\n    text = text.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g, '[REDACTED_EMAIL]');\n    \n    // Redact phone numbers (various formats)\n    text = text.replace(/\\+?1?[-.]?\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}/g, '[REDACTED_PHONE]');\n    \n    // Redact SSNs\n    text = text.replace(/\\d{3}-\\d{2}-\\d{4}/g, '[REDACTED_SSN]');\n    \n    return text;\n  };\n\n  // Redact message\n  if (event.message) {\n    event.message = redact(event.message);\n  }\n\n  // Redact user info\n  if (event.user) {\n    if (event.user.email) {\n      event.user.email = '[REDACTED]';\n    }\n    if (event.user.ip_address) {\n      event.user.ip_address = null;\n    }\n  }\n\n  // Redact extra data\n  if (event.extra) {\n    Object.keys(event.extra).forEach(key => {\n      if (typeof event.extra[key] === 'string') {\n        event.extra[key] = redact(event.extra[key]);\n      }\n    });\n  }\n\n  return event;\n}"
+}

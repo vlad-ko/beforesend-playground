@@ -1,0 +1,29 @@
+{
+  "id": "android-context-enrichment",
+  "name": "Android Context Enrichment",
+  "description": "Add Android-specific device context (battery, network, orientation, memory) to events for mobile debugging",
+  "sdk": "android",
+  "event": {
+    "event_id": "android-context-888",
+    "message": "RecyclerView rendering error",
+    "exception": {
+      "values": [
+        {
+          "type": "InflateException",
+          "value": "Error inflating class androidx.recyclerview.widget.RecyclerView"
+        }
+      ]
+    },
+    "contexts": {
+      "device": {
+        "name": "Samsung Galaxy S21",
+        "model": "SM-G991B"
+      },
+      "os": {
+        "name": "Android",
+        "version": "13"
+      }
+    }
+  },
+  "beforeSendCode": "// Add Android-specific device context\n// Note: In real Android app, you'd get Context from Application class\n\n// Simulate battery context\nevent.setExtra(\"battery_level\", 75.0)\nevent.setExtra(\"is_charging\", false)\nevent.setTag(\"battery_state\", \"discharging\")\n\n// Simulate network context\nevent.setTag(\"network_type\", \"wifi\")\nevent.setExtra(\"network_available\", true)\n\n// Simulate device orientation\nevent.setExtra(\"device_orientation\", \"portrait\")\n\n// Simulate memory context\nevent.setExtra(\"available_memory_mb\", 2048L)\nevent.setExtra(\"total_memory_mb\", 4096L)\nevent.setExtra(\"low_memory\", false)\nevent.setExtra(\"memory_threshold_mb\", 512L)\n\n// Simulate app state\nevent.setExtra(\"app_state\", \"foreground\")\nevent.setTag(\"app_lifecycle\", \"foreground\")\n\n// Simulate screen density\nevent.setExtra(\"screen_density\", 3.0f)\nevent.setExtra(\"screen_dpi\", 480)\n\n// Add Android-specific tags\nevent.setTag(\"platform\", \"android\")\nevent.setTag(\"device_type\", \"mobile\")\n\nreturn event"
+}

@@ -20,12 +20,15 @@ vi.mock('./api/client', () => ({
   apiClient: {
     transform: vi.fn(),
     getSDKs: vi.fn(),
+    getExamples: vi.fn(),
   },
 }));
 
 describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Set default mock return value for getExamples to prevent errors
+    vi.mocked(apiClient.getExamples).mockResolvedValue({ examples: [] });
   });
 
   it('renders the application header', () => {
@@ -67,7 +70,7 @@ describe('App', () => {
 
     expect(codeEditor.value).toContain('Transformers by Sentry 🤖');
     expect(codeEditor.value).toContain('TransformerError');
-    expect(codeEditor.value).toContain('transformed: true');
+    expect(codeEditor.value).toContain('transformed_by');
   });
 
   it('changes beforeSend code when SDK changes', async () => {
@@ -96,7 +99,7 @@ describe('App', () => {
 
     expect(codeEditor.value).toContain('Transformers by Sentry 🤖');
     expect(codeEditor.value).toContain('TransformerError');
-    expect(codeEditor.value).toContain("['transformed'] = True");
+    expect(codeEditor.value).toContain("'transformed_by'");
   });
 
   it('shows loading state during transformation', async () => {
@@ -322,6 +325,111 @@ describe('App', () => {
     it('displays helper text for Event JSON section', () => {
       render(<App />);
       expect(screen.getByText(/Paste your Sentry event JSON/i)).toBeInTheDocument();
+    });
+
+    it('does not show reset button when no example is loaded', () => {
+      render(<App />);
+      expect(screen.queryByText(/Reset to default example/i)).not.toBeInTheDocument();
+    });
+
+    it('shows reset button when example is loaded', async () => {
+      const user = userEvent.setup();
+      const mockExample = {
+        id: 'test-example',
+        name: 'Test Example',
+        description: 'A test example',
+        sdk: 'javascript',
+        event: { event_id: 'test-123' },
+        beforeSendCode: 'return event;',
+      };
+
+      vi.mocked(apiClient.getExamples).mockResolvedValue({
+        examples: [mockExample],
+      });
+
+      render(<App />);
+
+      // Wait for example selector to load
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Load Example/i })).toBeInTheDocument();
+      });
+
+      // Open dropdown
+      const loadButton = screen.getByRole('button', { name: /Load Example/i });
+      await user.click(loadButton);
+
+      // Wait for and click the example option
+      await waitFor(() => {
+        expect(screen.getByText('Test Example')).toBeInTheDocument();
+      });
+
+      const exampleOption = screen.getByText('Test Example');
+      await user.click(exampleOption);
+
+      // Wait for reset button to appear
+      await waitFor(() => {
+        expect(screen.getByText(/Reset to default example/i)).toBeInTheDocument();
+      });
+    });
+
+    it('resets to default example when reset button is clicked', async () => {
+      const user = userEvent.setup();
+      const mockExample = {
+        id: 'test-example',
+        name: 'Test Example',
+        description: 'A test example',
+        sdk: 'javascript',
+        event: { event_id: 'test-123' },
+        beforeSendCode: 'return event;',
+      };
+
+      vi.mocked(apiClient.getExamples).mockResolvedValue({
+        examples: [mockExample],
+      });
+
+      render(<App />);
+
+      // Wait for example selector to load
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /Load Example/i })).toBeInTheDocument();
+      });
+
+      // Open dropdown
+      const loadButton = screen.getByRole('button', { name: /Load Example/i });
+      await user.click(loadButton);
+
+      // Wait for and click the example option
+      await waitFor(() => {
+        expect(screen.getByText('Test Example')).toBeInTheDocument();
+      });
+
+      const exampleOption = screen.getByText('Test Example');
+      await user.click(exampleOption);
+
+      // Wait for reset button to appear (confirms example was loaded)
+      await waitFor(() => {
+        expect(screen.getByText(/Reset to default example/i)).toBeInTheDocument();
+      });
+
+      // Click reset button
+      const resetButton = screen.getByText(/Reset to default example/i);
+      await user.click(resetButton);
+
+      // Verify reset occurred - button should show "Load Example" again
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /^Load Example$/i })).toBeInTheDocument();
+      });
+
+      // Reset button should be hidden
+      expect(screen.queryByText(/Reset to default example/i)).not.toBeInTheDocument();
+
+      // Helper text should be back to default
+      expect(screen.getByText(/Paste your Sentry event JSON/i)).toBeInTheDocument();
+
+      // Verify event JSON was reset to default
+      const editors = screen.getAllByTestId('monaco-editor');
+      const eventEditor = editors[0] as HTMLTextAreaElement;
+      expect(eventEditor.value).toContain('example-event-id');
     });
 
     it('displays helper text for beforeSend Code section', () => {

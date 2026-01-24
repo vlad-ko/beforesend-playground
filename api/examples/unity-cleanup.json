@@ -1,0 +1,21 @@
+{
+  "id": "unity-cleanup",
+  "name": "Unity Metadata Cleanup",
+  "description": "Extract actual exception from Unity/Android crash metadata that pollutes exception messages, making issue titles unreadable",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "4ac65cab-f83d-4727-b1c5-82a35f9a31d3",
+    "timestamp": "2026-01-22T12:30:00.000Z",
+    "platform": "android",
+    "level": "fatal",
+    "exception": {
+      "values": [
+        {
+          "type": "UnityException",
+          "value": "FATAL EXCEPTION [RxComputationThreadPool-1] Unity version : 6000.2.14f1 Device model : samsung SM-A022M Device fingerprint: samsung/a02ub/a02:11/RP1A.200720.012/A022MUBS4BWL2:user/release-keys CPU supported ABI : [armeabi-v7a, armeabi] Build Type : Release Scripting Backend : IL2CPP Libs loaded from : Unknown Strip Engine Code : Undefined Resources$NotFoundException: File resource not found"
+        }
+      ]
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  if (event.exception && event.exception.values) {\n    for (const exception of event.exception.values) {\n      // Check if metadata is polluting the exception value\n      if (exception.value &&\n          (exception.value.includes('Unity version') ||\n           exception.value.includes('Device model') ||\n           exception.value.includes('Device fingerprint'))) {\n\n        // Extract thread name\n        const threadMatch = exception.value.match(/\\[([^\\]]+)\\]/);\n        if (threadMatch) {\n          event.tags = { ...event.tags, thread: threadMatch[1] };\n        }\n\n        // Extract actual exception type using regex\n        const exceptionMatch = exception.value.match(/([\\w\\.$]+(?:Exception|Error)):\\s*([^\\n]+?)\\s*$/);\n\n        if (exceptionMatch) {\n          // Found the real exception - use it\n          exception.type = exceptionMatch[1];\n          exception.value = exceptionMatch[2];\n        } else {\n          // No exception found - use generic but descriptive title\n          exception.type = 'NativeCrash';\n          exception.value = 'Android Native Crash';\n        }\n      }\n    }\n  }\n\n  return event;\n}"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "pii-scrubbing-dotnet",
+  "name": "PII Scrubbing (.NET)",
+  "description": "Remove personally identifiable information (emails, phone numbers, SSNs) from .NET events using C# regex patterns",
+  "sdk": "dotnet",
+  "event": {
+    "event_id": "dotnet-pii-123",
+    "message": "Authentication failed for user admin@company.com with phone +1-555-123-4567",
+    "user": {
+      "id": "user-789",
+      "email": "alice@example.com",
+      "username": "alice",
+      "ip_address": "10.0.1.50"
+    },
+    "extra": {
+      "form_data": "username=admin&email=sensitive@example.com&phone=555-1234&ssn=123-45-6789"
+    }
+  },
+  "beforeSendCode": "// Redact user email and IP\nif (ev.User != null)\n{\n    if (!string.IsNullOrEmpty(ev.User.Email))\n    {\n        ev.User.Email = \"[REDACTED]\";\n    }\n    if (!string.IsNullOrEmpty(ev.User.IpAddress))\n    {\n        ev.User.IpAddress = null;\n    }\n}\n\n// Add tag indicating PII was scrubbed\nev.SetTag(\"pii_scrubbed\", \"true\");\nev.SetTag(\"data_privacy\", \"compliant\");\n\n// Note: In production, you would also redact message and extra data\n// using regex patterns for emails, phones, SSNs similar to:\n// System.Text.RegularExpressions.Regex.Replace(text, pattern, \"[REDACTED]\")\n\nreturn ev;"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "aspnet-request-context",
+  "name": "ASP.NET Request Context",
+  "description": "Enrich .NET backend events with ASP.NET-specific request context (controller, action, route data, claims)",
+  "sdk": "dotnet",
+  "event": {
+    "event_id": "aspnet-context-999",
+    "message": "Database query timeout in OrdersController",
+    "exception": {
+      "values": [
+        {
+          "type": "SqlException",
+          "value": "Timeout expired. The timeout period elapsed prior to completion of the operation"
+        }
+      ]
+    },
+    "request": {
+      "url": "https://api.example.com/api/orders/123",
+      "method": "GET"
+    }
+  },
+  "beforeSendCode": "// Add ASP.NET MVC context\nev.SetTag(\"controller\", \"OrdersController\");\nev.SetTag(\"action\", \"GetOrder\");\nev.SetExtra(\"mvc.controller\", \"OrdersController\");\nev.SetExtra(\"mvc.action\", \"GetOrder\");\n\n// Add route parameters\nev.SetExtra(\"route_id\", \"123\");\n\n// Add request metadata\nev.SetExtra(\"request.protocol\", \"HTTP/1.1\");\nev.SetExtra(\"request.scheme\", \"https\");\nev.SetExtra(\"request.host\", \"api.example.com\");\nev.SetExtra(\"request.path\", \"/api/orders/123\");\n\n// Add response metadata\nev.SetExtra(\"response.status_code\", 500);\nev.SetExtra(\"response.content_type\", \"application/json\");\n\n// Add authentication context (without PII)\nev.SetExtra(\"user.authenticated\", true);\nev.SetTag(\"user_role\", \"admin\");\nev.SetTag(\"tenant\", \"enterprise-001\");\n\n// Add feature flags\nev.SetTag(\"api_version\", \"v2\");\nev.SetTag(\"environment\", \"production\");\n\nreturn ev;"
+}

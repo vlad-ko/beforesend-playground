@@ -1,0 +1,33 @@
+{
+  "id": "ios-lifecycle-tags",
+  "name": "iOS Lifecycle & App State Tags",
+  "description": "Add iOS-specific lifecycle events, memory warnings, and app state transition context for mobile debugging",
+  "sdk": "cocoa",
+  "event": {
+    "event_id": "ios-lifecycle-111",
+    "message": "Memory warning received during video processing",
+    "exception": {
+      "values": [
+        {
+          "type": "NSException",
+          "value": "Memory pressure - app received didReceiveMemoryWarning"
+        }
+      ]
+    },
+    "contexts": {
+      "device": {
+        "name": "iPhone 14 Pro Max",
+        "model": "iPhone15,3"
+      },
+      "os": {
+        "name": "iOS",
+        "version": "17.3"
+      },
+      "app": {
+        "app_version": "3.1.0",
+        "app_build": "245"
+      }
+    }
+  },
+  "beforeSendCode": "// Add iOS app lifecycle context\nif (!event.tags) event.tags = {};\nif (!event.extra) event.extra = {};\n\n// Simulate app state (in real app, would get from UIApplication)\nevent.tags.app_state = \"foreground\";\nevent.extra.app_lifecycle_state = \"active\";\n\n// Simulate app state transition context\nevent.extra.time_in_foreground = 3600; // seconds\nevent.extra.background_time_remaining = 180; // seconds\n\n// Memory warnings context\nevent.tags.memory_warning = \"true\";\nevent.extra.memory_warning_count = 2;\nevent.extra.memory_footprint_mb = 145;\n\n// Low power mode\nevent.tags.low_power_mode = \"enabled\";\nevent.extra.low_power_mode = true;\n\n// Background fetch status\nevent.extra.background_refresh_status = \"available\";\n\n// Thermal state\nevent.extra.thermal_state = \"fair\";\nevent.tags.thermal_throttling = \"false\";\n\n// App version and build\nevent.tags.app_version = \"3.1.0\";\nevent.tags.build_number = \"245\";\nevent.tags.build_type = \"testflight\";\n\n// View controller context\nevent.extra.current_view_controller = \"HomeViewController\";\n\n// iOS-specific tags\nevent.tags.platform = \"iOS\";\nevent.tags.device_type = \"mobile\";\n\nreturn event;"
+}

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import EventInput from './components/EventInput';
 import BeforeSendEditor from './components/BeforeSendEditor';
 import SdkSelector from './components/SdkSelector';
+import ExampleSelector from './components/ExampleSelector';
 import OutputViewer from './components/OutputViewer';
-import { apiClient, TransformResponse } from './api/client';
+import { apiClient, TransformResponse, Example } from './api/client';
 import sentryLogo from './assets/sentry-logo.png';
 
 const DEFAULT_EVENT = JSON.stringify(
@@ -151,6 +152,7 @@ function App() {
   const [result, setResult] = useState<TransformResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedExampleName, setSelectedExampleName] = useState<string | null>(null);
 
   const handleSdkChange = (sdk: string) => {
     setSelectedSdk(sdk);
@@ -176,6 +178,59 @@ function App() {
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
+  };
+
+  const handleExampleSelect = (example: Example) => {
+    // Load example event
+    setEventJson(JSON.stringify(example.event, null, 2));
+
+    // Load example beforeSend code
+    setBeforeSendCode(example.beforeSendCode);
+
+    // Update SDK selector to match example
+    setSelectedSdk(example.sdk);
+
+    // Track selected example name
+    setSelectedExampleName(example.name);
+
+    // Clear previous results
+    setResult(null);
+    setError(null);
+  };
+
+  const handleReset = () => {
+    // Reset to default example
+    setEventJson(DEFAULT_EVENT);
+
+    // Reset beforeSend code based on current SDK
+    if (selectedSdk === 'python') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_PY);
+    } else if (selectedSdk === 'ruby') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_RUBY);
+    } else if (selectedSdk === 'php') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_PHP);
+    } else if (selectedSdk === 'go') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_GO);
+    } else if (selectedSdk === 'dotnet') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_DOTNET);
+    } else if (selectedSdk === 'java') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_JAVA);
+    } else if (selectedSdk === 'android') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_ANDROID);
+    } else if (selectedSdk === 'react-native') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_RN);
+    } else if (selectedSdk === 'cocoa') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_COCOA);
+    } else {
+      setBeforeSendCode(DEFAULT_BEFORESEND_JS);
+    }
+
+    // Clear selected example name
+    setSelectedExampleName(null);
+
+    // Clear any results
+    setResult(null);
+    setError(null);
   };
 
   const handleTransform = async () => {
@@ -242,9 +297,23 @@ function App() {
           {/* Event Input */}
           <div className="bg-white rounded-lg shadow-md p-4">
             <h2 className="text-lg font-semibold mb-1">Event JSON</h2>
-            <p className="text-sm text-gray-600 mb-3">
-              Paste your Sentry event JSON or use the default example
+            <p className="text-sm text-gray-600 mb-2">
+              {selectedExampleName ? (
+                <>
+                  Loaded example: <span className="font-medium text-sentry-purple">{selectedExampleName}</span>
+                </>
+              ) : (
+                'Paste your Sentry event JSON or use the default example'
+              )}
             </p>
+            {selectedExampleName && (
+              <button
+                onClick={handleReset}
+                className="mb-3 text-sm text-gray-600 hover:text-sentry-purple underline"
+              >
+                Reset to default example
+              </button>
+            )}
             <EventInput value={eventJson} onChange={setEventJson} />
           </div>
 
@@ -265,6 +334,7 @@ function App() {
         {/* Controls */}
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
           <div className="flex items-center gap-4">
+            <ExampleSelector key={selectedExampleName || 'default'} onSelect={handleExampleSelect} />
             <SdkSelector value={selectedSdk} onChange={handleSdkChange} />
             <button
               onClick={handleTransform}

@@ -1,0 +1,27 @@
+{
+  "id": "conditional-dropping-go",
+  "name": "Conditional Event Dropping (Go)",
+  "description": "Filter out noisy errors in Go services - health checks, known errors, development environments",
+  "sdk": "go",
+  "event": {
+    "event_id": "go-drop-321",
+    "message": "Health check endpoint accessed",
+    "exception": {
+      "values": [
+        {
+          "type": "HttpError",
+          "value": "404 Not Found: /health"
+        }
+      ]
+    },
+    "request": {
+      "url": "https://api.example.com/health",
+      "method": "GET"
+    },
+    "tags": {
+      "environment": "development"
+    },
+    "level": "warning"
+  },
+  "beforeSendCode": "// Drop events from development environment\nif event[\"tags\"] != nil {\n    tags := event[\"tags\"].(map[string]interface{})\n    if env, ok := tags[\"environment\"].(string); ok {\n        if env == \"development\" {\n            // Don't send dev events to production Sentry\n            return nil\n        }\n    }\n}\n\n// Drop debug and info level events\nif level, ok := event[\"level\"].(string); ok {\n    if level == \"debug\" || level == \"info\" {\n        // Only send warnings and errors\n        return nil\n    }\n}\n\n// Add tag indicating filtering was applied\nif event[\"tags\"] == nil {\n    event[\"tags\"] = make(map[string]interface{})\n}\nevent[\"tags\"].(map[string]interface{})[\"filtered\"] = \"true\"\n\nreturn event"
+}

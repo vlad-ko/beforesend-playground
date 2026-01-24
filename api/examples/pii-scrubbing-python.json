@@ -1,0 +1,20 @@
+{
+  "id": "pii-scrubbing-python",
+  "name": "PII Scrubbing (Python)",
+  "description": "Remove personally identifiable information from Python events using Python beforeSend callback",
+  "sdk": "python",
+  "event": {
+    "event_id": "python-pii-123",
+    "message": "Authentication failed for user admin@company.com",
+    "user": {
+      "id": "user-789",
+      "email": "alice@example.com",
+      "username": "alice",
+      "ip_address": "10.0.1.50"
+    },
+    "extra": {
+      "form_data": "username=admin&email=sensitive@example.com&phone=555-1234"
+    }
+  },
+  "beforeSendCode": "import re\n\ndef before_send(event, hint):\n    # Helper function to redact sensitive data\n    def redact(text):\n        if not isinstance(text, str):\n            return text\n        \n        # Redact emails\n        text = re.sub(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}', '[REDACTED_EMAIL]', text)\n        \n        # Redact phone numbers\n        text = re.sub(r'\\+?1?[-.]?\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}', '[REDACTED_PHONE]', text)\n        \n        # Redact SSNs\n        text = re.sub(r'\\d{3}-\\d{2}-\\d{4}', '[REDACTED_SSN]', text)\n        \n        return text\n    \n    # Redact message\n    if event.get('message'):\n        event['message'] = redact(event['message'])\n    \n    # Redact user info\n    if 'user' in event:\n        if 'email' in event['user']:\n            event['user']['email'] = '[REDACTED]'\n        if 'ip_address' in event['user']:\n            event['user']['ip_address'] = None\n    \n    # Redact extra data\n    if 'extra' in event:\n        for key in event['extra']:\n            if isinstance(event['extra'][key], str):\n                event['extra'][key] = redact(event['extra'][key])\n    \n    return event"
+}

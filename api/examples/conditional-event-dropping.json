@@ -1,0 +1,26 @@
+{
+  "id": "conditional-event-dropping",
+  "name": "Conditional Event Dropping",
+  "description": "Filter out noisy or irrelevant errors before sending them to Sentry to reduce quota usage",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "drop-test-101",
+    "message": "Network request failed: Failed to fetch",
+    "exception": {
+      "values": [
+        {
+          "type": "NetworkError",
+          "value": "Failed to fetch"
+        }
+      ]
+    },
+    "tags": {
+      "environment": "production"
+    },
+    "user": {
+      "id": "user-456",
+      "email": "test@example.com"
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  // Drop events from known bots and crawlers\n  if (event.request && event.request.headers) {\n    const userAgent = event.request.headers['user-agent'] || '';\n    const botPatterns = [\n      /googlebot/i,\n      /bingbot/i,\n      /slackbot/i,\n      /facebookexternalhit/i\n    ];\n    \n    if (botPatterns.some(pattern => pattern.test(userAgent))) {\n      // Drop the event\n      return null;\n    }\n  }\n\n  // Drop common third-party script errors\n  if (event.exception && event.exception.values) {\n    const exception = event.exception.values[0];\n    const thirdPartyPatterns = [\n      /Script error/i,\n      /ResizeObserver loop/i,\n      /Non-Error promise rejection/i\n    ];\n    \n    if (thirdPartyPatterns.some(pattern => pattern.test(exception.value))) {\n      // Drop noisy errors\n      return null;\n    }\n  }\n\n  // Drop events from test/development users\n  if (event.user && event.user.email) {\n    if (event.user.email.endsWith('@test.com') || \n        event.user.email.endsWith('@example.com')) {\n      // Drop test user events\n      return null;\n    }\n  }\n\n  // Drop low-severity messages in production\n  if (event.level === 'info' || event.level === 'debug') {\n    if (event.tags && event.tags.environment === 'production') {\n      // Don't send info/debug to production\n      return null;\n    }\n  }\n\n  // Keep the event if none of the conditions matched\n  return event;\n}"
+}
