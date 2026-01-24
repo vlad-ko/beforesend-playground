@@ -129,6 +129,7 @@ function OutputViewer({ result, error }: OutputViewerProps) {
                   leftTitle="Original Event"
                   rightTitle="Transformed Event"
                   useDarkTheme={false}
+                  disableWordDiff={true}
                   styles={{
                     diffContainer: {
                       fontSize: '13px',
