@@ -126,35 +126,26 @@ function BeforeSendEditor({ value, onChange, language, sdk }: BeforeSendEditorPr
     editorRef.current = editor;
   };
 
-  const hasValidation = VALIDATION_SUPPORTED_SDKS.includes(sdk);
-
   return (
-    <div>
-      {!hasValidation && (
-        <div className="mb-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-          ⚠️ Real-time syntax validation is not yet available for this SDK
-        </div>
-      )}
-      <div className="border border-gray-300 rounded">
-        <Editor
-          height="400px"
-          defaultLanguage={language}
-          language={language}
-          value={value}
-          onChange={(newValue) => onChange(newValue || '')}
-          theme="vs-dark"
-          beforeMount={handleEditorWillMount}
-          onMount={handleEditorDidMount}
-          options={{
-            minimap: { enabled: false },
-            fontSize: 14,
-            lineNumbers: 'on',
-            scrollBeyondLastLine: false,
-            wordWrap: 'on',
-            automaticLayout: true,
-          }}
-        />
-      </div>
+    <div className="border border-gray-300 rounded">
+      <Editor
+        height="400px"
+        defaultLanguage={language}
+        language={language}
+        value={value}
+        onChange={(newValue) => onChange(newValue || '')}
+        theme="vs-dark"
+        beforeMount={handleEditorWillMount}
+        onMount={handleEditorDidMount}
+        options={{
+          minimap: { enabled: false },
+          fontSize: 14,
+          lineNumbers: 'on',
+          scrollBeyondLastLine: false,
+          wordWrap: 'on',
+          automaticLayout: true,
+        }}
+      />
     </div>
   );
 }
