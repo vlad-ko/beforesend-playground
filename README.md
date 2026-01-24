@@ -8,6 +8,7 @@ The beforeSend Testing Playground is a Docker-based tool for testing how `before
 
 **Key Features:**
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa)
+- ✅ Example templates library with pre-built transformations
 - ✅ Monaco editor with syntax highlighting
 - ✅ See before/after transformation results
 - ✅ Docker-isolated execution (safe for arbitrary code)
@@ -179,6 +180,35 @@ def before_send(event, hint):
   return event;
 }
 ```
+
+## Example Templates Library
+
+The playground includes a library of pre-built example templates that demonstrate common beforeSend use cases. Click **"Load Example"** in the UI to choose from:
+
+### Available Examples
+
+1. **Unity Metadata Cleanup** - Extract actual exceptions from Unity/Android crash metadata
+2. **PII Scrubbing** - Remove emails, phone numbers, and SSNs from events
+3. **Custom Fingerprinting** - Group similar errors by normalizing dynamic values
+4. **Add Custom Tags & Context** - Enrich events with additional metadata
+5. **Conditional Event Dropping** - Filter out noisy errors based on conditions
+6. **PII Scrubbing (Python)** - Python version of PII scrubbing example
+
+Each example includes:
+- Pre-configured event JSON
+- Working beforeSend code
+- Automatic SDK selection
+- Description of what it demonstrates
+
+### Using Examples
+
+1. Open the playground at http://localhost:3000
+2. Click **"Load Example"** button
+3. Select an example from the dropdown
+4. Click **"Transform"** to see the results
+5. Edit the code to customize the transformation
+
+Examples are stored in `api/examples/` and can be extended with custom templates.
 
 ## Documentation
 

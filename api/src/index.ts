@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import transformRouter from './routes/transform';
+import examplesRouter from './routes/examples';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -29,6 +30,7 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/transform', transformRouter);
+app.use('/api/examples', examplesRouter);
 
 // 404 handler
 app.use((req, res) => {
@@ -51,4 +53,5 @@ app.listen(PORT, () => {
   console.log(`🚀 API Gateway listening on port ${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/health`);
   console.log(`   Transform API: http://localhost:${PORT}/api/transform`);
+  console.log(`   Examples API: http://localhost:${PORT}/api/examples`);
 });

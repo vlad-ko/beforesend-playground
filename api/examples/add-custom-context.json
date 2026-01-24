@@ -1,0 +1,23 @@
+{
+  "id": "add-custom-context",
+  "name": "Add Custom Tags & Context",
+  "description": "Enrich events with custom tags, extra context, and metadata for better filtering and debugging",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "context-test-789",
+    "message": "Payment processing failed",
+    "exception": {
+      "values": [
+        {
+          "type": "PaymentError",
+          "value": "Card declined: insufficient funds"
+        }
+      ]
+    },
+    "request": {
+      "url": "https://api.example.com/v1/payments",
+      "method": "POST"
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  // Add custom tags for better filtering in Sentry\n  event.tags = {\n    ...event.tags,\n    payment_processor: 'stripe',\n    payment_method: 'credit_card',\n    error_category: 'payment_declined',\n    business_impact: 'revenue_loss'\n  };\n\n  // Add extra context for debugging\n  event.extra = {\n    ...event.extra,\n    payment_flow: 'checkout_v2',\n    retry_count: 0,\n    client_version: '2.1.0',\n    feature_flags: {\n      new_checkout: true,\n      auto_retry: false\n    }\n  };\n\n  // Set user context if not already set\n  if (!event.user) {\n    event.user = {\n      id: 'guest',\n      segment: 'free_tier'\n    };\n  }\n\n  // Add breadcrumb for payment flow\n  if (!event.breadcrumbs) {\n    event.breadcrumbs = [];\n  }\n  event.breadcrumbs.push({\n    type: 'info',\n    category: 'payment',\n    message: 'Payment processing attempted',\n    level: 'info',\n    timestamp: Date.now() / 1000\n  });\n\n  return event;\n}"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "custom-fingerprinting",
+  "name": "Custom Fingerprinting",
+  "description": "Group similar errors together by customizing the fingerprint, useful for dynamic error messages with unique IDs",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "fingerprint-test-456",
+    "exception": {
+      "values": [
+        {
+          "type": "DatabaseError",
+          "value": "Connection timeout to database server db-prod-us-west-2a.example.com:5432 after 30 seconds (connection_id: conn_7f3a9b2c)"
+        }
+      ]
+    },
+    "tags": {
+      "environment": "production",
+      "region": "us-west-2"
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  // Custom fingerprinting for better issue grouping\n  if (event.exception && event.exception.values) {\n    const exception = event.exception.values[0];\n    \n    if (exception.type === 'DatabaseError' && exception.value) {\n      // Remove dynamic parts (server names, IDs, timestamps)\n      // to group all database timeouts together\n      const normalizedValue = exception.value\n        .replace(/db-[a-z0-9-]+\\.example\\.com:[0-9]+/g, 'DATABASE_HOST')\n        .replace(/connection_id: [a-z0-9_]+/g, 'connection_id: DYNAMIC')\n        .replace(/after \\d+ seconds/g, 'after N seconds');\n      \n      // Set custom fingerprint for grouping\n      event.fingerprint = [\n        exception.type,\n        normalizedValue\n      ];\n      \n      // Add tag for easier filtering\n      event.tags = {\n        ...event.tags,\n        error_category: 'database_timeout'\n      };\n    }\n  }\n\n  return event;\n}"
+}

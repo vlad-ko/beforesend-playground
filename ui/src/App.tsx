@@ -2,8 +2,9 @@ import { useState } from 'react';
 import EventInput from './components/EventInput';
 import BeforeSendEditor from './components/BeforeSendEditor';
 import SdkSelector from './components/SdkSelector';
+import ExampleSelector from './components/ExampleSelector';
 import OutputViewer from './components/OutputViewer';
-import { apiClient, TransformResponse } from './api/client';
+import { apiClient, TransformResponse, Example } from './api/client';
 import sentryLogo from './assets/sentry-logo.png';
 
 const DEFAULT_EVENT = JSON.stringify(
@@ -178,6 +179,21 @@ function App() {
     }
   };
 
+  const handleExampleSelect = (example: Example) => {
+    // Load example event
+    setEventJson(JSON.stringify(example.event, null, 2));
+
+    // Load example beforeSend code
+    setBeforeSendCode(example.beforeSendCode);
+
+    // Update SDK selector to match example
+    setSelectedSdk(example.sdk);
+
+    // Clear previous results
+    setResult(null);
+    setError(null);
+  };
+
   const handleTransform = async () => {
     setIsLoading(true);
     setError(null);
@@ -265,6 +281,7 @@ function App() {
         {/* Controls */}
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
           <div className="flex items-center gap-4">
+            <ExampleSelector onSelect={handleExampleSelect} />
             <SdkSelector value={selectedSdk} onChange={handleSdkChange} />
             <button
               onClick={handleTransform}
