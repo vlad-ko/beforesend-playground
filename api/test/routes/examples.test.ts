@@ -202,6 +202,63 @@ describe('Examples API Route', () => {
       expect(response.body.examples).toHaveLength(1);
       expect(response.body.examples[0].id).toBe('complete');
     });
+
+    it('should load examples for multiple SDK types', async () => {
+      const mockExamples = [
+        {
+          id: 'pii-scrubbing-python',
+          name: 'PII Scrubbing (Python)',
+          description: 'Python regex patterns',
+          sdk: 'python',
+          event: { event_id: '1' },
+          beforeSendCode: 'def before_send(event, hint): return event',
+        },
+        {
+          id: 'pii-scrubbing-dotnet',
+          name: 'PII Scrubbing (.NET)',
+          description: 'C# regex patterns',
+          sdk: 'dotnet',
+          event: { event_id: '2' },
+          beforeSendCode: 'public SentryEvent BeforeSend(SentryEvent ev) { return ev; }',
+        },
+        {
+          id: 'conditional-dropping-go',
+          name: 'Conditional Event Dropping (Go)',
+          description: 'Go filtering patterns',
+          sdk: 'go',
+          event: { event_id: '3' },
+          beforeSendCode: 'func beforeSend(event *sentry.Event) *sentry.Event { return event }',
+        },
+        {
+          id: 'android-context-enrichment',
+          name: 'Android Context Enrichment',
+          description: 'Android-specific context',
+          sdk: 'android',
+          event: { event_id: '4' },
+          beforeSendCode: 'override fun execute(event: SentryEvent): SentryEvent { return event }',
+        },
+      ];
+
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.readdirSync as jest.Mock).mockReturnValue(mockExamples.map(e => `${e.id}.json`));
+      (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
+        const example = mockExamples.find(e => filePath.includes(`${e.id}.json`));
+        if (example) return JSON.stringify(example);
+        throw new Error('File not found');
+      });
+
+      const response = await request(app).get('/api/examples');
+
+      expect(response.status).toBe(200);
+      expect(response.body.examples).toHaveLength(4);
+
+      // Verify we have examples from different SDKs
+      const sdks = response.body.examples.map((e: any) => e.sdk);
+      expect(sdks).toContain('python');
+      expect(sdks).toContain('dotnet');
+      expect(sdks).toContain('go');
+      expect(sdks).toContain('android');
+    });
   });
 
   describe('GET /api/examples/:id', () => {
@@ -227,6 +284,7 @@ describe('Examples API Route', () => {
     });
 
     it('should return 404 if example not found', async () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockReturnValue([]);
 
       const response = await request(app).get('/api/examples/non-existent');

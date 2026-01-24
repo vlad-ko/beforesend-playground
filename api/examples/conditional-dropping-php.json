@@ -1,0 +1,28 @@
+{
+  "id": "conditional-dropping-php",
+  "name": "Conditional Event Dropping (PHP)",
+  "description": "Filter out noisy or irrelevant errors in PHP applications - bots, third-party scripts, test users",
+  "sdk": "php",
+  "event": {
+    "event_id": "php-drop-789",
+    "message": "Script error: Failed to load external resource",
+    "exception": {
+      "values": [
+        {
+          "type": "NetworkError",
+          "value": "Failed to fetch external script"
+        }
+      ]
+    },
+    "request": {
+      "headers": {
+        "user-agent": "Mozilla/5.0 (compatible; Googlebot/2.1)"
+      }
+    },
+    "user": {
+      "email": "test@example.com"
+    },
+    "level": "info"
+  },
+  "beforeSendCode": "function($event, $hint) {\n    // Drop events from known bots and crawlers\n    if (isset($event['request']['headers']['user-agent'])) {\n        $userAgent = $event['request']['headers']['user-agent'];\n        $botPatterns = [\n            '/googlebot/i',\n            '/bingbot/i',\n            '/slackbot/i',\n            '/facebookexternalhit/i',\n            '/twitterbot/i'\n        ];\n        \n        foreach ($botPatterns as $pattern) {\n            if (preg_match($pattern, $userAgent)) {\n                // Drop the event\n                return null;\n            }\n        }\n    }\n    \n    // Drop common third-party script errors\n    if (isset($event['exception']['values'])) {\n        $exception = $event['exception']['values'][0];\n        $thirdPartyPatterns = [\n            '/Script error/i',\n            '/ResizeObserver loop/i',\n            '/Non-Error promise rejection/i',\n            '/Failed to fetch external/i'\n        ];\n        \n        foreach ($thirdPartyPatterns as $pattern) {\n            if (preg_match($pattern, $exception['value'])) {\n                // Drop noisy third-party errors\n                return null;\n            }\n        }\n    }\n    \n    // Drop events from test/development users\n    if (isset($event['user']['email'])) {\n        $email = $event['user']['email'];\n        if (str_ends_with($email, '@test.com') || \n            str_ends_with($email, '@example.com')) {\n            // Drop test user events\n            return null;\n        }\n    }\n    \n    // Drop low-severity messages in production\n    if (isset($event['level']) && \n        ($event['level'] === 'info' || $event['level'] === 'debug')) {\n        if (isset($event['tags']['environment']) && \n            $event['tags']['environment'] === 'production') {\n            // Don't send info/debug to production\n            return null;\n        }\n    }\n    \n    // Keep the event if none of the conditions matched\n    return $event;\n}"
+}

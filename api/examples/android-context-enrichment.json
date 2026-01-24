@@ -1,0 +1,29 @@
+{
+  "id": "android-context-enrichment",
+  "name": "Android Context Enrichment",
+  "description": "Add Android-specific device context (battery, network, orientation, memory) to events for mobile debugging",
+  "sdk": "android",
+  "event": {
+    "event_id": "android-context-888",
+    "message": "RecyclerView rendering error",
+    "exception": {
+      "values": [
+        {
+          "type": "InflateException",
+          "value": "Error inflating class androidx.recyclerview.widget.RecyclerView"
+        }
+      ]
+    },
+    "contexts": {
+      "device": {
+        "name": "Samsung Galaxy S21",
+        "model": "SM-G991B"
+      },
+      "os": {
+        "name": "Android",
+        "version": "13"
+      }
+    }
+  },
+  "beforeSendCode": "import io.sentry.SentryEvent\nimport io.sentry.Hint\nimport io.sentry.SentryOptions.BeforeSendCallback\nimport android.content.Context\nimport android.content.Intent\nimport android.content.IntentFilter\nimport android.os.BatteryManager\nimport android.net.ConnectivityManager\nimport android.net.NetworkCapabilities\nimport android.app.ActivityManager\nimport android.content.res.Configuration\n\nclass AndroidContextCallback(private val context: Context) : BeforeSendCallback {\n    override fun execute(event: SentryEvent, hint: Hint): SentryEvent? {\n        // Add battery context\n        val batteryStatus: Intent? = IntentFilter(Intent.ACTION_BATTERY_CHANGED).let { ifilter ->\n            context.registerReceiver(null, ifilter)\n        }\n        \n        batteryStatus?.let {\n            val level = it.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)\n            val scale = it.getIntExtra(BatteryManager.EXTRA_SCALE, -1)\n            val batteryPct = level * 100 / scale.toFloat()\n            \n            val status = it.getIntExtra(BatteryManager.EXTRA_STATUS, -1)\n            val isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||\n                           status == BatteryManager.BATTERY_STATUS_FULL\n            \n            event.setExtra(\"battery_level\", batteryPct)\n            event.setExtra(\"is_charging\", isCharging)\n            event.setTag(\"battery_state\", if (isCharging) \"charging\" else \"discharging\")\n        }\n        \n        // Add network context\n        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager\n        val network = connectivityManager.activeNetwork\n        val capabilities = connectivityManager.getNetworkCapabilities(network)\n        \n        val networkType = when {\n            capabilities == null -> \"none\"\n            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> \"wifi\"\n            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> \"cellular\"\n            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> \"ethernet\"\n            else -> \"unknown\"\n        }\n        \n        event.setTag(\"network_type\", networkType)\n        event.setExtra(\"network_available\", capabilities != null)\n        \n        // Add device orientation\n        val orientation = context.resources.configuration.orientation\n        val orientationStr = when (orientation) {\n            Configuration.ORIENTATION_PORTRAIT -> \"portrait\"\n            Configuration.ORIENTATION_LANDSCAPE -> \"landscape\"\n            else -> \"undefined\"\n        }\n        event.setExtra(\"device_orientation\", orientationStr)\n        \n        // Add memory context\n        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager\n        val memoryInfo = ActivityManager.MemoryInfo()\n        activityManager.getMemoryInfo(memoryInfo)\n        \n        event.setExtra(\"available_memory_mb\", memoryInfo.availMem / (1024 * 1024))\n        event.setExtra(\"total_memory_mb\", memoryInfo.totalMem / (1024 * 1024))\n        event.setExtra(\"low_memory\", memoryInfo.lowMemory)\n        event.setExtra(\"memory_threshold_mb\", memoryInfo.threshold / (1024 * 1024))\n        \n        if (memoryInfo.lowMemory) {\n            event.setTag(\"memory_pressure\", \"high\")\n        }\n        \n        // Add app state context\n        val isInBackground = activityManager.runningAppProcesses?.firstOrNull {\n            it.processName == context.packageName\n        }?.importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND\n        \n        event.setExtra(\"app_state\", if (isInBackground) \"background\" else \"foreground\")\n        event.setTag(\"app_lifecycle\", if (isInBackground) \"background\" else \"foreground\")\n        \n        // Add screen density\n        val density = context.resources.displayMetrics.density\n        event.setExtra(\"screen_density\", density)\n        event.setExtra(\"screen_dpi\", context.resources.displayMetrics.densityDpi)\n        \n        return event\n    }\n}"
+}

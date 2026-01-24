@@ -1,0 +1,29 @@
+{
+  "id": "add-custom-tags-cocoa",
+  "name": "Add Custom Tags & Context (Cocoa)",
+  "description": "Enrich iOS/macOS events with mobile-specific tags, device info, and app context for better debugging",
+  "sdk": "cocoa",
+  "event": {
+    "event_id": "cocoa-context-777",
+    "message": "Network request failed",
+    "exception": {
+      "values": [
+        {
+          "type": "NetworkError",
+          "value": "Request timeout after 30 seconds"
+        }
+      ]
+    },
+    "contexts": {
+      "device": {
+        "name": "iPhone 13 Pro",
+        "model": "iPhone14,2"
+      },
+      "os": {
+        "name": "iOS",
+        "version": "17.2"
+      }
+    }
+  },
+  "beforeSendCode": "// Add mobile-specific tags\nif (!event.tags) event.tags = {};\nevent.tags.platform = \"iOS\";\nevent.tags.app_version = \"2.5.1\";\nevent.tags.build_number = \"123\";\nevent.tags.network_type = \"WiFi\"; // Would come from actual network API\nevent.tags.error_category = \"network_timeout\";\n\n// Add device context\nif (!event.extra) event.extra = {};\nevent.extra.device_orientation = \"portrait\";\nevent.extra.screen_brightness = 0.8;\nevent.extra.battery_level = 0.45; // 45%\nevent.extra.low_power_mode = false;\n\n// Add app lifecycle context\nevent.extra.app_state = \"foreground\";\nevent.extra.memory_pressure = \"normal\";\nevent.extra.time_since_launch = 3600; // seconds\n\n// Add feature flags\nevent.extra.feature_flags = {\n  dark_mode: true,\n  new_ui_enabled: false,\n  push_notifications: true\n};\n\n// Add user properties\nif (!event.user) event.user = {};\nevent.user.subscription_tier = \"premium\";\nevent.user.days_since_install = 90;\n\n// Add custom context for network request\nevent.extra.request_metadata = {\n  endpoint: \"/api/v1/data\",\n  retry_count: 2,\n  timeout_seconds: 30,\n  connection_type: \"cellular\"\n};\n\nreturn event;"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "pii-scrubbing-dotnet",
+  "name": "PII Scrubbing (.NET)",
+  "description": "Remove personally identifiable information (emails, phone numbers, SSNs) from .NET events using C# regex patterns",
+  "sdk": "dotnet",
+  "event": {
+    "event_id": "dotnet-pii-123",
+    "message": "Authentication failed for user admin@company.com with phone +1-555-123-4567",
+    "user": {
+      "id": "user-789",
+      "email": "alice@example.com",
+      "username": "alice",
+      "ip_address": "10.0.1.50"
+    },
+    "extra": {
+      "form_data": "username=admin&email=sensitive@example.com&phone=555-1234&ssn=123-45-6789"
+    }
+  },
+  "beforeSendCode": "// Helper method to redact sensitive data using regex\nstring Redact(string text)\n{\n    if (string.IsNullOrEmpty(text)) return text;\n    \n    // Redact emails\n    text = System.Text.RegularExpressions.Regex.Replace(\n        text, \n        @\"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\",\n        \"[REDACTED_EMAIL]\"\n    );\n    \n    // Redact phone numbers (various formats)\n    text = System.Text.RegularExpressions.Regex.Replace(\n        text,\n        @\"\\+?1?[-.]?\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}\",\n        \"[REDACTED_PHONE]\"\n    );\n    \n    // Redact SSNs\n    text = System.Text.RegularExpressions.Regex.Replace(\n        text,\n        @\"\\d{3}-\\d{2}-\\d{4}\",\n        \"[REDACTED_SSN]\"\n    );\n    \n    return text;\n}\n\n// Redact message\nif (!string.IsNullOrEmpty(ev.Message?.Message))\n{\n    ev.Message = new Sentry.Protocol.Message { Message = Redact(ev.Message.Message) };\n}\n\n// Redact user info\nif (ev.User != null)\n{\n    if (!string.IsNullOrEmpty(ev.User.Email))\n    {\n        ev.User.Email = \"[REDACTED]\";\n    }\n    if (!string.IsNullOrEmpty(ev.User.IpAddress))\n    {\n        ev.User.IpAddress = null;\n    }\n}\n\n// Redact extra data\nif (ev.Extra != null)\n{\n    foreach (var key in ev.Extra.Keys.ToList())\n    {\n        if (ev.Extra[key] is string strValue)\n        {\n            ev.Extra[key] = Redact(strValue);\n        }\n    }\n}\n\nreturn ev;"
+}

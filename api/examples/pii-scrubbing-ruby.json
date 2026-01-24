@@ -1,0 +1,20 @@
+{
+  "id": "pii-scrubbing-ruby",
+  "name": "PII Scrubbing (Ruby)",
+  "description": "Remove personally identifiable information (emails, phone numbers, SSNs) from Ruby events using regex patterns",
+  "sdk": "ruby",
+  "event": {
+    "event_id": "ruby-pii-456",
+    "message": "User registration failed for john.doe@example.com with phone 555-9876",
+    "user": {
+      "id": "user-999",
+      "email": "john.doe@example.com",
+      "username": "johndoe",
+      "ip_address": "192.168.100.50"
+    },
+    "extra": {
+      "request_params": "email=admin@company.com&phone=+1-555-4321&ssn=987-65-4321"
+    }
+  },
+  "beforeSendCode": "lambda do |event, hint|\n  # Helper method to redact sensitive data\n  def redact(text)\n    return text unless text.is_a?(String)\n    \n    # Redact emails\n    text = text.gsub(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/, '[REDACTED_EMAIL]')\n    \n    # Redact phone numbers (various formats)\n    text = text.gsub(/\\+?1?[-.]?\\(?\\d{3}\\)?[-.]?\\d{3}[-.]?\\d{4}/, '[REDACTED_PHONE]')\n    \n    # Redact SSNs\n    text = text.gsub(/\\d{3}-\\d{2}-\\d{4}/, '[REDACTED_SSN]')\n    \n    text\n  end\n  \n  # Redact message\n  event['message'] = redact(event['message']) if event['message']\n  \n  # Redact user info\n  if event['user']\n    event['user']['email'] = '[REDACTED]' if event['user']['email']\n    event['user']['ip_address'] = nil if event['user']['ip_address']\n  end\n  \n  # Redact extra data\n  if event['extra']\n    event['extra'].each do |key, value|\n      event['extra'][key] = redact(value) if value.is_a?(String)\n    end\n  end\n  \n  event\nend"
+}
