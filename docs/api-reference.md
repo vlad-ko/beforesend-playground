@@ -111,6 +111,65 @@ List available SDKs and their status.
 curl http://localhost:4000/api/transform/sdks
 ```
 
+### POST /api/validate
+
+Validate beforeSend code for syntax errors.
+
+**Request:**
+```json
+{
+  "sdk": "javascript",
+  "beforeSendCode": "(event, hint) => { return event; }"
+}
+```
+
+**Parameters:**
+- `sdk` (string, required): SDK to use for validation. One of: `javascript`, `python`, `ruby`, `php`, `go`, `dotnet`, `java`, `android`, `cocoa`, `react-native`
+- `beforeSendCode` (string, required): beforeSend callback code to validate
+
+**Response (Valid Code):**
+```json
+{
+  "valid": true,
+  "errors": []
+}
+```
+
+**Response (Invalid Code):**
+```json
+{
+  "valid": false,
+  "errors": [
+    {
+      "line": 3,
+      "column": 15,
+      "message": "Unexpected token ')'"
+    }
+  ]
+}
+```
+
+**HTTP Status Codes:**
+- `200 OK`: Validation completed (check `valid` field for result)
+- `400 Bad Request`: Missing required parameters or unsupported SDK
+- `500 Internal Server Error`: Validation service error
+
+**Example:**
+```bash
+curl -X POST http://localhost:4000/api/validate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sdk": "javascript",
+    "beforeSendCode": "(event, hint) => { return event"
+  }'
+```
+
+**Notes:**
+- Validation uses actual SDK parsers (JavaScript Function constructor, Python compile(), etc.)
+- SDKs without validation support gracefully fall back to `valid: true`
+- Currently supported: JavaScript, Python
+- Validation is also integrated into the UI editor with 500ms debouncing
+
 ### GET /health
 
 Health check endpoint for API Gateway.
@@ -165,6 +224,38 @@ curl -X POST http://localhost:5000/transform \
 curl -X POST http://localhost:5001/transform \
   -H "Content-Type: application/json" \
   -d '{"event": {...}, "beforeSendCode": "..."}'
+```
+
+### POST /validate
+
+SDK-specific validation endpoint.
+
+**Request:**
+```json
+{
+  "code": "(event, hint) => { return event; }"
+}
+```
+
+**Response:**
+```json
+{
+  "valid": true,
+  "errors": []
+}
+```
+
+**Example:**
+```bash
+# JavaScript SDK (port 5000)
+curl -X POST http://localhost:5000/validate \
+  -H "Content-Type: application/json" \
+  -d '{"code": "(event, hint) => { return event"}'
+
+# Python SDK (port 5001)
+curl -X POST http://localhost:5001/validate \
+  -H "Content-Type: application/json" \
+  -d '{"code": "def before_send(event, hint):\\n    return event"}'
 ```
 
 ### GET /health
