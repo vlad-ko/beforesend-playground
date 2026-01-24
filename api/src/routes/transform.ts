@@ -9,13 +9,14 @@ import { transformWithDotNet } from '../sdk-clients/dotnet';
 import { transformWithJava } from '../sdk-clients/java';
 import { transformWithAndroid } from '../sdk-clients/android';
 import { transformWithCocoa } from '../sdk-clients/cocoa';
+import { transformWithRust } from '../sdk-clients/rust';
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
 
 interface TransformRequest {
-  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'dotnet' | 'java' | 'android' | 'react-native' | 'cocoa';
+  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'dotnet' | 'java' | 'android' | 'react-native' | 'cocoa' | 'rust';
   event: string | Record<string, any>;
   beforeSendCode: string;
 }
@@ -126,6 +127,9 @@ router.post('/', async (req: Request<{}, {}, TransformRequest>, res: Response<Tr
           break;
         case 'cocoa':
           result = await transformWithCocoa(event, beforeSendCode);
+          break;
+        case 'rust':
+          result = await transformWithRust(event, beforeSendCode);
           break;
         default:
           return res.status(400).json({

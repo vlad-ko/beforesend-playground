@@ -122,6 +122,18 @@
       "packageManager": "npm",
       "packages": ["@sentry/react-native"],
       "description": "Official Sentry React Native SDK (uses JavaScript runtime)"
+    },
+    "rust": {
+      "name": "Rust",
+      "language": "rust",
+      "default": false,
+      "status": "available",
+      "port": 5010,
+      "dockerfile": "./sdks/rust/Dockerfile",
+      "entrypoint": "src/main.rs",
+      "packageManager": "cargo",
+      "packages": ["sentry"],
+      "description": "Official Sentry Rust SDK"
     }
   }
 }
