@@ -154,7 +154,7 @@ function SearchableExampleSelector({ onSelect }: SearchableExampleSelectorProps)
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Combobox.Options className="absolute z-10 mt-2 w-96 bg-white border border-gray-300 rounded-md shadow-lg max-h-96 overflow-hidden">
+            <Combobox.Options className="absolute z-10 mt-2 w-96 bg-white border border-gray-300 rounded-md shadow-lg overflow-hidden">
               <div className="p-2 border-b border-gray-200">
                 <input
                   type="text"
@@ -169,7 +169,7 @@ function SearchableExampleSelector({ onSelect }: SearchableExampleSelectorProps)
                 />
               </div>
 
-              <div className="overflow-y-auto max-h-80">
+              <div className="overflow-y-auto" style={{ maxHeight: 'min(32rem, calc(100vh - 16rem))' }}>
                 {filteredExamples.length === 0 ? (
                   <div className="px-4 py-8 text-center text-sm text-gray-500">
                     No examples found matching "{query}"
