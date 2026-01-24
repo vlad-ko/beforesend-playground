@@ -330,6 +330,7 @@ function App() {
               value={beforeSendCode}
               onChange={setBeforeSendCode}
               language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk === 'cocoa' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin'}
+              sdk={selectedSdk}
             />
           </div>
         </div>

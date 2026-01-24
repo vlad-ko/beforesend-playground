@@ -1,14 +1,75 @@
+import { useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import type * as Monaco from 'monaco-editor';
+import { apiClient } from '../api/client';
 
 interface BeforeSendEditorProps {
   value: string;
   onChange: (value: string) => void;
   language: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin';
+  sdk: string;
 }
 
-function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) {
+function BeforeSendEditor({ value, onChange, language, sdk }: BeforeSendEditorProps) {
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<typeof Monaco | null>(null);
+  const validationTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Validate code with debouncing
+  useEffect(() => {
+    // Clear previous timer
+    if (validationTimerRef.current) {
+      clearTimeout(validationTimerRef.current);
+    }
+
+    // Debounce validation (500ms)
+    validationTimerRef.current = setTimeout(async () => {
+      if (!editorRef.current || !monacoRef.current || !value) {
+        return;
+      }
+
+      try {
+        // Call validation API
+        const result = await apiClient.validate({
+          sdk,
+          beforeSendCode: value,
+        });
+
+        // Get Monaco model
+        const model = editorRef.current.getModel();
+        if (!model) return;
+
+        // Clear previous markers
+        monacoRef.current.editor.setModelMarkers(model, 'validation', []);
+
+        // Add error markers if validation failed
+        if (!result.valid && result.errors.length > 0) {
+          const markers = result.errors.map((error) => ({
+            severity: monacoRef.current!.MarkerSeverity.Error,
+            startLineNumber: error.line || 1,
+            startColumn: error.column || 1,
+            endLineNumber: error.line || 1,
+            endColumn: error.column ? error.column + 1 : 1000,
+            message: error.message,
+          }));
+          monacoRef.current.editor.setModelMarkers(model, 'validation', markers);
+        }
+      } catch (error) {
+        // Silently fail validation - don't block user input
+        console.error('Validation error:', error);
+      }
+    }, 500);
+
+    // Cleanup
+    return () => {
+      if (validationTimerRef.current) {
+        clearTimeout(validationTimerRef.current);
+      }
+    };
+  }, [value, sdk]);
+
   const handleEditorWillMount = (monaco: typeof Monaco) => {
+    monacoRef.current = monaco;
     // Configure TypeScript/JavaScript compiler options
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ESNext,
@@ -45,6 +106,10 @@ function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) 
     });
   };
 
+  const handleEditorDidMount = (editor: Monaco.editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+  };
+
   return (
     <div className="border border-gray-300 rounded">
       <Editor
@@ -55,6 +120,7 @@ function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) 
         onChange={(newValue) => onChange(newValue || '')}
         theme="vs-dark"
         beforeMount={handleEditorWillMount}
+        onMount={handleEditorDidMount}
         options={{
           minimap: { enabled: false },
           fontSize: 14,

@@ -42,6 +42,22 @@ export interface ExamplesResponse {
   examples: Example[];
 }
 
+export interface ValidationError {
+  line?: number;
+  column?: number;
+  message: string;
+}
+
+export interface ValidationRequest {
+  sdk: string;
+  beforeSendCode: string;
+}
+
+export interface ValidationResponse {
+  valid: boolean;
+  errors: ValidationError[];
+}
+
 export const apiClient = {
   async transform(request: TransformRequest): Promise<TransformResponse> {
     const response = await axios.post<TransformResponse>(
@@ -64,6 +80,20 @@ export const apiClient = {
 
   async getExamples(): Promise<ExamplesResponse> {
     const response = await axios.get<ExamplesResponse>(`${API_URL}/api/examples`);
+    return response.data;
+  },
+
+  async validate(request: ValidationRequest): Promise<ValidationResponse> {
+    const response = await axios.post<ValidationResponse>(
+      `${API_URL}/api/validate`,
+      request,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 5000, // 5 second timeout for validation
+      }
+    );
     return response.data;
   },
 };
