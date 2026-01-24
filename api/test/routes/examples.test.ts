@@ -152,11 +152,11 @@ describe('Examples API Route', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
       (fs.readdirSync as jest.Mock).mockReturnValue(['valid.json', 'invalid.json']);
       (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-        if (filePath.includes('valid.json')) {
-          return JSON.stringify(validExample);
-        }
-        if (filePath.includes('invalid.json')) {
+        if (filePath.endsWith('invalid.json')) {
           return '{invalid json';
+        }
+        if (filePath.endsWith('valid.json')) {
+          return JSON.stringify(validExample);
         }
         throw new Error('Unknown file');
       });
