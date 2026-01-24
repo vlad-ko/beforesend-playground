@@ -110,16 +110,17 @@ serde_json = "1.0"
 
     // Create main.rs with user's beforeSend code
     let main_rs = format!(
-        r##"use serde_json::{{json, Value}};
+        r##"#[allow(unused_imports)]
+use serde_json::{{json, Value}};
 
 fn main() {{
     let event_json = r#"{}"#;
     let mut event: Value = serde_json::from_str(event_json).unwrap();
 
-    // User's beforeSend code
-    let result: Option<Value> = {{
+    // User's beforeSend code wrapped in a closure to support ? operator
+    let result: Option<Value> = (|| -> Option<Value> {{
         {}
-    }};
+    }})();
 
     match result {{
         Some(transformed) => println!("{{}}", serde_json::to_string(&transformed).unwrap()),
@@ -127,7 +128,7 @@ fn main() {{
     }}
 }}
 "##,
-        event_json.replace("\"", "\\\""),
+        event_json,
         req.before_send_code
     );
 
@@ -272,14 +273,15 @@ serde_json = "1.0"
         });
     }
 
-    // Create main.rs with user's code
+    // Create main.rs with user's code wrapped in closure to support ? operator
     let main_rs = format!(
-        r#"use serde_json::Value;
+        r#"#[allow(unused_imports)]
+use serde_json::Value;
 
 fn main() {{
-    let _result: Option<Value> = {{
+    let _result: Option<Value> = (|| -> Option<Value> {{
         {}
-    }};
+    }})();
 }}
 "#,
         req.code
