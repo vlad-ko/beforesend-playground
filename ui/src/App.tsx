@@ -2,7 +2,7 @@ import { useState } from 'react';
 import EventInput from './components/EventInput';
 import BeforeSendEditor from './components/BeforeSendEditor';
 import SdkSelector from './components/SdkSelector';
-import ExampleSelector from './components/ExampleSelector';
+import SearchableExampleSelector from './components/SearchableExampleSelector';
 import OutputViewer from './components/OutputViewer';
 import { apiClient, TransformResponse, Example } from './api/client';
 import sentryLogo from './assets/sentry-logo.png';
@@ -368,7 +368,7 @@ function App() {
         {/* Controls */}
         <div className="bg-white rounded-lg shadow-md p-4 mb-6">
           <div className="flex items-center gap-4">
-            <ExampleSelector key={selectedExampleName || 'default'} onSelect={handleExampleSelect} />
+            <SearchableExampleSelector key={selectedExampleName || 'default'} onSelect={handleExampleSelect} />
             <SdkSelector value={selectedSdk} onChange={handleSdkChange} />
             <button
               onClick={handleTransform}
@@ -393,7 +393,7 @@ function App() {
           {(result || error) ? (
             <OutputViewer result={result} error={error} />
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded p-8 text-center text-gray-500">
+            <div className="bg-gray-50 border border-gray-200 rounded p-8 text-center text-gray-500 min-h-96 flex items-center justify-center">
               No result yet. Configure your event and beforeSend code, then click Transform.
             </div>
           )}

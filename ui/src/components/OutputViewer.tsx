@@ -41,7 +41,7 @@ function OutputViewer({ result, error }: OutputViewerProps) {
             <summary className="cursor-pointer text-red-800 font-medium">
               Show Traceback
             </summary>
-            <pre className="mt-2 text-xs text-red-600 bg-red-100 p-2 rounded overflow-x-auto">
+            <pre className="mt-2 text-xs text-red-600 bg-red-100 p-2 rounded overflow-auto max-h-64">
               {result.traceback}
             </pre>
           </details>
@@ -116,7 +116,7 @@ function OutputViewer({ result, error }: OutputViewerProps) {
             {viewMode === 'full' ? (
               <div>
                 <h3 className="font-semibold mb-2">Transformed Event</h3>
-                <pre className="text-sm bg-gray-900 text-green-400 p-4 rounded overflow-x-auto">
+                <pre className="text-sm bg-gray-900 text-green-400 p-4 rounded overflow-auto max-h-96">
                   {JSON.stringify(result.transformedEvent, null, 2)}
                 </pre>
               </div>
@@ -143,7 +143,7 @@ function OutputViewer({ result, error }: OutputViewerProps) {
       ) : (
         <div className="bg-gray-50 border border-gray-300 rounded p-4">
           <h3 className="font-semibold mb-2">Transformed Event</h3>
-          <pre className="text-sm bg-gray-900 text-green-400 p-4 rounded overflow-x-auto">
+          <pre className="text-sm bg-gray-900 text-green-400 p-4 rounded overflow-auto max-h-96">
             {JSON.stringify(result.transformedEvent, null, 2)}
           </pre>
         </div>
