@@ -393,7 +393,7 @@ function App() {
           {(result || error) ? (
             <OutputViewer result={result} error={error} />
           ) : (
-            <div className="bg-gray-50 border border-gray-200 rounded p-8 text-center text-gray-500">
+            <div className="bg-gray-50 border border-gray-200 rounded p-8 text-center text-gray-500 min-h-96 flex items-center justify-center">
               No result yet. Configure your event and beforeSend code, then click Transform.
             </div>
           )}
