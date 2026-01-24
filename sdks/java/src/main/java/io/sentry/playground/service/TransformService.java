@@ -79,9 +79,10 @@ public class TransformService {
     private String wrapUserCode(String userCode) {
         String trimmedCode = userCode.trim();
 
-        // Check for return as a standalone keyword using word boundaries
-        // This prevents false positives from "return" in comments, strings, or variable names
-        boolean hasReturn = trimmedCode.matches(".*\\breturn\\b.*");
+        // Check for return statement (return followed by whitespace or semicolon)
+        // This is a simple heuristic that avoids matching "return" in strings
+        // Pattern: return followed by space, tab, newline, or semicolon
+        boolean hasReturn = trimmedCode.matches(".*\\breturn[\\s;].*");
 
         if (hasReturn) {
             // User has explicit return, use code as-is

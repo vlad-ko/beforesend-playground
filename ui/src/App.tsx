@@ -131,18 +131,18 @@ const DEFAULT_BEFORESEND_RN = `(event, hint) => {
   return event;
 }`;
 
-const DEFAULT_BEFORESEND_COCOA = `(event, hint) => {
-  // Transform error message to Transformers theme 🤖
-  if (event.exception && event.exception.values) {
-    event.exception.values[0].value = 'Transformers by Sentry 🤖';
-    event.exception.values[0].type = 'TransformerError';
-  }
+const DEFAULT_BEFORESEND_COCOA = `// Transform error message to Transformers theme 🤖
+if (event.exception && event.exception.values) {
+  event.exception.values[0].value = 'Transformers by Sentry 🤖';
+  event.exception.values[0].type = 'TransformerError';
+}
 
-  // Add custom tag indicating which SDK transformed this
-  event.tags = { ...event.tags, transformed_by: 'Cocoa SDK', platform: 'iOS' };
+// Add custom tag indicating which SDK transformed this
+if (!event.tags) event.tags = {};
+event.tags.transformed_by = 'Cocoa SDK';
+event.tags.platform = 'iOS';
 
-  return event;
-}`;
+return event;`;
 
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);

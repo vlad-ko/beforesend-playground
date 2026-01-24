@@ -69,9 +69,10 @@ class TransformService {
     private fun wrapUserCode(userCode: String): String {
         val trimmedCode = userCode.trim()
 
-        // Check for return as a standalone keyword using word boundaries
-        // This prevents false positives from "return" in comments, strings, or variable names
-        val hasReturn = Regex("\\breturn\\b").containsMatchIn(trimmedCode)
+        // Check for return statement (return followed by whitespace or semicolon)
+        // This is a simple heuristic that avoids matching "return" in strings
+        // Pattern: return followed by space, tab, newline, or semicolon
+        val hasReturn = Regex("\\breturn[\\s;]").containsMatchIn(trimmedCode)
 
         return if (hasReturn) {
             // User has explicit return, use code as-is
