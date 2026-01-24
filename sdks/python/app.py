@@ -86,6 +86,61 @@ def transform():
             'error': f'Unexpected error: {str(e)}'
         }), 500
 
+@app.route('/validate', methods=['POST'])
+def validate():
+    """
+    Validate endpoint
+    Validates beforeSend code for syntax errors without executing it
+    """
+    try:
+        data = request.get_json()
+
+        if not data or 'code' not in data:
+            return jsonify({
+                'valid': False,
+                'errors': [{'message': 'Missing code parameter'}]
+            }), 400
+
+        code = data['code']
+        errors = []
+
+        try:
+            # Use compile() to check syntax without executing
+            compile(code, '<string>', 'exec')
+
+            # If we get here, syntax is valid
+            return jsonify({
+                'valid': True,
+                'errors': []
+            })
+        except SyntaxError as e:
+            # Extract error details
+            error_info = {
+                'line': e.lineno,
+                'column': e.offset,
+                'message': str(e.msg)
+            }
+            errors.append(error_info)
+
+            return jsonify({
+                'valid': False,
+                'errors': errors
+            })
+        except Exception as e:
+            # Other compilation errors
+            errors.append({'message': str(e)})
+            return jsonify({
+                'valid': False,
+                'errors': errors
+            })
+
+    except Exception as e:
+        print(f'Validation error: {str(e)}', file=sys.stderr)
+        return jsonify({
+            'valid': False,
+            'errors': [{'message': f'Validation service error: {str(e)}'}]
+        }), 500
+
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""

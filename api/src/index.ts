@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import transformRouter from './routes/transform';
 import examplesRouter from './routes/examples';
+import validateRouter from './routes/validate';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -31,6 +32,7 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/transform', transformRouter);
 app.use('/api/examples', examplesRouter);
+app.use('/api/validate', validateRouter);
 
 // 404 handler
 app.use((req, res) => {

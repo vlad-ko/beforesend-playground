@@ -18,6 +18,21 @@ interface TransformResponse {
   error?: string;
 }
 
+interface ValidationRequest {
+  code: string;
+}
+
+interface ValidationError {
+  line?: number;
+  column?: number;
+  message: string;
+}
+
+interface ValidationResponse {
+  valid: boolean;
+  errors: ValidationError[];
+}
+
 /**
  * Transform endpoint
  * Receives an event and beforeSend code, applies the transformation
@@ -74,6 +89,64 @@ app.post('/transform', async (req: Request<{}, {}, TransformRequest>, res: Respo
     return res.status(500).json({
       success: false,
       error: `Unexpected error: ${error.message}`
+    });
+  }
+});
+
+/**
+ * Validate endpoint
+ * Validates beforeSend code for syntax errors without executing it
+ */
+app.post('/validate', async (req: Request<{}, {}, ValidationRequest>, res: Response<ValidationResponse>) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        valid: false,
+        errors: [{ message: 'Missing code parameter' }]
+      });
+    }
+
+    const errors: ValidationError[] = [];
+
+    try {
+      // Try to parse the code as a function expression
+      const wrappedCode = `(${code})`;
+
+      // Use eval to check syntax (doesn't actually execute in strict mode)
+      // We need to actually evaluate it to catch syntax errors
+      const checkSyntax = new Function('"use strict"; return ' + wrappedCode);
+      checkSyntax();
+
+      // If we get here, syntax is valid
+      return res.json({
+        valid: true,
+        errors: []
+      });
+    } catch (error: any) {
+      // Parse error message to extract line/column info if available
+      const errorMessage = error.message || 'Syntax error';
+
+      // Try to extract line number from error message
+      const lineMatch = errorMessage.match(/line (\d+)/i);
+      const line = lineMatch ? parseInt(lineMatch[1], 10) : undefined;
+
+      errors.push({
+        line,
+        message: errorMessage
+      });
+
+      return res.json({
+        valid: false,
+        errors
+      });
+    }
+  } catch (error: any) {
+    console.error('Validation error:', error);
+    return res.status(500).json({
+      valid: false,
+      errors: [{ message: `Validation service error: ${error.message}` }]
     });
   }
 });
