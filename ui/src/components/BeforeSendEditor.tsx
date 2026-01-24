@@ -9,7 +9,7 @@ interface BeforeSendEditorProps {
 
 function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) {
   const handleEditorWillMount = (monaco: typeof Monaco) => {
-    // Configure TypeScript/JavaScript compiler options to suppress deprecation warnings
+    // Configure TypeScript/JavaScript compiler options
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
       target: monaco.languages.typescript.ScriptTarget.ESNext,
       allowNonTsExtensions: true,
@@ -17,14 +17,31 @@ function BeforeSendEditor({ value, onChange, language }: BeforeSendEditorProps) 
       module: monaco.languages.typescript.ModuleKind.CommonJS,
       noEmit: true,
       esModuleInterop: true,
-      lib: ['es2020'], // Don't include 'dom' lib which has deprecated Window.event
+      allowJs: true,
+      checkJs: false, // Don't type-check JavaScript
     });
 
-    // Disable diagnostics for deprecation warnings
+    // Disable semantic validation - we only want syntax checking for snippets
+    // Users are writing code snippets, not full programs, so we don't need strict type checking
     monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: false,
+      noSemanticValidation: true, // Disable semantic errors (undefined variables, type errors)
+      noSyntaxValidation: false,  // Keep syntax error checking (missing brackets, etc.)
+    });
+
+    // Also configure TypeScript defaults (in case users write TS)
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      target: monaco.languages.typescript.ScriptTarget.ESNext,
+      allowNonTsExtensions: true,
+      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      module: monaco.languages.typescript.ModuleKind.CommonJS,
+      noEmit: true,
+      esModuleInterop: true,
+      allowJs: true,
+    });
+
+    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
+      noSemanticValidation: true,
       noSyntaxValidation: false,
-      diagnosticCodesToIgnore: [6385], // Suppress deprecation warnings (code 6385)
     });
   };
 
