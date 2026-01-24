@@ -306,23 +306,26 @@ function App() {
                 'Paste your Sentry event JSON or use the default example'
               )}
             </p>
-            {selectedExampleName && (
-              <button
-                onClick={handleReset}
-                className="mb-3 text-sm text-gray-600 hover:text-sentry-purple underline"
-              >
-                Reset to default example
-              </button>
-            )}
+            <div className="h-7 mb-1">
+              {selectedExampleName && (
+                <button
+                  onClick={handleReset}
+                  className="text-sm text-gray-600 hover:text-sentry-purple underline"
+                >
+                  Reset to default example
+                </button>
+              )}
+            </div>
             <EventInput value={eventJson} onChange={setEventJson} />
           </div>
 
           {/* beforeSend Editor */}
           <div className="bg-white rounded-lg shadow-md p-4">
             <h2 className="text-lg font-semibold mb-1">beforeSend Code</h2>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-gray-600 mb-2">
               Write your beforeSend callback to transform the event
             </p>
+            <div className="h-7 mb-1"></div>
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
