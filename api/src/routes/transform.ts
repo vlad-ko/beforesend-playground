@@ -10,13 +10,14 @@ import { transformWithJava } from '../sdk-clients/java';
 import { transformWithAndroid } from '../sdk-clients/android';
 import { transformWithCocoa } from '../sdk-clients/cocoa';
 import { transformWithRust } from '../sdk-clients/rust';
+import { transformWithElixir } from '../sdk-clients/elixir';
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
 
 interface TransformRequest {
-  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'dotnet' | 'java' | 'android' | 'react-native' | 'cocoa' | 'rust';
+  sdk: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'dotnet' | 'java' | 'android' | 'react-native' | 'cocoa' | 'rust' | 'elixir';
   event: string | Record<string, any>;
   beforeSendCode: string;
 }
@@ -130,6 +131,9 @@ router.post('/', async (req: Request<{}, {}, TransformRequest>, res: Response<Tr
           break;
         case 'rust':
           result = await transformWithRust(event, beforeSendCode);
+          break;
+        case 'elixir':
+          result = await transformWithElixir(event, beforeSendCode);
           break;
         default:
           return res.status(400).json({

@@ -134,6 +134,18 @@
       "packageManager": "cargo",
       "packages": ["sentry"],
       "description": "Official Sentry Rust SDK"
+    },
+    "elixir": {
+      "name": "Elixir",
+      "language": "elixir",
+      "default": false,
+      "status": "available",
+      "port": 5011,
+      "dockerfile": "./sdks/elixir/Dockerfile",
+      "entrypoint": "lib/router.ex",
+      "packageManager": "mix",
+      "packages": ["plug_cowboy", "jason"],
+      "description": "Official Sentry Elixir SDK"
     }
   }
 }

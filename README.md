@@ -4,10 +4,10 @@
 
 ## Overview
 
-**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, and master `beforeSend` patterns across 10 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
+**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
 
 **Key Features:**
-- ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, **Rust**)
+- ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, Rust, **Elixir**)
 - ✅ **19 pre-built example templates** across 10 SDKs
 - ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
 - ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers (JavaScript, Python, Ruby, PHP, Go, .NET, Rust)
@@ -110,6 +110,18 @@ tags.insert("build_number".to_string(), json!("42"));
 tags.insert("rust_version".to_string(), json!("1.75.0"));
 
 Some(event)
+```
+
+### Example 5: Pattern Matching (Elixir)
+
+**beforeSend (Elixir):**
+```elixir
+fn event, _hint ->
+  # Add custom tags using Elixir pattern matching
+  event
+  |> Map.put(:tags, %{environment: "production", service: "api"})
+  |> Map.update(:level, "error", &String.upcase/1)
+end
 ```
 
 ## Using the Playground
