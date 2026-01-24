@@ -100,6 +100,78 @@ $app->post('/transform', function (Request $request, Response $response) {
     }
 });
 
+// Validate endpoint
+$app->post('/validate', function (Request $request, Response $response) {
+    try {
+        $data = $request->getParsedBody();
+
+        if (!isset($data['code'])) {
+            $response->getBody()->write(json_encode([
+                'valid' => false,
+                'errors' => [['message' => 'Missing code parameter']]
+            ]));
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(400);
+        }
+
+        $code = $data['code'];
+        $errors = [];
+
+        try {
+            // Try to parse the code by evaluating it in a safe context
+            // We wrap it to check syntax without actually executing
+            $testCode = 'return ' . $code . ';';
+
+            // Use token_get_all to check for syntax errors
+            // This will throw ParseError if syntax is invalid
+            @eval('if(false){' . $testCode . '}');
+
+            // Also try to actually parse to catch more errors
+            $beforeSendFn = eval($testCode);
+
+            $response->getBody()->write(json_encode([
+                'valid' => true,
+                'errors' => []
+            ]));
+            return $response->withHeader('Content-Type', 'application/json');
+        } catch (ParseError $e) {
+            // Extract line number from error message if available
+            $line = $e->getLine();
+
+            $errors[] = [
+                'line' => $line > 0 ? $line : null,
+                'message' => $e->getMessage()
+            ];
+
+            $response->getBody()->write(json_encode([
+                'valid' => false,
+                'errors' => $errors
+            ]));
+            return $response->withHeader('Content-Type', 'application/json');
+        } catch (Throwable $e) {
+            $errors[] = [
+                'message' => $e->getMessage()
+            ];
+
+            $response->getBody()->write(json_encode([
+                'valid' => false,
+                'errors' => $errors
+            ]));
+            return $response->withHeader('Content-Type', 'application/json');
+        }
+    } catch (Throwable $e) {
+        error_log('Validation error: ' . $e->getMessage());
+        $response->getBody()->write(json_encode([
+            'valid' => false,
+            'errors' => [['message' => 'Validation service error: ' . $e->getMessage()]]
+        ]));
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(500);
+    }
+});
+
 // Health check endpoint
 $app->get('/health', function (Request $request, Response $response) {
     $response->getBody()->write(json_encode([

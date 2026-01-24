@@ -89,6 +89,56 @@ post '/transform' do
   end
 end
 
+# Validate endpoint
+# Validates beforeSend code for syntax errors without executing it
+post '/validate' do
+  content_type :json
+
+  begin
+    request.body.rewind
+    data = JSON.parse(request.body.read)
+
+    unless data['code']
+      return [
+        400,
+        { valid: false, errors: [{ message: 'Missing code parameter' }] }.to_json
+      ]
+    end
+
+    code = data['code']
+    errors = []
+
+    begin
+      # Use RubyVM::InstructionSequence to compile without executing
+      RubyVM::InstructionSequence.compile(code)
+
+      { valid: true, errors: [] }.to_json
+    rescue SyntaxError => e
+      # Extract line number from error message if available
+      line_match = e.message.match(/:(\d+):/)
+      line = line_match ? line_match[1].to_i : nil
+
+      errors << {
+        line: line,
+        message: e.message
+      }
+
+      { valid: false, errors: errors }.to_json
+    end
+  rescue JSON::ParserError => e
+    [
+      400,
+      { valid: false, errors: [{ message: "Invalid JSON: #{e.message}" }] }.to_json
+    ]
+  rescue StandardError => e
+    warn "Validation error: #{e.message}"
+    [
+      500,
+      { valid: false, errors: [{ message: "Validation service error: #{e.message}" }] }.to_json
+    ]
+  end
+end
+
 # Health check endpoint
 get '/health' do
   content_type :json

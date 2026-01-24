@@ -32,11 +32,27 @@ type HealthResponse struct {
 	SDK    string `json:"sdk"`
 }
 
+type ValidationRequest struct {
+	Code string `json:"code" binding:"required"`
+}
+
+type ValidationError struct {
+	Line    *int   `json:"line,omitempty"`
+	Column  *int   `json:"column,omitempty"`
+	Message string `json:"message"`
+}
+
+type ValidationResponse struct {
+	Valid  bool              `json:"valid"`
+	Errors []ValidationError `json:"errors"`
+}
+
 func setupRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	router.POST("/transform", transformHandler)
+	router.POST("/validate", validateHandler)
 	router.GET("/health", healthHandler)
 
 	return router
@@ -203,6 +219,113 @@ go 1.22
 	c.JSON(http.StatusOK, TransformResponse{
 		Success:          true,
 		TransformedEvent: transformedEvent,
+	})
+}
+
+func validateHandler(c *gin.Context) {
+	var req ValidationRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, ValidationResponse{
+			Valid: false,
+			Errors: []ValidationError{
+				{Message: "Missing code parameter"},
+			},
+		})
+		return
+	}
+
+	// Create temporary directory for validation
+	tmpDir, err := ioutil.TempDir("", "validate-*")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ValidationResponse{
+			Valid: false,
+			Errors: []ValidationError{
+				{Message: fmt.Sprintf("Validation service error: %v", err)},
+			},
+		})
+		return
+	}
+	defer os.RemoveAll(tmpDir)
+
+	// Create a simple validation program
+	programPath := filepath.Join(tmpDir, "validate.go")
+	program := fmt.Sprintf(`package main
+
+type Event map[string]interface{}
+type EventHint map[string]interface{}
+
+func main() {
+	_ = func(event Event, hint EventHint) Event {
+		%s
+	}
+}
+`, req.Code)
+
+	// Write the program to file
+	if err := ioutil.WriteFile(programPath, []byte(program), 0644); err != nil {
+		c.JSON(http.StatusInternalServerError, ValidationResponse{
+			Valid: false,
+			Errors: []ValidationError{
+				{Message: fmt.Sprintf("Validation service error: %v", err)},
+			},
+		})
+		return
+	}
+
+	// Initialize go module
+	goModContent := `module validate
+go 1.22
+`
+	goModPath := filepath.Join(tmpDir, "go.mod")
+	if err := ioutil.WriteFile(goModPath, []byte(goModContent), 0644); err != nil {
+		c.JSON(http.StatusInternalServerError, ValidationResponse{
+			Valid: false,
+			Errors: []ValidationError{
+				{Message: fmt.Sprintf("Validation service error: %v", err)},
+			},
+		})
+		return
+	}
+
+	// Try to compile - this checks syntax
+	compileCmd := exec.Command("go", "build", "-o", "/dev/null", "validate.go")
+	compileCmd.Dir = tmpDir
+	var compileErr bytes.Buffer
+	compileCmd.Stderr = &compileErr
+
+	if err := compileCmd.Run(); err != nil {
+		errorMsg := compileErr.String()
+
+		// Try to extract line number from error message
+		// Go errors look like: "./validate.go:5:2: syntax error: ..."
+		var line *int
+		parts := strings.Split(errorMsg, ":")
+		if len(parts) >= 2 {
+			if lineNum, err := strconv.Atoi(parts[1]); err == nil {
+				// Subtract the header lines we added
+				actualLine := lineNum - 4
+				if actualLine > 0 {
+					line = &actualLine
+				}
+			}
+		}
+
+		c.JSON(http.StatusOK, ValidationResponse{
+			Valid: false,
+			Errors: []ValidationError{
+				{
+					Line:    line,
+					Message: errorMsg,
+				},
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, ValidationResponse{
+		Valid:  true,
+		Errors: []ValidationError{},
 	})
 }
 
