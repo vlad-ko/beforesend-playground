@@ -169,7 +169,7 @@ function SearchableExampleSelector({ onSelect }: SearchableExampleSelectorProps)
                 />
               </div>
 
-              <div className="overflow-y-auto" style={{ maxHeight: 'min(32rem, calc(100vh - 16rem))' }}>
+              <div className="overflow-y-auto" style={{ minHeight: '24rem', maxHeight: 'min(32rem, calc(100vh - 16rem))' }}>
                 {filteredExamples.length === 0 ? (
                   <div className="px-4 py-8 text-center text-sm text-gray-500">
                     No examples found matching "{query}"
