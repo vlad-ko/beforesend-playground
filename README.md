@@ -4,7 +4,7 @@
 
 ## Overview
 
-**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
+**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, share configurations securely, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
 
 **Key Features:**
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, Rust, **Elixir**)
@@ -12,6 +12,7 @@
 - ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
 - ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers (JavaScript, Python, Ruby, PHP, Go, .NET, Rust)
 - ✅ **Compile-on-the-fly** - Go and Rust SDKs compile and execute user code for authentic behavior
+- ✅ **Secure sharing** - Share configurations with automatic PII scrubbing (event values removed, structure preserved)
 - ✅ Monaco editor with syntax highlighting
 - ✅ Docker-isolated execution (safe for arbitrary code)
 
@@ -156,13 +157,15 @@ See **[Example Templates Guide](docs/examples.md)** for full catalog.
 
 See **[Diff Viewer Guide](docs/diff-viewer.md)** for details.
 
-### 4. Copy & Deploy
+### 4. Share or Deploy
 
-Copy your tested `beforeSend` code to your Sentry SDK configuration.
+**Deploy:** Copy your tested `beforeSend` code to your Sentry SDK configuration.
+
+**Share:** Click the "Share" button to create a secure, shareable link with your configuration (see [Sharing Configurations](#sharing-configurations) below).
 
 ## Sharing Configurations
 
-You can safely share your beforeSend configurations with colleagues:
+You can safely share your beforeSend configurations with colleagues or customers:
 
 1. Configure your event JSON and beforeSend code
 2. Click the "Share" button (right side of controls)
