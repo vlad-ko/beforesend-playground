@@ -160,6 +160,28 @@ See **[Diff Viewer Guide](docs/diff-viewer.md)** for details.
 
 Copy your tested `beforeSend` code to your Sentry SDK configuration.
 
+## Sharing Configurations
+
+You can safely share your beforeSend configurations with colleagues:
+
+1. Configure your event JSON and beforeSend code
+2. Click the "Share" button (right side of controls)
+3. A paste will be created with your configuration (expires after 30 days)
+4. Copy the URL and share it with others
+
+**Security**: Event values are automatically scrubbed before sharing to prevent accidental PII leakage. Only the event structure (field names and types) is shared, along with your beforeSend code. For example:
+```json
+{
+  "user": {
+    "email": "<string>",
+    "ip_address": "<string>"
+  },
+  "exception": {
+    "values": [...]
+  }
+}
+```
+
 ## Real-World Example
 
 **Problem:** Android Unity crashes include device metadata in the exception message, making issue titles unreadable.

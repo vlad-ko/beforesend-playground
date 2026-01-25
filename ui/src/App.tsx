@@ -7,6 +7,21 @@ import OutputViewer from './components/OutputViewer';
 import { apiClient, TransformResponse, Example } from './api/client';
 import sentryLogo from './assets/sentry-logo.png';
 
+const AVAILABLE_SDKS = [
+  { key: 'javascript', name: 'JavaScript', language: 'javascript', package: '@sentry/node', version: '8.55.0' },
+  { key: 'python', name: 'Python', language: 'python', package: 'sentry-sdk', version: '2.20.0' },
+  { key: 'ruby', name: 'Ruby', language: 'ruby', package: 'sentry-ruby', version: '5.22.0' },
+  { key: 'php', name: 'PHP', language: 'php', package: 'sentry/sentry', version: '4.12.0' },
+  { key: 'go', name: 'Go', language: 'go', package: 'github.com/getsentry/sentry-go', version: '0.29.1' },
+  { key: 'dotnet', name: '.NET', language: 'csharp', package: 'Sentry', version: '5.0.0' },
+  { key: 'java', name: 'Java', language: 'java', package: 'io.sentry:sentry', version: '7.16.0' },
+  { key: 'android', name: 'Android', language: 'kotlin', package: 'io.sentry:sentry-android', version: '7.16.0' },
+  { key: 'cocoa', name: 'Cocoa (iOS/macOS)', language: 'javascript', package: 'Sentry', version: '8.40.1' },
+  { key: 'react-native', name: 'React Native', language: 'javascript', package: '@sentry/react-native', version: '6.3.0' },
+  { key: 'rust', name: 'Rust', language: 'rust', package: 'sentry', version: '0.34.0' },
+  { key: 'elixir', name: 'Elixir', language: 'elixir', package: 'sentry', version: '10.9.0' },
+];
+
 const DEFAULT_EVENT = JSON.stringify(
   {
     event_id: 'example-event-id',
@@ -193,6 +208,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedExampleName, setSelectedExampleName] = useState<string | null>(null);
+  const [isSharing, setIsSharing] = useState(false);
+  const [gistUrl, setGistUrl] = useState<string | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const handleSdkChange = (sdk: string) => {
     setSelectedSdk(sdk);
@@ -310,6 +328,45 @@ function App() {
     }
   };
 
+  const handleShare = async () => {
+    setIsSharing(true);
+    setError(null);
+
+    try {
+      // Parse event JSON
+      let eventObj;
+      try {
+        eventObj = JSON.parse(eventJson);
+      } catch (e) {
+        throw new Error('Invalid JSON in event input');
+      }
+
+      // Get SDK info
+      const sdkInfo = AVAILABLE_SDKS.find(s => s.key === selectedSdk);
+      if (!sdkInfo) {
+        throw new Error('SDK not found');
+      }
+
+      // Call share API
+      const response = await apiClient.createAnonymousGist({
+        sdk: selectedSdk,
+        sdkName: sdkInfo.name,
+        sdkPackage: sdkInfo.package,
+        sdkVersion: sdkInfo.version,
+        event: eventObj,
+        beforeSendCode: beforeSendCode,
+      });
+
+      setGistUrl(response.html_url);
+      setShowShareModal(true);
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to create paste. Try again.';
+      setError(errorMessage);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -394,6 +451,7 @@ function App() {
           <div className="flex items-center gap-4">
             <SearchableExampleSelector key={selectedExampleName || 'default'} onSelect={handleExampleSelect} />
             <SdkSelector value={selectedSdk} onChange={handleSdkChange} />
+
             <button
               onClick={handleTransform}
               disabled={isLoading}
@@ -404,6 +462,20 @@ function App() {
               }`}
             >
               {isLoading ? 'Transforming...' : 'Transform'}
+            </button>
+
+            {/* Spacer - push Share button all the way right */}
+            <div className="flex-1"></div>
+
+            {/* Share button - ALL THE WAY RIGHT */}
+            <button
+              onClick={handleShare}
+              disabled={isSharing}
+              className={`px-6 py-2 rounded-md font-medium text-white ${
+                isSharing ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-800'
+              }`}
+            >
+              {isSharing ? 'Creating...' : 'Share'}
             </button>
           </div>
         </div>
@@ -422,6 +494,62 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Share Modal */}
+        {showShareModal && gistUrl && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl p-6 max-w-lg w-full mx-4">
+              <h3 className="text-xl font-bold mb-4">Configuration Shared!</h3>
+
+              <p className="text-gray-600 mb-4">
+                Your beforeSend code and event structure have been shared.
+                <strong> Original event values have been removed</strong> to prevent accidental PII sharing.
+                (Link expires in 30 days)
+              </p>
+
+              <div className="bg-gray-100 p-3 rounded mb-4 break-all">
+                <a
+                  href={gistUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sentry-purple hover:underline"
+                >
+                  {gistUrl}
+                </a>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(gistUrl);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800"
+                >
+                  Copy URL
+                </button>
+
+                <a
+                  href={gistUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 px-4 py-2 bg-sentry-purple text-white rounded-md hover:bg-purple-900 text-center"
+                >
+                  Open Link
+                </a>
+
+                <button
+                  onClick={() => {
+                    setShowShareModal(false);
+                    setGistUrl(null);
+                  }}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

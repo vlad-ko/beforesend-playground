@@ -67,6 +67,9 @@ The beforeSend Testing Playground uses a microservices architecture with Docker 
 **Key Endpoints:**
 - `POST /api/transform` - Transform events
 - `GET /api/transform/sdks` - List SDKs
+- `POST /api/share` - Create shareable paste link (dpaste.com)
+- `GET /api/examples` - Get example configurations
+- `POST /api/validate` - Validate beforeSend code syntax
 - `GET /health` - Health check
 
 ### SDK Containers

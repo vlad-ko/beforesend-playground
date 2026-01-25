@@ -58,6 +58,20 @@ export interface ValidationResponse {
   errors: ValidationError[];
 }
 
+export interface ShareRequest {
+  sdk: string;
+  sdkName: string;
+  sdkPackage: string;
+  sdkVersion: string;
+  event: Record<string, any>;
+  beforeSendCode: string;
+}
+
+export interface ShareResponse {
+  html_url: string;
+  id: string;
+}
+
 export const apiClient = {
   async transform(request: TransformRequest): Promise<TransformResponse> {
     const response = await axios.post<TransformResponse>(
@@ -94,6 +108,21 @@ export const apiClient = {
         timeout: 5000, // 5 second timeout for validation
       }
     );
+    return response.data;
+  },
+
+  async createAnonymousGist(request: ShareRequest): Promise<ShareResponse> {
+    const response = await axios.post<ShareResponse>(
+      `${API_URL}/api/share`,
+      request,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 10000, // 10 second timeout
+      }
+    );
+
     return response.data;
   },
 };
