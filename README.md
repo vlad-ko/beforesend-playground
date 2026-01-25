@@ -12,6 +12,7 @@
 - ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
 - ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers (JavaScript, Python, Ruby, PHP, Go, .NET, Rust)
 - ✅ **Compile-on-the-fly** - Go and Rust SDKs compile and execute user code for authentic behavior
+- ✅ **Secure sharing** - Share configurations with automatic PII scrubbing (event values removed, structure preserved)
 - ✅ Monaco editor with syntax highlighting
 - ✅ Docker-isolated execution (safe for arbitrary code)
 
