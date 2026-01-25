@@ -165,6 +165,26 @@ event["tags"]["transformed_by"] = serde_json::json!("Rust SDK");
 
 Some(event)`;
 
+const DEFAULT_BEFORESEND_ELIXIR = `fn event, _hint ->
+  # Transform error message to Transformers theme 🤖
+  event
+  |> Map.update("exception", %{}, fn exception ->
+    Map.update(exception, "values", [], fn values ->
+      case values do
+        [first | rest] ->
+          [
+            first
+            |> Map.put("value", "Transformers by Sentry 🤖")
+            |> Map.put("type", "TransformerError")
+            | rest
+          ]
+        _ -> values
+      end
+    end)
+  end)
+  |> Map.put("tags", %{"transformed_by" => "Elixir SDK"})
+end`;
+
 function App() {
   const [eventJson, setEventJson] = useState(DEFAULT_EVENT);
   const [beforeSendCode, setBeforeSendCode] = useState(DEFAULT_BEFORESEND_JS);
@@ -197,6 +217,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_COCOA);
     } else if (sdk === 'rust') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RUST);
+    } else if (sdk === 'elixir') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_ELIXIR);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
@@ -245,6 +267,8 @@ function App() {
       setBeforeSendCode(DEFAULT_BEFORESEND_COCOA);
     } else if (selectedSdk === 'rust') {
       setBeforeSendCode(DEFAULT_BEFORESEND_RUST);
+    } else if (selectedSdk === 'elixir') {
+      setBeforeSendCode(DEFAULT_BEFORESEND_ELIXIR);
     } else {
       setBeforeSendCode(DEFAULT_BEFORESEND_JS);
     }
@@ -359,7 +383,7 @@ function App() {
             <BeforeSendEditor
               value={beforeSendCode}
               onChange={setBeforeSendCode}
-              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk === 'cocoa' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin' | 'rust'}
+              language={(selectedSdk === 'dotnet' ? 'csharp' : selectedSdk === 'android' ? 'kotlin' : selectedSdk === 'react-native' ? 'javascript' : selectedSdk === 'cocoa' ? 'javascript' : selectedSdk) as 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin' | 'rust' | 'elixir'}
               sdk={selectedSdk}
             />
           </div>

@@ -6,7 +6,7 @@ import { apiClient } from '../api/client';
 interface BeforeSendEditorProps {
   value: string;
   onChange: (value: string) => void;
-  language: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin' | 'rust';
+  language: 'javascript' | 'python' | 'ruby' | 'php' | 'go' | 'csharp' | 'java' | 'kotlin' | 'rust' | 'elixir';
   sdk: string;
 }
 
