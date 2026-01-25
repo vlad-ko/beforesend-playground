@@ -3,6 +3,7 @@ import cors from 'cors';
 import transformRouter from './routes/transform';
 import examplesRouter from './routes/examples';
 import validateRouter from './routes/validate';
+import shareRouter from './routes/share';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -33,6 +34,7 @@ app.get('/health', (req, res) => {
 app.use('/api/transform', transformRouter);
 app.use('/api/examples', examplesRouter);
 app.use('/api/validate', validateRouter);
+app.use('/api/share', shareRouter);
 
 // 404 handler
 app.use((req, res) => {
