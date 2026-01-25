@@ -157,9 +157,11 @@ See **[Example Templates Guide](docs/examples.md)** for full catalog.
 
 See **[Diff Viewer Guide](docs/diff-viewer.md)** for details.
 
-### 4. Copy & Deploy
+### 4. Share or Deploy
 
-Copy your tested `beforeSend` code to your Sentry SDK configuration.
+**Deploy:** Copy your tested `beforeSend` code to your Sentry SDK configuration.
+
+**Share:** Click the "Share" button to create a secure, shareable link with your configuration (see [Sharing Configurations](#sharing-configurations) below).
 
 ## Sharing Configurations
 
