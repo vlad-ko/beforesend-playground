@@ -165,7 +165,7 @@ See **[Diff Viewer Guide](docs/diff-viewer.md)** for details.
 
 ## Sharing Configurations
 
-You can safely share your beforeSend configurations with colleagues:
+You can safely share your beforeSend configurations with colleagues or customers:
 
 1. Configure your event JSON and beforeSend code
 2. Click the "Share" button (right side of controls)
