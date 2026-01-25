@@ -4,7 +4,7 @@
 
 ## Overview
 
-**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
+**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples, see transformations in action with visual diffs, share configurations securely, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
 
 **Key Features:**
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, Rust, **Elixir**)
