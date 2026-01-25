@@ -15,6 +15,7 @@ const AVAILABLE_SDKS = [
   { key: 'cocoa', name: 'Cocoa (iOS/macOS)', language: 'javascript', package: 'Sentry', version: '8.40.1' },
   { key: 'react-native', name: 'React Native', language: 'javascript', package: '@sentry/react-native', version: '6.3.0' },
   { key: 'rust', name: 'Rust', language: 'rust', package: 'sentry', version: '0.34.0' },
+  { key: 'elixir', name: 'Elixir', language: 'elixir', package: 'sentry', version: '10.9.0' },
 ];
 
 function SdkSelector({ value, onChange }: SdkSelectorProps) {

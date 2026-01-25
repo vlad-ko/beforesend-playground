@@ -37,6 +37,7 @@ services:
       - ANDROID_SDK_URL=http://sdk-android:5008
       - COCOA_SDK_URL=http://sdk-cocoa:5009
       - RUST_SDK_URL=http://sdk-rust:5010
+      - ELIXIR_SDK_URL=http://sdk-elixir:5011
     depends_on:
       - sdk-javascript
       - sdk-python
@@ -48,6 +49,7 @@ services:
       - sdk-android
       - sdk-cocoa
       - sdk-rust
+      - sdk-elixir
 
   # JavaScript SDK Container (Default - Always Available)
   sdk-javascript:
@@ -139,6 +141,17 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5010:5010"
+
+  sdk-elixir:
+    build:
+      context: ./sdks/elixir
+      dockerfile: Dockerfile
+    ports:
+      - "5011:5011"
+    volumes:
+      - ./sdks/elixir:/app
+      - /app/deps
+      - /app/_build
 
 networks:
   default:

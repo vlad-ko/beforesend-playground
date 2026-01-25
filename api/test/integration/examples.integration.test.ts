@@ -95,6 +95,8 @@ describe('Examples Integration Tests', () => {
       'java',
       'android',
       'cocoa',
+      'rust',
+      'elixir',
     ];
 
     examples.forEach((example) => {
