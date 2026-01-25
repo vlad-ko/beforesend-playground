@@ -55,7 +55,7 @@ describe('.NET SDK Client', () => {
         beforeSendCode,
       },
       expect.objectContaining({
-        timeout: 10000,
+        timeout: 30000,
       })
     );
   });
