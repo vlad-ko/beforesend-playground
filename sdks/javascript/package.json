@@ -1,7 +1,7 @@
 {
-  "name": "beforesend-playground-sdk-javascript",
+  "name": "@sdk-playground/sdk-javascript",
   "version": "1.0.0",
-  "description": "JavaScript SDK transformation service",
+  "description": "JavaScript SDK transformation service for SDK Playground",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

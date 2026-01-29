@@ -303,7 +303,7 @@ docker-compose exec api sh
 docker-compose exec sdk-python bash
 
 # View container details
-docker inspect beforesend-playground-api-1
+docker inspect sdk-playground-api-1
 ```
 
 ### Network Debugging
@@ -316,7 +316,7 @@ docker-compose exec api ping sdk-python
 docker-compose exec api curl http://sdk-javascript:5000/health
 
 # View network details
-docker network inspect beforesend-network
+docker network inspect sdk-playground-network
 ```
 
 ### Test SDK Directly
@@ -381,7 +381,7 @@ If containers can't communicate:
 
 ```bash
 # Recreate network
-docker network rm beforesend-network
-docker network create beforesend-network
+docker network rm sdk-playground-network
+docker network create sdk-playground-network
 docker-compose up -d
 ```

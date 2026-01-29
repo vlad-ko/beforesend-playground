@@ -1,7 +1,7 @@
 {
-  "name": "beforesend-playground",
+  "name": "sdk-playground",
   "version": "1.0.0",
-  "description": "Test Sentry beforeSend transformations across multiple SDKs",
+  "description": "Test Sentry SDK features across multiple languages in isolation",
   "private": true,
   "scripts": {
     "setup": "npm install && cd cli && npm install && npm run build",

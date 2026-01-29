@@ -1,6 +1,6 @@
 {
-    "name": "sentry/beforesend-playground-php",
-    "description": "PHP SDK service for beforeSend Testing Playground",
+    "name": "sentry/sdk-playground-php",
+    "description": "PHP SDK service for SDK Playground",
     "type": "project",
     "require": {
         "php": ">=8.3",

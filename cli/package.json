@@ -1,7 +1,7 @@
 {
-  "name": "beforesend-playground-cli",
+  "name": "@sdk-playground/cli",
   "version": "1.0.0",
-  "description": "CLI for managing SDK containers",
+  "description": "CLI for managing SDK Playground containers",
   "main": "dist/index.js",
   "bin": {
     "sdk": "./dist/index.js"

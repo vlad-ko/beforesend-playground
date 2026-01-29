@@ -1,10 +1,10 @@
-# Claude Development Guide - beforeSend Playground
+# Claude Development Guide - SDK Playground
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-The beforeSend Testing Playground is a Docker-based tool for testing Sentry `beforeSend` transformations across multiple SDK languages. It's used by Sentry's Solutions Engineering team for customer support and internal testing.
+The SDK Playground is a Docker-based tool for testing Sentry SDK features across multiple languages. It's used by Sentry's Solutions Engineering team for customer support and internal testing.
 
 **Tech Stack:**
 - Backend: Node.js/TypeScript (Express), Python (Flask)
@@ -38,9 +38,9 @@ This is a **non-negotiable** architectural principle:
 **Correct Usage:**
 ```bash
 # ✅ Run tests in Docker
-docker run --rm beforesend-playground-api npm test
-docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
-docker run --rm beforesend-playground-sdk-python pytest
+docker run --rm sdk-playground-api npm test
+docker run --rm -e NODE_ENV=test sdk-playground-sdk-javascript npm test
+docker run --rm sdk-playground-sdk-python pytest
 
 # ✅ Install dependencies via Docker rebuild
 docker-compose build api
@@ -95,7 +95,7 @@ git checkout -b feature/add-validation
 docker-compose build api
 
 # 4. Run test in Docker (should fail - RED)
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 
 # 5. Implement feature
 # src/parsers/json.ts - Add validation logic
@@ -104,7 +104,7 @@ docker run --rm beforesend-playground-api npm test
 docker-compose build api
 
 # 7. Run test in Docker (should pass - GREEN)
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 
 # 8. Refactor if needed, commit
 git add test/ src/
@@ -124,20 +124,20 @@ git commit -m "feat: add JSON validation with tests"
 docker-compose build
 
 # Run API Gateway tests
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 
 # Run JavaScript SDK tests
-docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
+docker run --rm -e NODE_ENV=test sdk-playground-sdk-javascript npm test
 
 # Run Python SDK tests
-docker run --rm beforesend-playground-sdk-python pytest
+docker run --rm sdk-playground-sdk-python pytest
 
 # Run with coverage
-docker run --rm beforesend-playground-api npm run test:coverage
-docker run --rm beforesend-playground-sdk-python pytest --cov
+docker run --rm sdk-playground-api npm run test:coverage
+docker run --rm sdk-playground-sdk-python pytest --cov
 
 # Run specific test file
-docker run --rm beforesend-playground-api npm test -- json.test.ts
+docker run --rm sdk-playground-api npm test -- json.test.ts
 
 # Run in watch mode (requires docker-compose up for hot reload)
 docker-compose up api
@@ -499,9 +499,9 @@ docker-compose logs -f api        # View API logs only
 docker-compose down               # Stop all services
 
 # Testing (Docker - NEVER run tests on host)
-docker run --rm beforesend-playground-api npm test
-docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
-docker run --rm beforesend-playground-sdk-python pytest
+docker run --rm sdk-playground-api npm test
+docker run --rm -e NODE_ENV=test sdk-playground-sdk-javascript npm test
+docker run --rm sdk-playground-sdk-python pytest
 
 # Testing with running containers
 docker-compose exec api npm test
@@ -547,16 +547,16 @@ docker system prune -a            # Clean Docker system
 **Required Test Commands (Run Before Every Push):**
 ```bash
 # API Gateway
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 
 # JavaScript SDK
-docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
+docker run --rm -e NODE_ENV=test sdk-playground-sdk-javascript npm test
 
 # Python SDK
-docker run --rm beforesend-playground-sdk-python pytest
+docker run --rm sdk-playground-sdk-python pytest
 
 # UI (if applicable)
-docker run --rm beforesend-playground-ui npm test
+docker run --rm sdk-playground-ui npm test
 ```
 
 **If ANY test fails, DO NOT PUSH. Fix the issue first.**

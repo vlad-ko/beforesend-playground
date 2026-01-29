@@ -1,10 +1,10 @@
-# beforeSend Testing Playground
+# Sentry SDK Playground
 
-> Test Sentry `beforeSend` transformations across multiple SDKs before deploying to production
+> Test Sentry SDK features across multiple languages in isolation
 
 ## Overview
 
-**Learn by doing.** The beforeSend Testing Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples or write your own code, see transformations in action with visual diffs, share configurations securely, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
+**Learn by doing.** The SDK Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples or write your own code, see transformations in action with visual diffs, share configurations securely, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
 
 **Key Features:**
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, Rust, **Elixir**)
@@ -22,7 +22,7 @@
 
 ```bash
 # 1. Clone and navigate to the repository
-cd beforesend-playground
+cd sdk-playground
 
 # 2. Build and start all services
 docker-compose up -d
