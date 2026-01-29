@@ -95,6 +95,11 @@ router.post('/send', async (req: Request, res: Response) => {
     if (secret) {
       signature = generateHMACSignature(payload, secret);
       headers['X-Sentry-Signature'] = signature;
+
+      // For testing with our built-in receiver, also send the secret
+      // This allows the receiver to verify the signature
+      // Real Sentry webhook receivers would have the secret stored, not in headers
+      headers['X-Webhook-Secret'] = secret;
     }
 
     // Send webhook
@@ -110,19 +115,27 @@ router.post('/send', async (req: Request, res: Response) => {
         signature,
         webhookStatus: webhookResponse.status,
         webhookStatusText: webhookResponse.statusText,
+        webhookResponseBody: webhookResponse.data, // Include response for verification details
       });
     } catch (webhookError: any) {
       // Webhook send failed, but we still return success for the API call
       // This is expected behavior - the API successfully attempted to send
       if (webhookError.response) {
         // Server responded with error status
+        // Include the actual error response from the webhook endpoint
+        const errorData = webhookError.response.data;
+        const errorMessage = typeof errorData === 'string'
+          ? errorData
+          : errorData?.error || errorData?.message || 'Webhook endpoint returned an error';
+
         res.json({
           success: true,
           sentAt,
           signature,
           webhookStatus: webhookError.response.status,
           webhookStatusText: webhookError.response.statusText,
-          webhookError: 'Webhook endpoint returned an error',
+          webhookError: errorMessage,
+          webhookResponseBody: errorData, // Include full response for debugging
         });
       } else if (webhookError.request) {
         // Request was made but no response received

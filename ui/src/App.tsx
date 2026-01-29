@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ModeSelector from './components/ModeSelector';
 import ModeInfo from './components/ModeInfo';
 import BeforeSendPlayground from './components/playgrounds/BeforeSendPlayground';
+import WebhookPlayground from './components/playgrounds/WebhookPlayground';
 import { PlaygroundMode } from './types/modes';
 import sentryLogo from './assets/sentry-logo.png';
 
+const STORAGE_KEY = 'sentry-playground-mode';
+
 function App() {
-  const [currentMode, setCurrentMode] = useState<PlaygroundMode>('beforeSend');
+  // Initialize mode from localStorage, fallback to 'beforeSend'
+  const [currentMode, setCurrentMode] = useState<PlaygroundMode>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return (saved as PlaygroundMode) || 'beforeSend';
+  });
+
+  // Save mode to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, currentMode);
+  }, [currentMode]);
 
   const renderPlayground = () => {
     switch (currentMode) {
@@ -27,19 +39,7 @@ function App() {
           </div>
         );
       case 'webhooks':
-        return (
-          <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">Coming Soon</h3>
-            <p className="text-gray-500">
-              Webhook playground will be available in Phase 4
-            </p>
-          </div>
-        );
+        return <WebhookPlayground />;
       default:
         return <BeforeSendPlayground />;
     }
