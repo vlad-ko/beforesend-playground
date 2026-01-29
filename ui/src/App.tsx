@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ModeSelector from './components/ModeSelector';
+import ModeInfo from './components/ModeInfo';
 import BeforeSendPlayground from './components/playgrounds/BeforeSendPlayground';
 import { PlaygroundMode } from './types/modes';
 import sentryLogo from './assets/sentry-logo.png';
@@ -76,6 +77,9 @@ function App() {
       <div className="container mx-auto px-4 py-6">
         {/* Mode Selector */}
         <ModeSelector currentMode={currentMode} onModeChange={setCurrentMode} />
+
+        {/* Mode Info */}
+        <ModeInfo currentMode={currentMode} />
 
         {/* Playground Content */}
         {renderPlayground()}
