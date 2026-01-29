@@ -33,7 +33,7 @@ describe('App', () => {
 
   it('renders the application header', () => {
     render(<App />);
-    expect(screen.getByText('beforeSend Testing Playground')).toBeInTheDocument();
+    expect(screen.getByText('Sentry SDK Playground')).toBeInTheDocument();
   });
 
   it('renders all main sections', () => {
@@ -456,7 +456,7 @@ describe('App', () => {
       render(<App />);
       const githubLink = screen.getByRole('link', { name: /GitHub/i });
       expect(githubLink).toBeInTheDocument();
-      expect(githubLink).toHaveAttribute('href', 'https://github.com/vlad-ko/beforesend-playground');
+      expect(githubLink).toHaveAttribute('href', 'https://github.com/vlad-ko/sdk-playground');
     });
 
     it('SDK selector shows version for JavaScript', () => {
