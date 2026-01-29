@@ -153,6 +153,11 @@ router.post('/send', async (req: Request, res: Response) => {
  *
  * This endpoint simulates a webhook receiver that validates HMAC signatures
  * the same way a real Sentry webhook receiver would.
+ *
+ * IMPORTANT: Signature must be computed on the raw request body bytes,
+ * not on a re-serialized version of the parsed JSON. This ensures
+ * signature verification works correctly regardless of JSON key ordering
+ * or whitespace differences.
  */
 router.post('/receive', (req: Request, res: Response) => {
   try {
@@ -174,9 +179,18 @@ router.post('/receive', (req: Request, res: Response) => {
       });
     }
 
-    // Compute expected signature from raw body
-    const payload = JSON.stringify(req.body);
-    const expectedSignature = generateHMACSignature(payload, secret);
+    // CRITICAL: Use raw body for signature verification
+    // Computing signature on JSON.stringify(req.body) would fail because
+    // JSON serialization is non-deterministic (key order can vary)
+    const rawBody = (req as any).rawBody;
+    if (!rawBody) {
+      return res.status(500).json({
+        verified: false,
+        error: 'Raw body not available for signature verification'
+      });
+    }
+
+    const expectedSignature = generateHMACSignature(rawBody, secret);
 
     // Compare signatures (constant-time comparison would be better for production)
     const verified = signature === expectedSignature;

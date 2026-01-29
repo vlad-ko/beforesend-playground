@@ -4,7 +4,12 @@ import * as crypto from 'crypto';
 import webhooksRouter from '../../src/routes/webhooks';
 
 const app = express();
-app.use(express.json());
+// Capture raw body for webhook signature verification (same as in main app)
+app.use(express.json({
+  verify: (req: any, res, buf, encoding) => {
+    req.rawBody = buf.toString((encoding as BufferEncoding) || 'utf8');
+  }
+}));
 app.use('/api/webhooks', webhooksRouter);
 
 // Helper function to generate HMAC signature for testing
@@ -359,6 +364,30 @@ describe('Webhooks API Route', () => {
       expect(response.status).toBe(200);
       expect(response.body.verified).toBe(true);
       expect(response.body.payload).toEqual(payload);
+    });
+
+    it('should verify signature based on raw body, not re-serialized JSON', async () => {
+      // This test ensures we use the raw request body for signature verification
+      // JSON.stringify can produce different output (key order, whitespace) even
+      // for semantically identical objects, which would break signature verification
+
+      const secret = 'test-secret';
+      // Deliberately use specific JSON formatting with extra spaces
+      const rawPayload = '{"action":"test",  "data":{"id":123}}';
+      const signature = generateTestSignature(rawPayload, secret);
+
+      // supertest will parse and re-serialize this, potentially changing formatting
+      // But our endpoint should verify against the original raw body
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('Content-Type', 'application/json')
+        .set('X-Sentry-Signature', signature)
+        .set('X-Webhook-Secret', secret)
+        .send(rawPayload);  // Send as raw string
+
+      expect(response.status).toBe(200);
+      expect(response.body.verified).toBe(true);
+      expect(response.body.signature.match).toBe(true);
     });
   });
 });
