@@ -185,7 +185,7 @@ git pull origin main
 ## Project Structure
 
 ```
-beforesend-playground/
+sdk-playground/
 ├── docker-compose.yml           # Service definitions
 ├── README.md                    # Main documentation
 │
