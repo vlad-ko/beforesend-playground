@@ -302,6 +302,16 @@ export default function WebhookPlayground() {
                     <p className="text-red-600 text-xs mt-1">
                       {result.webhookError}
                     </p>
+                    {result.webhookResponseBody && typeof result.webhookResponseBody === 'object' && (
+                      <details className="mt-2">
+                        <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                          View full error response
+                        </summary>
+                        <pre className="mt-2 p-2 bg-gray-50 rounded text-xs overflow-auto max-h-32 border border-gray-200">
+                          {JSON.stringify(result.webhookResponseBody, null, 2)}
+                        </pre>
+                      </details>
+                    )}
                   </div>
                 )}
 

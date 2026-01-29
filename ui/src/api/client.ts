@@ -97,6 +97,7 @@ export interface SendWebhookResponse {
   webhookStatus?: number;
   webhookStatusText?: string;
   webhookError?: string;
+  webhookResponseBody?: any;
   error?: string;
   details?: string;
 }

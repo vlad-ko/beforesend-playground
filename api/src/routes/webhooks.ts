@@ -116,13 +116,20 @@ router.post('/send', async (req: Request, res: Response) => {
       // This is expected behavior - the API successfully attempted to send
       if (webhookError.response) {
         // Server responded with error status
+        // Include the actual error response from the webhook endpoint
+        const errorData = webhookError.response.data;
+        const errorMessage = typeof errorData === 'string'
+          ? errorData
+          : errorData?.error || errorData?.message || 'Webhook endpoint returned an error';
+
         res.json({
           success: true,
           sentAt,
           signature,
           webhookStatus: webhookError.response.status,
           webhookStatusText: webhookError.response.statusText,
-          webhookError: 'Webhook endpoint returned an error',
+          webhookError: errorMessage,
+          webhookResponseBody: errorData, // Include full response for debugging
         });
       } else if (webhookError.request) {
         // Request was made but no response received
