@@ -147,4 +147,61 @@ router.post('/send', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/webhooks/receive
+ * Receive and verify webhook signatures
+ *
+ * This endpoint simulates a webhook receiver that validates HMAC signatures
+ * the same way a real Sentry webhook receiver would.
+ */
+router.post('/receive', (req: Request, res: Response) => {
+  try {
+    const signature = req.headers['x-sentry-signature'] as string;
+    const secret = req.headers['x-webhook-secret'] as string;
+
+    // Validate required headers
+    if (!secret) {
+      return res.status(400).json({
+        verified: false,
+        error: 'X-Webhook-Secret header required for verification'
+      });
+    }
+
+    if (!signature) {
+      return res.status(400).json({
+        verified: false,
+        error: 'X-Sentry-Signature header required for verification'
+      });
+    }
+
+    // Compute expected signature from raw body
+    const payload = JSON.stringify(req.body);
+    const expectedSignature = generateHMACSignature(payload, secret);
+
+    // Compare signatures (constant-time comparison would be better for production)
+    const verified = signature === expectedSignature;
+
+    res.json({
+      verified,
+      receivedAt: new Date().toISOString(),
+      signature: {
+        received: signature,
+        expected: expectedSignature,
+        match: verified
+      },
+      payload: req.body,
+      message: verified
+        ? 'Webhook signature verified successfully!'
+        : 'Signature verification failed - signatures do not match'
+    });
+  } catch (error: any) {
+    console.error('Error verifying webhook:', error);
+    res.status(500).json({
+      verified: false,
+      error: 'Failed to verify webhook',
+      details: error.message
+    });
+  }
+});
+
 export default router;

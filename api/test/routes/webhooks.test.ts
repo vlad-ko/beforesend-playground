@@ -1,10 +1,19 @@
 import request from 'supertest';
 import express from 'express';
+import * as crypto from 'crypto';
 import webhooksRouter from '../../src/routes/webhooks';
 
 const app = express();
 app.use(express.json());
 app.use('/api/webhooks', webhooksRouter);
+
+// Helper function to generate HMAC signature for testing
+function generateTestSignature(payload: string, secret: string): string {
+  return crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+}
 
 describe('Webhooks API Route', () => {
   describe('GET /api/webhooks/templates', () => {
@@ -191,6 +200,165 @@ describe('Webhooks API Route', () => {
       if (response.status === 200) {
         expect(response.body).toHaveProperty('webhookStatus');
       }
+    });
+  });
+
+  describe('POST /api/webhooks/receive', () => {
+    it('should verify valid webhook signature', async () => {
+      const payload = { action: 'test', data: { message: 'test webhook' } };
+      const secret = 'test-secret';
+      const payloadString = JSON.stringify(payload);
+      const signature = generateTestSignature(payloadString, secret);
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', signature)
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.status).toBe(200);
+      expect(response.body.verified).toBe(true);
+      expect(response.body.signature.match).toBe(true);
+      expect(response.body.signature.received).toBe(signature);
+      expect(response.body.signature.expected).toBe(signature);
+    });
+
+    it('should reject invalid webhook signature', async () => {
+      const payload = { action: 'test', data: {} };
+      const secret = 'test-secret';
+      const wrongSignature = 'invalid-signature-12345';
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', wrongSignature)
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.status).toBe(200);
+      expect(response.body.verified).toBe(false);
+      expect(response.body.signature.match).toBe(false);
+      expect(response.body.signature.received).toBe(wrongSignature);
+      expect(response.body.message).toContain('failed');
+    });
+
+    it('should return 400 when X-Webhook-Secret header is missing', async () => {
+      const payload = { action: 'test' };
+      const signature = 'some-signature';
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', signature)
+        .send(payload);
+
+      expect(response.status).toBe(400);
+      expect(response.body.verified).toBe(false);
+      expect(response.body.error).toContain('X-Webhook-Secret');
+    });
+
+    it('should return 400 when X-Sentry-Signature header is missing', async () => {
+      const payload = { action: 'test' };
+      const secret = 'test-secret';
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.status).toBe(400);
+      expect(response.body.verified).toBe(false);
+      expect(response.body.error).toContain('X-Sentry-Signature');
+    });
+
+    it('should include received timestamp in response', async () => {
+      const payload = { action: 'test' };
+      const secret = 'test-secret';
+      const payloadString = JSON.stringify(payload);
+      const signature = generateTestSignature(payloadString, secret);
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', signature)
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.body.receivedAt).toBeDefined();
+      expect(new Date(response.body.receivedAt)).toBeInstanceOf(Date);
+      expect(response.body.receivedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+    });
+
+    it('should return both received and expected signatures', async () => {
+      const payload = { action: 'test', data: { id: 123 } };
+      const secret = 'test-secret';
+      const payloadString = JSON.stringify(payload);
+      const signature = generateTestSignature(payloadString, secret);
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', signature)
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.body.signature).toBeDefined();
+      expect(response.body.signature.received).toBe(signature);
+      expect(response.body.signature.expected).toBeDefined();
+      expect(response.body.signature.match).toBe(true);
+    });
+
+    it('should include payload in response', async () => {
+      const payload = { action: 'created', data: { issue: { id: '123' } } };
+      const secret = 'test-secret';
+      const payloadString = JSON.stringify(payload);
+      const signature = generateTestSignature(payloadString, secret);
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', signature)
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.body.payload).toEqual(payload);
+    });
+
+    it('should include success message for valid signature', async () => {
+      const payload = { action: 'test' };
+      const secret = 'test-secret';
+      const payloadString = JSON.stringify(payload);
+      const signature = generateTestSignature(payloadString, secret);
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', signature)
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.body.message).toContain('verified successfully');
+    });
+
+    it('should handle complex nested payloads', async () => {
+      const payload = {
+        action: 'created',
+        installation: { uuid: '12345' },
+        data: {
+          issue: {
+            id: '123',
+            title: 'Test Issue',
+            metadata: { type: 'Error', value: 'Something broke' }
+          }
+        }
+      };
+      const secret = 'complex-secret-123';
+      const payloadString = JSON.stringify(payload);
+      const signature = generateTestSignature(payloadString, secret);
+
+      const response = await request(app)
+        .post('/api/webhooks/receive')
+        .set('X-Sentry-Signature', signature)
+        .set('X-Webhook-Secret', secret)
+        .send(payload);
+
+      expect(response.status).toBe(200);
+      expect(response.body.verified).toBe(true);
+      expect(response.body.payload).toEqual(payload);
     });
   });
 });
