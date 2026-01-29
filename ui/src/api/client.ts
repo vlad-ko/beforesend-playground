@@ -72,6 +72,35 @@ export interface ShareResponse {
   id: string;
 }
 
+export interface WebhookTemplate {
+  id: string;
+  name: string;
+  description: string;
+  eventType: string;
+  payload?: Record<string, any>;
+}
+
+export interface WebhookTemplatesResponse {
+  templates: WebhookTemplate[];
+}
+
+export interface SendWebhookRequest {
+  url: string;
+  templateId: string;
+  secret?: string;
+}
+
+export interface SendWebhookResponse {
+  success: boolean;
+  sentAt: string;
+  signature?: string;
+  webhookStatus?: number;
+  webhookStatusText?: string;
+  webhookError?: string;
+  error?: string;
+  details?: string;
+}
+
 export const apiClient = {
   async transform(request: TransformRequest): Promise<TransformResponse> {
     const response = await axios.post<TransformResponse>(
@@ -123,6 +152,34 @@ export const apiClient = {
       }
     );
 
+    return response.data;
+  },
+
+  async getWebhookTemplates(): Promise<WebhookTemplatesResponse> {
+    const response = await axios.get<WebhookTemplatesResponse>(
+      `${API_URL}/api/webhooks/templates`
+    );
+    return response.data;
+  },
+
+  async getWebhookTemplate(id: string): Promise<WebhookTemplate> {
+    const response = await axios.get<WebhookTemplate>(
+      `${API_URL}/api/webhooks/templates/${id}`
+    );
+    return response.data;
+  },
+
+  async sendWebhook(request: SendWebhookRequest): Promise<SendWebhookResponse> {
+    const response = await axios.post<SendWebhookResponse>(
+      `${API_URL}/api/webhooks/send`,
+      request,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 15000, // 15 second timeout
+      }
+    );
     return response.data;
   },
 };
