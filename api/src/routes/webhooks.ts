@@ -94,7 +94,7 @@ router.post('/send', async (req: Request, res: Response) => {
 
     if (secret) {
       signature = generateHMACSignature(payload, secret);
-      headers['X-Sentry-Signature'] = signature;
+      headers['Sentry-Hook-Signature'] = signature;
 
       // For testing with our built-in receiver, also send the secret
       // This allows the receiver to verify the signature
@@ -174,7 +174,7 @@ router.post('/send', async (req: Request, res: Response) => {
  */
 router.post('/receive', (req: Request, res: Response) => {
   try {
-    const signature = req.headers['x-sentry-signature'] as string;
+    const signature = req.headers['sentry-hook-signature'] as string;
     const secret = req.headers['x-webhook-secret'] as string;
 
     // Validate required headers
@@ -188,7 +188,7 @@ router.post('/receive', (req: Request, res: Response) => {
     if (!signature) {
       return res.status(400).json({
         verified: false,
-        error: 'X-Sentry-Signature header required for verification'
+        error: 'Sentry-Hook-Signature header required for verification'
       });
     }
 

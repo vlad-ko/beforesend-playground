@@ -162,10 +162,10 @@ Test Sentry webhook payloads with HMAC-SHA256 signature generation and verificat
 
 ### Signature Verification
 
-The playground automatically generates Sentry-compatible HMAC-SHA256 signatures when you provide a webhook secret. This signature is included in the `X-Sentry-Signature` header:
+The playground automatically generates Sentry-compatible HMAC-SHA256 signatures when you provide a webhook secret. This signature is included in the `Sentry-Hook-Signature` header:
 
 ```
-X-Sentry-Signature: 98c4da25a5aa896c33fa7edc1a1169a97ac78866002f089c43b49d8971617529
+Sentry-Hook-Signature: 98c4da25a5aa896c33fa7edc1a1169a97ac78866002f089c43b49d8971617529
 ```
 
 **Verification Example (Node.js):**
@@ -187,7 +187,7 @@ app.post('/webhooks/sentry', express.json({
     req.rawBody = buf.toString('utf8');  // Capture raw body for verification
   }
 }), (req, res) => {
-  const signature = req.headers['x-sentry-signature'];
+  const signature = req.headers['sentry-hook-signature'];
   const secret = process.env.SENTRY_WEBHOOK_SECRET;
 
   if (!verifySentrySignature(req.rawBody, signature, secret)) {
@@ -217,7 +217,7 @@ def verify_sentry_signature(raw_body: bytes, signature: str, secret: str) -> boo
 
 @app.route('/webhooks/sentry', methods=['POST'])
 def sentry_webhook():
-    signature = request.headers.get('X-Sentry-Signature')
+    signature = request.headers.get('Sentry-Hook-Signature')
     secret = os.environ['SENTRY_WEBHOOK_SECRET']
 
     if not verify_sentry_signature(request.get_data(), signature, secret):
