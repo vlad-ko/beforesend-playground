@@ -1,0 +1,42 @@
+{
+  "id": "metric-alert",
+  "name": "Metric Alert - Triggered",
+  "description": "Triggered when a metric alert threshold is exceeded",
+  "eventType": "metric_alert",
+  "payload": {
+    "action": "metric_alert.triggered",
+    "installation": {
+      "uuid": "12345678-1234-1234-1234-123456789012"
+    },
+    "data": {
+      "metric_alert": {
+        "id": "987654",
+        "title": "High Error Rate Alert",
+        "description": "Error rate exceeded 100 per minute",
+        "status": "critical",
+        "query": "event.type:error",
+        "aggregate": "count()",
+        "timeWindow": 60,
+        "threshold": 100,
+        "resolveThreshold": null,
+        "thresholdType": "above",
+        "triggeredAt": "2024-01-29T12:15:00.000000Z",
+        "dateCreated": "2024-01-15T10:00:00.000000Z"
+      },
+      "description_text": "Error rate exceeded 100 per minute in project my-project",
+      "description_title": "Critical: High Error Rate Alert",
+      "metric_value": 156.5,
+      "project": {
+        "id": "123456",
+        "name": "my-project",
+        "slug": "my-project",
+        "platform": "javascript"
+      },
+      "organization": {
+        "id": "org123",
+        "slug": "example-org",
+        "name": "Example Organization"
+      }
+    }
+  }
+}

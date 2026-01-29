@@ -1,0 +1,58 @@
+{
+  "id": "issue-alert-assigned",
+  "name": "Issue Alert - Assigned",
+  "description": "Triggered when an issue is assigned to a user or team",
+  "eventType": "issue",
+  "payload": {
+    "action": "assigned",
+    "installation": {
+      "uuid": "12345678-1234-1234-1234-123456789012"
+    },
+    "data": {
+      "issue": {
+        "id": "4567890123",
+        "shareId": null,
+        "shortId": "PLAYGROUND-2",
+        "title": "TypeError: Cannot read property 'id' of undefined",
+        "culprit": "function getUserProfile in users.js",
+        "permalink": "https://sentry.io/organizations/example-org/issues/4567890123/",
+        "logger": null,
+        "level": "error",
+        "status": "unresolved",
+        "statusDetails": {},
+        "isPublic": false,
+        "platform": "javascript",
+        "project": {
+          "id": "123456",
+          "name": "my-project",
+          "slug": "my-project",
+          "platform": "javascript"
+        },
+        "type": "error",
+        "metadata": {
+          "type": "TypeError",
+          "value": "Cannot read property 'id' of undefined",
+          "filename": "users.js",
+          "function": "getUserProfile"
+        },
+        "numComments": 0,
+        "assignedTo": {
+          "id": "789",
+          "name": "Jane Smith",
+          "email": "jane@example.com",
+          "type": "user"
+        },
+        "isBookmarked": false,
+        "isSubscribed": true,
+        "subscriptionDetails": null,
+        "hasSeen": false,
+        "annotations": [],
+        "isUnhandled": true,
+        "count": "5",
+        "userCount": 3,
+        "firstSeen": "2024-01-28T14:30:00.000000Z",
+        "lastSeen": "2024-01-29T11:45:00.000000Z"
+      }
+    }
+  }
+}

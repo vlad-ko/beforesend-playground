@@ -4,6 +4,7 @@ import transformRouter from './routes/transform';
 import examplesRouter from './routes/examples';
 import validateRouter from './routes/validate';
 import shareRouter from './routes/share';
+import webhooksRouter from './routes/webhooks';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -35,6 +36,7 @@ app.use('/api/transform', transformRouter);
 app.use('/api/examples', examplesRouter);
 app.use('/api/validate', validateRouter);
 app.use('/api/share', shareRouter);
+app.use('/api/webhooks', webhooksRouter);
 
 // 404 handler
 app.use((req, res) => {
@@ -58,4 +60,5 @@ app.listen(PORT, () => {
   console.log(`   Health check: http://localhost:${PORT}/health`);
   console.log(`   Transform API: http://localhost:${PORT}/api/transform`);
   console.log(`   Examples API: http://localhost:${PORT}/api/examples`);
+  console.log(`   Webhooks API: http://localhost:${PORT}/api/webhooks`);
 });

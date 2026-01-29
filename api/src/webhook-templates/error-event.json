@@ -1,0 +1,88 @@
+{
+  "id": "error-event",
+  "name": "Error Event Created",
+  "description": "Triggered when a new error event is captured",
+  "eventType": "event",
+  "payload": {
+    "action": "event.created",
+    "installation": {
+      "uuid": "12345678-1234-1234-1234-123456789012"
+    },
+    "data": {
+      "event": {
+        "event_id": "a1b2c3d4e5f6789012345678",
+        "level": "error",
+        "platform": "javascript",
+        "timestamp": "2024-01-29T12:20:30.000Z",
+        "received": "2024-01-29T12:20:31.000Z",
+        "environment": "production",
+        "release": "1.0.5",
+        "dist": null,
+        "exception": {
+          "values": [
+            {
+              "type": "ReferenceError",
+              "value": "undefined is not a function",
+              "mechanism": {
+                "type": "generic",
+                "handled": false
+              },
+              "stacktrace": {
+                "frames": [
+                  {
+                    "filename": "app.js",
+                    "function": "onClick",
+                    "lineno": 42,
+                    "colno": 15,
+                    "in_app": true
+                  },
+                  {
+                    "filename": "jquery.min.js",
+                    "function": "dispatch",
+                    "lineno": 3,
+                    "colno": 8234,
+                    "in_app": false
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "user": {
+          "id": "user123",
+          "email": "user@example.com",
+          "username": "john_doe",
+          "ip_address": "192.168.1.100"
+        },
+        "request": {
+          "url": "https://example.com/dashboard",
+          "method": "GET",
+          "headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+          }
+        },
+        "contexts": {
+          "browser": {
+            "name": "Chrome",
+            "version": "120.0.0"
+          },
+          "os": {
+            "name": "Windows",
+            "version": "10"
+          }
+        },
+        "tags": {
+          "environment": "production",
+          "release": "1.0.5",
+          "server_name": "web-01"
+        }
+      },
+      "project": {
+        "id": "123456",
+        "name": "my-project",
+        "slug": "my-project",
+        "platform": "javascript"
+      }
+    }
+  }
+}
