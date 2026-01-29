@@ -1,0 +1,60 @@
+{
+  "id": "issue-alert-resolved",
+  "name": "Issue Alert - Resolved",
+  "description": "Triggered when an issue is marked as resolved",
+  "eventType": "issue",
+  "payload": {
+    "action": "resolved",
+    "installation": {
+      "uuid": "12345678-1234-1234-1234-123456789012"
+    },
+    "data": {
+      "issue": {
+        "id": "4567890123",
+        "shareId": null,
+        "shortId": "PLAYGROUND-1",
+        "title": "Error: Something went wrong",
+        "culprit": "function processUserData in app.js",
+        "permalink": "https://sentry.io/organizations/example-org/issues/4567890123/",
+        "logger": null,
+        "level": "error",
+        "status": "resolved",
+        "statusDetails": {
+          "inNextRelease": false
+        },
+        "isPublic": false,
+        "platform": "javascript",
+        "project": {
+          "id": "123456",
+          "name": "my-project",
+          "slug": "my-project",
+          "platform": "javascript"
+        },
+        "type": "error",
+        "metadata": {
+          "type": "Error",
+          "value": "Something went wrong",
+          "filename": "app.js",
+          "function": "processUserData"
+        },
+        "numComments": 2,
+        "assignedTo": {
+          "id": "789",
+          "name": "John Doe",
+          "email": "john@example.com",
+          "type": "user"
+        },
+        "isBookmarked": false,
+        "isSubscribed": true,
+        "subscriptionDetails": null,
+        "hasSeen": true,
+        "annotations": [],
+        "isUnhandled": false,
+        "count": "15",
+        "userCount": 8,
+        "firstSeen": "2024-01-20T10:00:00.000000Z",
+        "lastSeen": "2024-01-29T12:00:00.000000Z"
+      }
+    }
+  }
+}

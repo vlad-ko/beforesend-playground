@@ -1,0 +1,58 @@
+{
+  "id": "comment-created",
+  "name": "Comment Created",
+  "description": "Triggered when a comment is added to an issue",
+  "eventType": "comment",
+  "payload": {
+    "action": "comment.created",
+    "installation": {
+      "uuid": "12345678-1234-1234-1234-123456789012"
+    },
+    "data": {
+      "comment": {
+        "id": "comment789",
+        "comment": "I'm investigating this issue. It looks like it's related to the recent deployment.",
+        "dateCreated": "2024-01-29T12:25:00.000Z"
+      },
+      "issue": {
+        "id": "4567890123",
+        "shareId": null,
+        "shortId": "PLAYGROUND-1",
+        "title": "Error: Something went wrong",
+        "culprit": "function processUserData in app.js",
+        "permalink": "https://sentry.io/organizations/example-org/issues/4567890123/",
+        "logger": null,
+        "level": "error",
+        "status": "unresolved",
+        "statusDetails": {},
+        "isPublic": false,
+        "platform": "javascript",
+        "project": {
+          "id": "123456",
+          "name": "my-project",
+          "slug": "my-project",
+          "platform": "javascript"
+        },
+        "type": "error",
+        "metadata": {
+          "type": "Error",
+          "value": "Something went wrong",
+          "filename": "app.js",
+          "function": "processUserData"
+        }
+      },
+      "author": {
+        "id": "user456",
+        "name": "Alice Johnson",
+        "email": "alice@example.com",
+        "type": "user"
+      },
+      "project": {
+        "id": "123456",
+        "name": "my-project",
+        "slug": "my-project",
+        "platform": "javascript"
+      }
+    }
+  }
+}
