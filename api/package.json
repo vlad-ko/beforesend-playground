@@ -1,7 +1,7 @@
 {
-  "name": "beforesend-playground-api",
+  "name": "@sdk-playground/api",
   "version": "1.0.0",
-  "description": "API Gateway for beforeSend transformation testing",
+  "description": "API Gateway for SDK Playground testing",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

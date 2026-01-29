@@ -155,4 +155,4 @@ services:
 
 networks:
   default:
-    name: beforesend-network
+    name: sdk-playground-network

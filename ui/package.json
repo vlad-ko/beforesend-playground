@@ -1,5 +1,5 @@
 {
-  "name": "beforesend-playground-ui",
+  "name": "@sdk-playground/ui",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
