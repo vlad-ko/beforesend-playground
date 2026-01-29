@@ -258,7 +258,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .set('X-Webhook-Secret', secret)
         .send(payload);
 
@@ -276,7 +276,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', wrongSignature)
+        .set('Sentry-Hook-Signature', wrongSignature)
         .set('X-Webhook-Secret', secret)
         .send(payload);
 
@@ -293,7 +293,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .send(payload);
 
       expect(response.status).toBe(400);
@@ -301,7 +301,7 @@ describe('Webhooks API Route', () => {
       expect(response.body.error).toContain('X-Webhook-Secret');
     });
 
-    it('should return 400 when X-Sentry-Signature header is missing', async () => {
+    it('should return 400 when Sentry-Hook-Signature header is missing', async () => {
       const payload = { action: 'test' };
       const secret = 'test-secret';
 
@@ -312,7 +312,7 @@ describe('Webhooks API Route', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.verified).toBe(false);
-      expect(response.body.error).toContain('X-Sentry-Signature');
+      expect(response.body.error).toContain('Sentry-Hook-Signature');
     });
 
     it('should include received timestamp in response', async () => {
@@ -323,7 +323,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .set('X-Webhook-Secret', secret)
         .send(payload);
 
@@ -340,7 +340,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .set('X-Webhook-Secret', secret)
         .send(payload);
 
@@ -358,7 +358,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .set('X-Webhook-Secret', secret)
         .send(payload);
 
@@ -373,7 +373,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .set('X-Webhook-Secret', secret)
         .send(payload);
 
@@ -398,7 +398,7 @@ describe('Webhooks API Route', () => {
 
       const response = await request(app)
         .post('/api/webhooks/receive')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .set('X-Webhook-Secret', secret)
         .send(payload);
 
@@ -422,7 +422,7 @@ describe('Webhooks API Route', () => {
       const response = await request(app)
         .post('/api/webhooks/receive')
         .set('Content-Type', 'application/json')
-        .set('X-Sentry-Signature', signature)
+        .set('Sentry-Hook-Signature', signature)
         .set('X-Webhook-Secret', secret)
         .send(rawPayload);  // Send as raw string
 

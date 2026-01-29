@@ -4,11 +4,12 @@
 
 ## Overview
 
-**Learn by doing.** The SDK Playground lets you experiment with real Sentry SDKs in a safe sandbox environment. Load pre-built examples or write your own code, see transformations in action with visual diffs, share configurations securely, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
+**Learn by doing.** The SDK Playground lets you experiment with real Sentry SDKs and webhook integrations in a safe sandbox environment. Load pre-built examples or write your own code, test webhook payloads with signature verification, see transformations in action with visual diffs, share configurations securely, and master `beforeSend` patterns across 11 languages—all before touching production. Perfect for Solutions Engineers impressing customers with live demos and building deep SDK expertise.
 
 **Key Features:**
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, Rust, **Elixir**)
 - ✅ **19 pre-built example templates** across 10 SDKs
+- ✅ **Webhook testing** - Test Sentry webhook payloads with HMAC signature generation and verification
 - ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
 - ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers (JavaScript, Python, Ruby, PHP, Go, .NET, Rust)
 - ✅ **Compile-on-the-fly** - Go and Rust SDKs compile and execute user code for authentic behavior
@@ -32,6 +33,10 @@ open http://localhost:3000
 ```
 
 The playground will be available at **http://localhost:3000** 🎉
+
+**Choose your playground mode:**
+- **beforeSend** - Transform error events before sending to Sentry
+- **Webhooks** - Test webhook payloads with signature generation and verification
 
 ### Stop Services
 
@@ -124,6 +129,143 @@ fn event, _hint ->
   |> Map.update(:level, "error", &String.upcase/1)
 end
 ```
+
+## Webhook Testing
+
+Test Sentry webhook payloads with HMAC-SHA256 signature generation and verification. Perfect for debugging webhook integrations and demonstrating webhook security to customers.
+
+### Quick Example
+
+1. Switch to **Webhooks** tab in the playground
+2. Select a webhook type (e.g., "Issue Alert - Created")
+3. Customize the payload in the Monaco editor (optional)
+4. Enter your webhook endpoint URL
+5. Add a webhook secret (optional, for signature generation)
+6. Click **Send Webhook**
+7. View request details and response
+
+### Available Webhook Templates
+
+**Issue Alerts:**
+- Issue Alert - Created (triggered when a new issue is created)
+- Issue Alert - Resolved (triggered when an issue is resolved)
+- Issue Alert - Assigned (triggered when an issue is assigned)
+
+**Performance & Monitoring:**
+- Metric Alert (triggered when a metric threshold is breached)
+
+**Error Events:**
+- Error Event (triggered when a new error occurs)
+
+**Collaboration:**
+- Comment Created (triggered when a comment is added to an issue)
+
+### Signature Verification
+
+The playground automatically generates Sentry-compatible HMAC-SHA256 signatures when you provide a webhook secret. This signature is included in the `Sentry-Hook-Signature` header:
+
+```
+Sentry-Hook-Signature: 98c4da25a5aa896c33fa7edc1a1169a97ac78866002f089c43b49d8971617529
+```
+
+**Verification Example (Node.js):**
+```javascript
+const crypto = require('crypto');
+
+function verifySentrySignature(rawBody, signature, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(rawBody)  // IMPORTANT: Use raw request body, not re-serialized JSON
+    .digest('hex');
+
+  return signature === expected;
+}
+
+// Express.js example
+app.post('/webhooks/sentry', express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString('utf8');  // Capture raw body for verification
+  }
+}), (req, res) => {
+  const signature = req.headers['sentry-hook-signature'];
+  const secret = process.env.SENTRY_WEBHOOK_SECRET;
+
+  if (!verifySentrySignature(req.rawBody, signature, secret)) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  // Process webhook...
+  res.json({ success: true });
+});
+```
+
+**Verification Example (Python):**
+```python
+import hmac
+import hashlib
+from flask import Flask, request
+
+app = Flask(__name__)
+
+def verify_sentry_signature(raw_body: bytes, signature: str, secret: str) -> bool:
+    expected = hmac.new(
+        secret.encode('utf-8'),
+        raw_body,  # Use raw bytes, not JSON-parsed data
+        hashlib.sha256
+    ).hexdigest()
+    return signature == expected
+
+@app.route('/webhooks/sentry', methods=['POST'])
+def sentry_webhook():
+    signature = request.headers.get('Sentry-Hook-Signature')
+    secret = os.environ['SENTRY_WEBHOOK_SECRET']
+
+    if not verify_sentry_signature(request.get_data(), signature, secret):
+        return {'error': 'Invalid signature'}, 401
+
+    # Process webhook...
+    return {'success': True}
+```
+
+### Built-in Receiver for Testing
+
+The playground includes a built-in webhook receiver at `http://localhost:4000/api/webhooks/receive` that automatically verifies signatures. Use this to test your webhook payloads before sending them to your actual endpoint:
+
+1. Keep the default URL: `http://localhost:4000/api/webhooks/receive`
+2. Add a webhook secret: `test-secret`
+3. Click **Send Webhook**
+4. View the verification results with SE guidance
+
+The response will show:
+- ✅ Signature verification status
+- Received vs expected signatures
+- Troubleshooting tips for signature mismatches
+
+### Common Use Cases
+
+**Use Case 1: Test Customer Webhook Integration**
+
+A customer is setting up Sentry webhooks but getting signature verification errors. Use the playground to:
+1. Send a test webhook to their endpoint
+2. Show them the exact signature generation process
+3. Debug their verification code
+4. Demonstrate the importance of using raw request body
+
+**Use Case 2: Demonstrate Webhook Security**
+
+Show customers how Sentry webhooks are secured:
+1. Send a webhook with a secret
+2. Show the HMAC-SHA256 signature
+3. Explain why signatures prevent webhook spoofing
+4. Share verification code examples
+
+**Use Case 3: Inspect Webhook Payloads**
+
+Understand what data Sentry sends in webhooks:
+1. Select different webhook types
+2. Review the payload structure
+3. Identify useful fields for automation
+4. Test with external services like webhook.site for raw inspection
 
 ## Using the Playground
 
