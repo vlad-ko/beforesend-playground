@@ -147,4 +147,75 @@ router.post('/send', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/webhooks/receive
+ * Receive and verify webhook signatures
+ *
+ * This endpoint simulates a webhook receiver that validates HMAC signatures
+ * the same way a real Sentry webhook receiver would.
+ *
+ * IMPORTANT: Signature must be computed on the raw request body bytes,
+ * not on a re-serialized version of the parsed JSON. This ensures
+ * signature verification works correctly regardless of JSON key ordering
+ * or whitespace differences.
+ */
+router.post('/receive', (req: Request, res: Response) => {
+  try {
+    const signature = req.headers['x-sentry-signature'] as string;
+    const secret = req.headers['x-webhook-secret'] as string;
+
+    // Validate required headers
+    if (!secret) {
+      return res.status(400).json({
+        verified: false,
+        error: 'X-Webhook-Secret header required for verification'
+      });
+    }
+
+    if (!signature) {
+      return res.status(400).json({
+        verified: false,
+        error: 'X-Sentry-Signature header required for verification'
+      });
+    }
+
+    // CRITICAL: Use raw body for signature verification
+    // Computing signature on JSON.stringify(req.body) would fail because
+    // JSON serialization is non-deterministic (key order can vary)
+    const rawBody = (req as any).rawBody;
+    if (!rawBody) {
+      return res.status(500).json({
+        verified: false,
+        error: 'Raw body not available for signature verification'
+      });
+    }
+
+    const expectedSignature = generateHMACSignature(rawBody, secret);
+
+    // Compare signatures (constant-time comparison would be better for production)
+    const verified = signature === expectedSignature;
+
+    res.json({
+      verified,
+      receivedAt: new Date().toISOString(),
+      signature: {
+        received: signature,
+        expected: expectedSignature,
+        match: verified
+      },
+      payload: req.body,
+      message: verified
+        ? 'Webhook signature verified successfully!'
+        : 'Signature verification failed - signatures do not match'
+    });
+  } catch (error: any) {
+    console.error('Error verifying webhook:', error);
+    res.status(500).json({
+      verified: false,
+      error: 'Failed to verify webhook',
+      details: error.message
+    });
+  }
+});
+
 export default router;

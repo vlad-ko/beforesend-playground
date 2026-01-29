@@ -14,7 +14,16 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true,
 }));
-app.use(express.json({ limit: '10mb' }));
+
+// Capture raw body for webhook signature verification
+app.use(express.json({
+  limit: '10mb',
+  verify: (req: any, res, buf, encoding) => {
+    // Store raw body for routes that need it (e.g., webhook signature verification)
+    // encoding parameter is optional and may not be a valid BufferEncoding
+    req.rawBody = buf.toString((encoding as BufferEncoding) || 'utf8');
+  }
+}));
 
 // Request logging
 app.use((req, res, next) => {
