@@ -1,4 +1,4 @@
-defmodule BeforeSendPlayground.Router do
+defmodule SdkPlayground.Router do
   use Plug.Router
   use Plug.ErrorHandler
 

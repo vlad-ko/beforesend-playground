@@ -1,9 +1,9 @@
-defmodule BeforeSendPlayground.MixProject do
+defmodule SdkPlayground.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :beforesend_playground,
+      app: :sdk_playground,
       version: "1.0.0",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
@@ -14,7 +14,7 @@ defmodule BeforeSendPlayground.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {BeforeSendPlayground.Application, []}
+      mod: {SdkPlayground.Application, []}
     ]
   end
 
