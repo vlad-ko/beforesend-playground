@@ -39,12 +39,12 @@ This guide covers testing practices, running tests, and adding tests for new fea
 docker-compose build
 
 # Run all tests for a specific service
-docker run --rm beforesend-playground-api npm test
-docker run --rm beforesend-playground-sdk-python pytest
-docker run --rm beforesend-playground-sdk-javascript npm test
+docker run --rm sdk-playground-api npm test
+docker run --rm sdk-playground-sdk-python pytest
+docker run --rm sdk-playground-sdk-javascript npm test
 
 # Run with coverage
-docker run --rm beforesend-playground-api npm run test:coverage
+docker run --rm sdk-playground-api npm run test:coverage
 ```
 
 ### All Test Commands
@@ -53,17 +53,17 @@ docker run --rm beforesend-playground-api npm run test:coverage
 
 ```bash
 # All tests
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 
 # Specific test file
-docker run --rm beforesend-playground-api npm test -- routes/transform.test.ts
+docker run --rm sdk-playground-api npm test -- routes/transform.test.ts
 
 # Watch mode (requires running container)
 docker-compose up api
 docker-compose exec api npm run test:watch
 
 # Coverage report
-docker run --rm beforesend-playground-api npm run test:coverage
+docker run --rm sdk-playground-api npm run test:coverage
 
 # View coverage report
 open api/coverage/lcov-report/index.html
@@ -73,30 +73,30 @@ open api/coverage/lcov-report/index.html
 
 **JavaScript SDK:**
 ```bash
-docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
+docker run --rm -e NODE_ENV=test sdk-playground-sdk-javascript npm test
 ```
 
 **Python SDK:**
 ```bash
-docker run --rm beforesend-playground-sdk-python pytest
-docker run --rm beforesend-playground-sdk-python pytest --cov  # With coverage
+docker run --rm sdk-playground-sdk-python pytest
+docker run --rm sdk-playground-sdk-python pytest --cov  # With coverage
 ```
 
 **Go SDK:**
 ```bash
-docker run --rm beforesend-playground-sdk-go go test ./...
+docker run --rm sdk-playground-sdk-go go test ./...
 ```
 
 **Rust SDK:**
 ```bash
-docker run --rm beforesend-playground-sdk-rust cargo test
+docker run --rm sdk-playground-sdk-rust cargo test
 ```
 
 #### UI Tests
 
 ```bash
 # All UI tests
-docker run --rm beforesend-playground-ui npm test
+docker run --rm sdk-playground-ui npm test
 
 # Watch mode
 docker-compose up ui
@@ -110,9 +110,9 @@ docker-compose exec ui npm run test:watch
 docker-compose up -d
 
 # Run integration tests (requires services running)
-docker run --rm --network beforesend-network \
+docker run --rm --network sdk-playground-network \
   -e API_URL=http://api:4000 \
-  beforesend-playground-api npm run test:integration
+  sdk-playground-api npm run test:integration
 ```
 
 ## Test Structure
@@ -205,7 +205,7 @@ describe('Transformation Workflow', () => {
 
 ```bash
 # Generate coverage report
-docker run --rm beforesend-playground-api npm run test:coverage
+docker run --rm sdk-playground-api npm run test:coverage
 
 # Open HTML report
 open api/coverage/lcov-report/index.html
@@ -250,7 +250,7 @@ describe('Rust SDK Client', () => {
 
 **Run test to verify it fails:**
 ```bash
-docker run --rm beforesend-playground-api npm test -- sdk-clients/rust.test.ts
+docker run --rm sdk-playground-api npm test -- sdk-clients/rust.test.ts
 # Expected: FAIL - transformWithRust is not defined
 ```
 
@@ -285,7 +285,7 @@ beforeEach(() => {
 **Run tests again:**
 ```bash
 docker-compose build api
-docker run --rm beforesend-playground-api npm test -- sdk-clients/rust.test.ts
+docker run --rm sdk-playground-api npm test -- sdk-clients/rust.test.ts
 # Expected: PASS - all tests green
 ```
 
@@ -299,7 +299,7 @@ Clean up code while keeping tests green:
 
 **Run tests after refactoring:**
 ```bash
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 # Expected: All tests still pass
 ```
 
@@ -344,7 +344,7 @@ describe('New SDK Client', () => {
 3. **Run tests in Docker:**
 ```bash
 docker-compose build api
-docker run --rm beforesend-playground-api npm test -- sdk-clients/new-sdk.test.ts
+docker run --rm sdk-playground-api npm test -- sdk-clients/new-sdk.test.ts
 ```
 
 ### For New Feature
@@ -468,7 +468,7 @@ it('should transform valid event', () => {
 cd api && npm test
 
 # CORRECT - always use Docker
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 ```
 
 ### Tests Timeout
@@ -519,7 +519,7 @@ mockedAxios.post.mockResolvedValueOnce({
 **Solution:**
 ```bash
 # Run tests with coverage flag
-docker run --rm beforesend-playground-api npm run test:coverage
+docker run --rm sdk-playground-api npm run test:coverage
 
 # Check if coverage directory exists
 ls -la api/coverage/
@@ -535,8 +535,8 @@ ls -la api/coverage/
 docker-compose up -d sdk-python sdk-rust
 
 # Use network flag for integration tests
-docker run --rm --network beforesend-network \
-  beforesend-playground-api npm test
+docker run --rm --network sdk-playground-network \
+  sdk-playground-api npm test
 ```
 
 ## CI/CD Integration
@@ -559,13 +559,13 @@ jobs:
         run: docker-compose build
 
       - name: Run API tests
-        run: docker run --rm beforesend-playground-api npm test
+        run: docker run --rm sdk-playground-api npm test
 
       - name: Run Python SDK tests
-        run: docker run --rm beforesend-playground-sdk-python pytest
+        run: docker run --rm sdk-playground-sdk-python pytest
 
       - name: Generate coverage
-        run: docker run --rm beforesend-playground-api npm run test:coverage
+        run: docker run --rm sdk-playground-api npm run test:coverage
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -598,26 +598,26 @@ jobs:
 docker-compose build
 
 # Run all API tests
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 
 # Run specific test file
-docker run --rm beforesend-playground-api npm test -- transform.test.ts
+docker run --rm sdk-playground-api npm test -- transform.test.ts
 
 # Run tests with coverage
-docker run --rm beforesend-playground-api npm run test:coverage
+docker run --rm sdk-playground-api npm run test:coverage
 
 # Run Python SDK tests
-docker run --rm beforesend-playground-sdk-python pytest
+docker run --rm sdk-playground-sdk-python pytest
 
 # Run Rust SDK tests
-docker run --rm beforesend-playground-sdk-rust cargo test
+docker run --rm sdk-playground-sdk-rust cargo test
 
 # Watch mode (requires running container)
 docker-compose exec api npm run test:watch
 
 # Integration tests (requires services running)
 docker-compose up -d
-docker run --rm --network beforesend-network beforesend-playground-api npm run test:integration
+docker run --rm --network sdk-playground-network sdk-playground-api npm run test:integration
 ```
 
 ## See Also

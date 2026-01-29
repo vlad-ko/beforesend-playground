@@ -176,11 +176,11 @@ Each SDK runs in its own Docker container with:
 
 ## Docker Network
 
-All containers run on the same Docker network (`beforesend-network`) for inter-service communication:
+All containers run on the same Docker network (`sdk-playground-network`) for inter-service communication:
 
 ```yaml
 networks:
-  beforesend-network:
+  sdk-playground-network:
     driver: bridge
 ```
 

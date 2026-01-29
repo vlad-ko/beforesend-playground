@@ -30,15 +30,15 @@ describe('MyFeature', () => {
 
 ```bash
 # Run ALL tests across all services
-docker run --rm beforesend-playground-api npm test
-docker run --rm -e NODE_ENV=test beforesend-playground-sdk-javascript npm test
-docker run --rm beforesend-playground-sdk-python pytest
-docker run --rm beforesend-playground-ui npm test
+docker run --rm sdk-playground-api npm test
+docker run --rm -e NODE_ENV=test sdk-playground-sdk-javascript npm test
+docker run --rm sdk-playground-sdk-python pytest
+docker run --rm sdk-playground-ui npm test
 
 # Run with coverage
-docker run --rm beforesend-playground-api npm run test:coverage
-docker run --rm beforesend-playground-sdk-python pytest --cov
-docker run --rm beforesend-playground-ui npm run test:coverage
+docker run --rm sdk-playground-api npm run test:coverage
+docker run --rm sdk-playground-sdk-python pytest --cov
+docker run --rm sdk-playground-ui npm run test:coverage
 
 # Run tests in running containers (faster for development)
 docker-compose exec api npm test
@@ -154,7 +154,7 @@ git checkout -b feature/add-timeout-handling
 # Make tests pass
 
 # 4. Run tests in Docker
-docker run --rm beforesend-playground-api npm test
+docker run --rm sdk-playground-api npm test
 
 # 5. Commit with descriptive message
 git add .
@@ -268,7 +268,7 @@ beforesend-playground/
 
 6. **Run tests in Docker:**
    ```bash
-   docker run --rm beforesend-playground-api npm test
+   docker run --rm sdk-playground-api npm test
    ```
 
 7. **Update documentation**
