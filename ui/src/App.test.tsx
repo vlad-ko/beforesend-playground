@@ -473,4 +473,86 @@ describe('App', () => {
       expect(select.textContent).toContain('sentry-sdk 2.20.0');
     });
   });
+
+  describe('Mode Persistence', () => {
+    beforeEach(() => {
+      // Clear localStorage before each test
+      localStorage.clear();
+    });
+
+    it('defaults to beforeSend mode when no saved mode exists', () => {
+      render(<App />);
+
+      // Should show beforeSend playground
+      expect(screen.getByText('Event JSON')).toBeInTheDocument();
+      expect(screen.getByText('beforeSend Code')).toBeInTheDocument();
+    });
+
+    it('saves selected mode to localStorage', async () => {
+      const user = userEvent.setup();
+
+      // Mock webhook templates to prevent errors
+      vi.mocked(apiClient).getWebhookTemplates = vi.fn().mockResolvedValue({
+        templates: [],
+      });
+
+      render(<App />);
+
+      // Click webhooks tab
+      const webhooksButton = screen.getByRole('button', { name: /webhooks/i });
+      await user.click(webhooksButton);
+
+      // Check localStorage was updated
+      expect(localStorage.getItem('sentry-playground-mode')).toBe('webhooks');
+    });
+
+    it('restores mode from localStorage on mount', () => {
+      // Set localStorage before rendering
+      localStorage.setItem('sentry-playground-mode', 'webhooks');
+
+      // Mock webhook templates
+      vi.mocked(apiClient).getWebhookTemplates = vi.fn().mockResolvedValue({
+        templates: [],
+      });
+
+      render(<App />);
+
+      // Should show webhook playground
+      expect(screen.getByText('Webhook Playground')).toBeInTheDocument();
+    });
+
+    it('persists mode across tab switches', async () => {
+      const user = userEvent.setup();
+
+      // Mock webhook templates
+      vi.mocked(apiClient).getWebhookTemplates = vi.fn().mockResolvedValue({
+        templates: [],
+      });
+
+      render(<App />);
+
+      // Initially on beforeSend
+      expect(screen.getByText('Event JSON')).toBeInTheDocument();
+
+      // Switch to webhooks
+      const webhooksButton = screen.getByRole('button', { name: /webhooks/i });
+      await user.click(webhooksButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Webhook Playground')).toBeInTheDocument();
+      });
+
+      expect(localStorage.getItem('sentry-playground-mode')).toBe('webhooks');
+
+      // Switch back to beforeSend
+      const beforeSendButton = screen.getByRole('button', { name: /^beforeSend$/i });
+      await user.click(beforeSendButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Event JSON')).toBeInTheDocument();
+      });
+
+      expect(localStorage.getItem('sentry-playground-mode')).toBe('beforeSend');
+    });
+  });
 });

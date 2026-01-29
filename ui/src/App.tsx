@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ModeSelector from './components/ModeSelector';
 import ModeInfo from './components/ModeInfo';
 import BeforeSendPlayground from './components/playgrounds/BeforeSendPlayground';
@@ -6,8 +6,19 @@ import WebhookPlayground from './components/playgrounds/WebhookPlayground';
 import { PlaygroundMode } from './types/modes';
 import sentryLogo from './assets/sentry-logo.png';
 
+const STORAGE_KEY = 'sentry-playground-mode';
+
 function App() {
-  const [currentMode, setCurrentMode] = useState<PlaygroundMode>('beforeSend');
+  // Initialize mode from localStorage, fallback to 'beforeSend'
+  const [currentMode, setCurrentMode] = useState<PlaygroundMode>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return (saved as PlaygroundMode) || 'beforeSend';
+  });
+
+  // Save mode to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, currentMode);
+  }, [currentMode]);
 
   const renderPlayground = () => {
     switch (currentMode) {
