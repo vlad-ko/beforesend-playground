@@ -95,6 +95,11 @@ router.post('/send', async (req: Request, res: Response) => {
     if (secret) {
       signature = generateHMACSignature(payload, secret);
       headers['X-Sentry-Signature'] = signature;
+
+      // For testing with our built-in receiver, also send the secret
+      // This allows the receiver to verify the signature
+      // Real Sentry webhook receivers would have the secret stored, not in headers
+      headers['X-Webhook-Secret'] = secret;
     }
 
     // Send webhook

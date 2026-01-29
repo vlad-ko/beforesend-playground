@@ -171,7 +171,7 @@ export default function WebhookPlayground() {
                 onChange={(e) => setTargetUrl(e.target.value)}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Defaults to built-in receiver. Try webhook.site for external testing.
+                Defaults to built-in receiver for signature verification. Use external services like webhook.site to inspect raw requests.
               </p>
             </div>
 
