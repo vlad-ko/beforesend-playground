@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { apiClient, WebhookTemplate, SendWebhookResponse } from '../../api/client';
 
+const DEFAULT_RECEIVER_URL = 'http://localhost:4000/api/webhooks/receive';
+
 export default function WebhookPlayground() {
   const [templates, setTemplates] = useState<WebhookTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [payload, setPayload] = useState<string>('{}');
-  const [targetUrl, setTargetUrl] = useState<string>('');
-  const [secret, setSecret] = useState<string>('');
+  const [targetUrl, setTargetUrl] = useState<string>(DEFAULT_RECEIVER_URL);
+  const [secret, setSecret] = useState<string>('test-secret');
   const [generateSignature, setGenerateSignature] = useState<boolean>(true);
   const [result, setResult] = useState<SendWebhookResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -97,8 +99,8 @@ export default function WebhookPlayground() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left Panel - Payload Editor */}
-        <div className="flex-1 flex flex-col border-r border-gray-200">
+        {/* Left Panel - Payload Editor (wider) */}
+        <div className="flex-1 lg:flex-[2] flex flex-col border-r border-gray-200">
           {/* Template Selector */}
           <div className="flex-none p-4 border-b border-gray-200">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -152,7 +154,7 @@ export default function WebhookPlayground() {
         </div>
 
         {/* Right Panel - Configuration */}
-        <div className="w-full lg:w-96 flex flex-col">
+        <div className="w-full lg:flex-1 flex flex-col">
           {/* Configuration Form */}
           <div className="flex-none p-4 space-y-4 border-b border-gray-200">
             {/* Target URL */}
@@ -163,12 +165,12 @@ export default function WebhookPlayground() {
               <input
                 type="text"
                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="https://webhook.site/unique-id"
+                placeholder={DEFAULT_RECEIVER_URL}
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
               />
               <p className="text-xs text-gray-500 mt-1">
-                Use webhook.site or your own endpoint
+                Defaults to built-in receiver. Try webhook.site for external testing.
               </p>
             </div>
 

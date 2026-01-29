@@ -119,7 +119,7 @@ describe('WebhookPlayground', () => {
   it('renders target URL input field', async () => {
     render(<WebhookPlayground />);
     await waitFor(() => {
-      const urlInput = screen.getByPlaceholderText(/webhook\.site/i);
+      const urlInput = screen.getByPlaceholderText(/localhost:4000/i);
       expect(urlInput).toBeInTheDocument();
     });
   });
@@ -144,18 +144,29 @@ describe('WebhookPlayground', () => {
     expect(button).toBeInTheDocument();
   });
 
-  it('disables send button when URL is empty', () => {
+  it('disables send button when URL is empty', async () => {
     render(<WebhookPlayground />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+    });
+
+    // Clear the default URL
+    const urlInput = screen.getByPlaceholderText(/localhost:4000/i);
+    fireEvent.change(urlInput, { target: { value: '' } });
+
     const button = screen.getByRole('button', { name: /send webhook/i });
     expect(button).toBeDisabled();
   });
 
-  it('enables send button when URL is provided', () => {
+  it('enables send button when URL is provided', async () => {
     render(<WebhookPlayground />);
 
-    const urlInput = screen.getByPlaceholderText(/webhook\.site/i);
-    fireEvent.change(urlInput, { target: { value: 'https://webhook.site/test' } });
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+    });
 
+    // Default URL is already provided, so button should be enabled
     const button = screen.getByRole('button', { name: /send webhook/i });
     expect(button).toBeEnabled();
   });
@@ -187,7 +198,7 @@ describe('WebhookPlayground', () => {
     });
 
     // Fill URL
-    const urlInput = screen.getByPlaceholderText(/webhook\.site/i);
+    const urlInput = screen.getByPlaceholderText(/localhost:4000/i);
     fireEvent.change(urlInput, { target: { value: 'https://webhook.site/test' } });
 
     // Fill secret
@@ -225,7 +236,7 @@ describe('WebhookPlayground', () => {
       expect(apiClient.getWebhookTemplate).toHaveBeenCalled();
     });
 
-    const urlInput = screen.getByPlaceholderText(/webhook\.site/i);
+    const urlInput = screen.getByPlaceholderText(/localhost:4000/i);
     fireEvent.change(urlInput, { target: { value: 'https://webhook.site/test' } });
 
     const button = screen.getByRole('button', { name: /send webhook/i });
@@ -259,7 +270,7 @@ describe('WebhookPlayground', () => {
       expect(apiClient.getWebhookTemplate).toHaveBeenCalled();
     });
 
-    const urlInput = screen.getByPlaceholderText(/webhook\.site/i);
+    const urlInput = screen.getByPlaceholderText(/localhost:4000/i);
     fireEvent.change(urlInput, { target: { value: 'https://webhook.site/test' } });
 
     const button = screen.getByRole('button', { name: /send webhook/i });
@@ -289,7 +300,7 @@ describe('WebhookPlayground', () => {
       expect(apiClient.getWebhookTemplate).toHaveBeenCalled();
     });
 
-    const urlInput = screen.getByPlaceholderText(/webhook\.site/i);
+    const urlInput = screen.getByPlaceholderText(/localhost:4000/i);
     fireEvent.change(urlInput, { target: { value: 'https://webhook.site/test' } });
 
     const button = screen.getByRole('button', { name: /send webhook/i });
@@ -344,7 +355,7 @@ describe('WebhookPlayground', () => {
       expect(apiClient.getWebhookTemplate).toHaveBeenCalled();
     });
 
-    const urlInput = screen.getByPlaceholderText(/webhook\.site/i);
+    const urlInput = screen.getByPlaceholderText(/localhost:4000/i);
     fireEvent.change(urlInput, { target: { value: 'https://webhook.site/test' } });
 
     // Uncheck signature generation
