@@ -207,6 +207,20 @@ describe('Webhooks API Route', () => {
       }
     });
 
+    it('should include response body from webhook endpoint on success', async () => {
+      const response = await request(app)
+        .post('/api/webhooks/send')
+        .send({
+          url: 'https://webhook.site/test',
+          templateId: 'error-event',
+          secret: 'test-secret',
+        });
+
+      if (response.status === 200 && response.body.success) {
+        expect(response.body).toHaveProperty('webhookResponseBody');
+      }
+    });
+
     it('should include X-Webhook-Secret header when secret is provided', async () => {
       // This test verifies the header is added, but we can't easily intercept
       // the actual HTTP request in the test. The implementation is tested

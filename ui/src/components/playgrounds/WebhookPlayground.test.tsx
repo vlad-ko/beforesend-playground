@@ -282,6 +282,57 @@ describe('WebhookPlayground', () => {
     });
   });
 
+  it('displays SE guidance when webhook is successfully verified by built-in receiver', async () => {
+    (apiClient.sendWebhook as any).mockResolvedValue({
+      success: true,
+      sentAt: '2026-01-29T12:00:00Z',
+      signature: 'abc123def456',
+      webhookStatus: 200,
+      webhookStatusText: 'OK',
+      webhookResponseBody: {
+        verified: true,
+        message: 'Webhook signature verified successfully!',
+        signature: {
+          received: 'abc123def456',
+          expected: 'abc123def456',
+          match: true,
+        },
+      },
+    });
+
+    render(<WebhookPlayground />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+    });
+
+    const select = screen.getByRole('combobox');
+    fireEvent.change(select, { target: { value: 'issue-alert-created' } });
+
+    await waitFor(() => {
+      expect(apiClient.getWebhookTemplate).toHaveBeenCalled();
+    });
+
+    const button = screen.getByRole('button', { name: /send webhook/i });
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Webhook Received & Verified Successfully/i)).toBeInTheDocument();
+      expect(screen.getByText(/HMAC-SHA256 signature was verified successfully/i)).toBeInTheDocument();
+      expect(screen.getByText(/SE Guidance: What This Means/i)).toBeInTheDocument();
+    });
+
+    // Expand SE guidance
+    const guidanceToggle = screen.getByText(/SE Guidance: What This Means/i);
+    fireEvent.click(guidanceToggle);
+
+    await waitFor(() => {
+      expect(screen.getByText(/For Testing:/i)).toBeInTheDocument();
+      expect(screen.getByText(/For Customers:/i)).toBeInTheDocument();
+      expect(screen.getByText(/Troubleshooting:/i)).toBeInTheDocument();
+    });
+  });
+
   it('displays error when sending fails', async () => {
     (apiClient.sendWebhook as any).mockRejectedValue(
       new Error('Network error')

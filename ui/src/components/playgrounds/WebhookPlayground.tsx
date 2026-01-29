@@ -276,6 +276,45 @@ export default function WebhookPlayground() {
                 </div>
               </div>
 
+              {/* Success Info - Built-in Receiver Verification */}
+              {result.webhookStatus === 200 && result.webhookResponseBody?.verified && (
+                <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="flex items-start">
+                    <span className="text-blue-600 mr-2 text-lg">ℹ️</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-blue-900 mb-2">
+                        Webhook Received & Verified Successfully
+                      </p>
+                      <p className="text-xs text-blue-800 mb-2">
+                        The webhook was delivered to the built-in receiver and the HMAC-SHA256 signature was verified successfully.
+                        This confirms your webhook configuration is correct.
+                      </p>
+                      {result.webhookResponseBody.signature?.match && (
+                        <div className="text-xs text-blue-700 bg-blue-100 p-2 rounded mt-2">
+                          <div className="font-medium mb-1">✓ Signature Verification Details:</div>
+                          <div className="font-mono text-xs space-y-1">
+                            <div>Expected: {result.webhookResponseBody.signature.expected?.substring(0, 16)}...</div>
+                            <div>Received: {result.webhookResponseBody.signature.received?.substring(0, 16)}...</div>
+                            <div className="text-green-700 font-semibold">Status: Signatures Match</div>
+                          </div>
+                        </div>
+                      )}
+                      <details className="mt-2">
+                        <summary className="text-xs text-blue-600 cursor-pointer hover:text-blue-800 font-medium">
+                          SE Guidance: What This Means
+                        </summary>
+                        <div className="mt-2 text-xs text-blue-800 space-y-1 pl-2 border-l-2 border-blue-300">
+                          <p>• <strong>For Testing:</strong> You can use this playground to test different webhook payloads and verify signature generation.</p>
+                          <p>• <strong>For Customers:</strong> Show customers how to verify webhook signatures using HMAC-SHA256 with their secret key.</p>
+                          <p>• <strong>Troubleshooting:</strong> If signatures don't match, check that the customer is using the raw request body (not re-serialized JSON).</p>
+                          <p>• <strong>External Services:</strong> Use webhook.site or similar services to inspect the raw HTTP request including all headers.</p>
+                        </div>
+                      </details>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Response Details */}
               <div className="space-y-2 text-sm">
                 {result.sentAt && (

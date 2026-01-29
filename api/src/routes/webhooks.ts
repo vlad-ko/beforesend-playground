@@ -115,6 +115,7 @@ router.post('/send', async (req: Request, res: Response) => {
         signature,
         webhookStatus: webhookResponse.status,
         webhookStatusText: webhookResponse.statusText,
+        webhookResponseBody: webhookResponse.data, // Include response for verification details
       });
     } catch (webhookError: any) {
       // Webhook send failed, but we still return success for the API call
