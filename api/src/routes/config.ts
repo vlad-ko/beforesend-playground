@@ -4,7 +4,7 @@
 
 import { Router, Request, Response } from 'express';
 import { configDictionary } from '../config-dictionary';
-import { JavaScriptConfigParser } from '../config-parsers';
+import { JavaScriptConfigParser, PythonConfigParser } from '../config-parsers';
 import { ConfigAnalyzer } from '../config-analyzer';
 
 const router = Router();
@@ -12,6 +12,9 @@ const router = Router();
 // Create parser and analyzer instances
 const jsParser = new JavaScriptConfigParser();
 const jsAnalyzer = new ConfigAnalyzer(jsParser);
+
+const pyParser = new PythonConfigParser();
+const pyAnalyzer = new ConfigAnalyzer(pyParser);
 
 /**
  * POST /api/config/analyze
@@ -27,15 +30,23 @@ router.post('/analyze', async (req: Request, res: Response) => {
       });
     }
 
-    // For now, only JavaScript is supported
-    if (sdk !== 'javascript') {
-      return res.status(400).json({
-        error: `SDK "${sdk}" is not yet supported. Currently supported: javascript`,
-      });
+    // Select the appropriate analyzer based on SDK
+    let analyzer;
+    switch (sdk) {
+      case 'javascript':
+        analyzer = jsAnalyzer;
+        break;
+      case 'python':
+        analyzer = pyAnalyzer;
+        break;
+      default:
+        return res.status(400).json({
+          error: `SDK "${sdk}" is not yet supported. Currently supported: javascript, python`,
+        });
     }
 
     // Analyze the configuration
-    const result = jsAnalyzer.analyze(configCode, sdk);
+    const result = analyzer.analyze(configCode, sdk);
 
     return res.json({
       success: true,

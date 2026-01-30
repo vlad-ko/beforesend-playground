@@ -1,0 +1,10 @@
+{
+  "id": "py-performance",
+  "name": "Python - Performance Monitoring",
+  "description": "Advanced configuration with performance monitoring and profiling",
+  "sdk": "python",
+  "complexity": "intermediate",
+  "useCase": "High-performance Python services with custom sampling logic",
+  "seGuidance": "Perfect for customers who want fine-grained control over performance sampling. The traces_sampler function allows dynamic sampling based on request properties (e.g., sample 100% of critical endpoints, 10% of others). Profiling (profiles_sample_rate) provides CPU/memory insights but adds overhead - start with 0.1 (10%) and adjust based on performance impact.",
+  "configCode": "import sentry_sdk\n\nsentry_sdk.init(\n    dsn=\"https://examplePublicKey@o0.ingest.sentry.io/0\",\n    environment=\"production\",\n    release=\"my-app@2.0.0\",\n    \n    # Performance monitoring at 10%\n    traces_sample_rate=0.1,\n    \n    # Or use custom sampler for dynamic sampling\n    traces_sampler=lambda sampling_context: (\n        # Sample 100% of API endpoints\n        1.0 if \"/api/\" in sampling_context.get(\"wsgi_environ\", {}).get(\"PATH_INFO\", \"\")\n        # Sample 10% of everything else\n        else 0.1\n    ),\n    \n    # Profile 10% of sampled transactions\n    # Provides CPU/memory profiling data\n    profiles_sample_rate=0.1,\n    \n    # Enable tracing (required for performance monitoring)\n    enable_tracing=True,\n)"
+}
