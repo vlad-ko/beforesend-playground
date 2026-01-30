@@ -12,7 +12,7 @@ export const performanceOptions: ConfigOption[] = [
     type: 'array',
     category: 'performance',
     required: false,
-    defaultValue: ['localhost', /^\//],
+    defaultValue: ['localhost', '/^\\//'],
     examples: [
       '["localhost", /^\\/api/]',
       '["https://api.myapp.com", /^https:\\/\\/.*\\.myapp\\.com/]',
