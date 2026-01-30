@@ -20,6 +20,48 @@ export class ConfigAnalyzer {
   }
 
   /**
+   * Convert snake_case to camelCase
+   * Used to normalize Python option names (traces_sample_rate -> tracesSampleRate)
+   */
+  private snakeToCamelCase(str: string): string {
+    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+  }
+
+  /**
+   * Normalize option key to camelCase for dictionary lookup
+   */
+  private normalizeKey(key: string): string {
+    if (key.includes('_')) {
+      return this.snakeToCamelCase(key);
+    }
+    return key;
+  }
+
+  /**
+   * Convert camelCase to snake_case
+   * Used to check Python options (tracesSampleRate -> traces_sample_rate)
+   */
+  private camelToSnakeCase(str: string): string {
+    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  }
+
+  /**
+   * Check if parsed options contain a key (handles both snake_case and camelCase)
+   */
+  private parsedOptionsHas(options: Map<string, ParsedOption>, key: string): boolean {
+    // Check the key as-is first
+    if (options.has(key)) {
+      return true;
+    }
+    // Try snake_case version for Python configs
+    const snakeKey = this.camelToSnakeCase(key);
+    if (options.has(snakeKey)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Analyze a configuration code string
    */
   analyze(configCode: string, sdk: string): AnalysisResult {
@@ -81,7 +123,9 @@ export class ConfigAnalyzer {
    * Analyze a single configuration option
    */
   private analyzeOption(parsedOption: ParsedOption, sdk: string): OptionAnalysis {
-    const dictOption = configDictionary.getOption(parsedOption.key);
+    // Normalize key for dictionary lookup (handles Python snake_case -> camelCase)
+    const normalizedKey = this.normalizeKey(parsedOption.key);
+    const dictOption = configDictionary.getOption(normalizedKey);
 
     const analysis: OptionAnalysis = {
       key: parsedOption.key,
@@ -139,9 +183,11 @@ export class ConfigAnalyzer {
    */
   private validateOptionValue(parsedOption: ParsedOption, dictOption: any): Warning[] {
     const warnings: Warning[] = [];
+    // Normalize key for comparisons (handles Python snake_case)
+    const normalizedKey = this.normalizeKey(parsedOption.key);
 
     // Check DSN format
-    if (parsedOption.key === 'dsn') {
+    if (normalizedKey === 'dsn') {
       if (typeof parsedOption.value === 'string') {
         if (!parsedOption.value.startsWith('https://')) {
           warnings.push({
@@ -162,7 +208,7 @@ export class ConfigAnalyzer {
     }
 
     // Check sample rates
-    if (parsedOption.key === 'sampleRate' || parsedOption.key === 'tracesSampleRate' || parsedOption.key === 'profilesSampleRate') {
+    if (normalizedKey === 'sampleRate' || normalizedKey === 'tracesSampleRate' || normalizedKey === 'profilesSampleRate') {
       if (parsedOption.type === 'number') {
         const rate = parsedOption.value;
         if (rate < 0 || rate > 1) {
@@ -175,7 +221,7 @@ export class ConfigAnalyzer {
         }
 
         // Warn about 100% sampling in production
-        if (parsedOption.key === 'tracesSampleRate' && rate === 1.0) {
+        if (normalizedKey === 'tracesSampleRate' && rate === 1.0) {
           warnings.push({
             severity: 'warning',
             message: '100% transaction sampling may quickly exhaust quota in production',
@@ -187,27 +233,27 @@ export class ConfigAnalyzer {
     }
 
     // Check debug mode
-    if (parsedOption.key === 'debug' && parsedOption.value === true) {
+    if (normalizedKey === 'debug' && parsedOption.value === true) {
       warnings.push({
         severity: 'warning',
         message: 'Debug mode should be disabled in production',
-        optionKey: 'debug',
+        optionKey: parsedOption.key,
         fix: 'Set debug: false for production environments',
       });
     }
 
     // Check sendDefaultPii
-    if (parsedOption.key === 'sendDefaultPii' && parsedOption.value === true) {
+    if (normalizedKey === 'sendDefaultPii' && parsedOption.value === true) {
       warnings.push({
         severity: 'warning',
         message: 'Sending default PII may violate privacy regulations',
-        optionKey: 'sendDefaultPii',
+        optionKey: parsedOption.key,
         fix: 'Consider using beforeSend for fine-grained PII control',
       });
     }
 
     // Check environment
-    if (parsedOption.key === 'environment') {
+    if (normalizedKey === 'environment') {
       if (typeof parsedOption.value === 'string' && parsedOption.value === 'production') {
         // This is fine, but note it
       }
@@ -224,7 +270,7 @@ export class ConfigAnalyzer {
     const requiredOptions = configDictionary.getRequiredOptions();
 
     for (const required of requiredOptions) {
-      if (!parsed.options.has(required.key)) {
+      if (!this.parsedOptionsHas(parsed.options, required.key)) {
         warnings.push({
           severity: 'error',
           message: `Missing required option: ${required.key}`,
@@ -244,7 +290,7 @@ export class ConfigAnalyzer {
     const recommendations: Recommendation[] = [];
 
     // Check if environment is set
-    if (!parsed.options.has('environment')) {
+    if (!this.parsedOptionsHas(parsed.options, 'environment')) {
       recommendations.push({
         title: 'Set environment',
         description: 'Setting the environment helps separate events from different deployment stages',
@@ -255,7 +301,7 @@ export class ConfigAnalyzer {
     }
 
     // Check if release is set
-    if (!parsed.options.has('release')) {
+    if (!this.parsedOptionsHas(parsed.options, 'release')) {
       recommendations.push({
         title: 'Set release version',
         description: 'Setting release enables features like suspect commits and release health tracking',
@@ -266,7 +312,7 @@ export class ConfigAnalyzer {
     }
 
     // Check for tracesSampleRate if not set
-    if (!parsed.options.has('tracesSampleRate') && !parsed.options.has('enableTracing')) {
+    if (!this.parsedOptionsHas(parsed.options, 'tracesSampleRate') && !this.parsedOptionsHas(parsed.options, 'enableTracing')) {
       recommendations.push({
         title: 'Enable performance monitoring',
         description: 'Add tracesSampleRate to enable performance monitoring and track application performance',
@@ -277,7 +323,7 @@ export class ConfigAnalyzer {
     }
 
     // Recommend beforeSend for PII scrubbing
-    if (!parsed.options.has('beforeSend')) {
+    if (!this.parsedOptionsHas(parsed.options, 'beforeSend')) {
       recommendations.push({
         title: 'Add beforeSend for PII scrubbing',
         description: 'Use beforeSend to remove sensitive data before events are sent to Sentry',
@@ -288,7 +334,7 @@ export class ConfigAnalyzer {
     }
 
     // Check for ignoreErrors
-    if (!parsed.options.has('ignoreErrors')) {
+    if (!this.parsedOptionsHas(parsed.options, 'ignoreErrors')) {
       recommendations.push({
         title: 'Filter known errors with ignoreErrors',
         description: 'Use ignoreErrors to filter out browser quirks and third-party errors',
@@ -323,9 +369,9 @@ export class ConfigAnalyzer {
     score -= mediumPriorityRecs.length * 5;
 
     // Bonus for having good options
-    if (parsed.options.has('environment')) score += 5;
-    if (parsed.options.has('release')) score += 5;
-    if (parsed.options.has('beforeSend')) score += 5;
+    if (this.parsedOptionsHas(parsed.options, 'environment')) score += 5;
+    if (this.parsedOptionsHas(parsed.options, 'release')) score += 5;
+    if (this.parsedOptionsHas(parsed.options, 'beforeSend')) score += 5;
 
     // Ensure score is within bounds
     return Math.max(0, Math.min(100, score));
