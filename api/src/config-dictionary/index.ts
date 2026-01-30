@@ -12,6 +12,9 @@ import { hooksOptions } from './hooks-options';
 import { filteringOptions } from './filtering-options';
 import { integrationsOptions } from './integrations-options';
 import { transportOptions } from './transport-options';
+import { performanceOptions } from './performance-options';
+import { contextOptions } from './context-options';
+import { replayOptions } from './replay-options';
 
 const categoryDescriptions: Record<ConfigCategory, { name: string; description: string }> = {
   core: {
@@ -64,6 +67,9 @@ export class ConfigDictionary {
       ...filteringOptions,
       ...integrationsOptions,
       ...transportOptions,
+      ...performanceOptions,
+      ...contextOptions,
+      ...replayOptions,
     ];
 
     this.options = new Map();
