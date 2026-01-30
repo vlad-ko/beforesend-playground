@@ -102,6 +102,100 @@ export interface SendWebhookResponse {
   details?: string;
 }
 
+// Config Analyzer Types
+export type WarningSeverity = 'error' | 'warning' | 'info';
+
+export interface ConfigWarning {
+  severity: WarningSeverity;
+  message: string;
+  optionKey?: string;
+  fix?: string;
+}
+
+export interface ConfigRecommendation {
+  title: string;
+  description: string;
+  optionKey?: string;
+  priority: 'high' | 'medium' | 'low';
+  example?: string;
+}
+
+export interface OptionAnalysis {
+  key: string;
+  displayName: string;
+  value: any;
+  rawValue: string;
+  type: string;
+  category: string;
+  description: string;
+  seGuidance?: string;
+  docsUrl?: string;
+  recognized: boolean;
+  warnings: ConfigWarning[];
+}
+
+export interface AnalysisResult {
+  valid: boolean;
+  sdk: string;
+  summary: string;
+  options: OptionAnalysis[];
+  warnings: ConfigWarning[];
+  recommendations: ConfigRecommendation[];
+  score: number;
+  parseErrors: Array<{ message: string; line?: number; column?: number }>;
+}
+
+export interface AnalyzeConfigRequest {
+  configCode: string;
+  sdk: string;
+}
+
+export interface AnalyzeConfigResponse {
+  success: boolean;
+  data?: AnalysisResult;
+  error?: string;
+  message?: string;
+}
+
+export interface ConfigOption {
+  key: string;
+  displayName: string;
+  description: string;
+  type: string;
+  category: string;
+  required: boolean;
+  defaultValue?: any;
+  examples?: string[];
+  docsUrl?: string;
+  seGuidance?: string;
+  warnings?: string[];
+  relatedOptions?: string[];
+  supportedSDKs?: string[];
+}
+
+export interface ConfigOptionsResponse {
+  success: boolean;
+  data?: {
+    options: ConfigOption[];
+    categories: Record<string, { name: string; description: string }>;
+    totalCount: number;
+  };
+  error?: string;
+}
+
+export interface ConfigExample {
+  id: string;
+  name: string;
+  description: string;
+  sdk: string;
+  configCode: string;
+}
+
+export interface ConfigExamplesResponse {
+  success: boolean;
+  examples: ConfigExample[];
+}
+
 export const apiClient = {
   async transform(request: TransformRequest): Promise<TransformResponse> {
     const response = await axios.post<TransformResponse>(
@@ -180,6 +274,45 @@ export const apiClient = {
         },
         timeout: 15000, // 15 second timeout
       }
+    );
+    return response.data;
+  },
+
+  async analyzeConfig(request: AnalyzeConfigRequest): Promise<AnalyzeConfigResponse> {
+    const response = await axios.post<AnalyzeConfigResponse>(
+      `${API_URL}/api/config/analyze`,
+      request,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        timeout: 10000, // 10 second timeout
+      }
+    );
+    return response.data;
+  },
+
+  async getConfigOptions(category?: string, search?: string): Promise<ConfigOptionsResponse> {
+    const params = new URLSearchParams();
+    if (category) params.append('category', category);
+    if (search) params.append('search', search);
+
+    const response = await axios.get<ConfigOptionsResponse>(
+      `${API_URL}/api/config/options?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  async getConfigOption(key: string): Promise<{ success: boolean; data?: ConfigOption; error?: string }> {
+    const response = await axios.get<{ success: boolean; data?: ConfigOption; error?: string }>(
+      `${API_URL}/api/config/options/${key}`
+    );
+    return response.data;
+  },
+
+  async getConfigExamples(): Promise<ConfigExamplesResponse> {
+    const response = await axios.get<ConfigExamplesResponse>(
+      `${API_URL}/api/config/examples`
     );
     return response.data;
   },

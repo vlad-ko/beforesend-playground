@@ -1,0 +1,7 @@
+{
+  "id": "js-basic",
+  "name": "JavaScript - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in a production application",
+  "sdk": "javascript",
+  "configCode": "Sentry.init({\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  environment: \"production\",\n  release: \"my-app@1.0.0\",\n});"
+}
