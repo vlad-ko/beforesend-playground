@@ -44,10 +44,24 @@ function filterExamples(examples: ConfigExample[], query: string): ConfigExample
       example.name,
       example.sdk,
       example.description,
+      example.useCase || '',
     ].join(' ').toLowerCase();
 
     return terms.every(term => searchText.includes(term));
   });
+}
+
+function getComplexityBadge(complexity?: string): { color: string; label: string } {
+  switch (complexity) {
+    case 'basic':
+      return { color: 'bg-green-100 text-green-800', label: 'Basic' };
+    case 'intermediate':
+      return { color: 'bg-blue-100 text-blue-800', label: 'Intermediate' };
+    case 'advanced':
+      return { color: 'bg-purple-100 text-purple-800', label: 'Advanced' };
+    default:
+      return { color: 'bg-gray-100 text-gray-800', label: 'General' };
+  }
 }
 
 function SearchableConfigExampleSelector({ onSelect }: SearchableConfigExampleSelectorProps) {
@@ -156,29 +170,37 @@ function SearchableConfigExampleSelector({ onSelect }: SearchableConfigExampleSe
                     {query ? `No examples found for "${query}"` : 'No examples available'}
                   </div>
                 ) : (
-                  filteredExamples.map((example) => (
-                    <Combobox.Option
-                      key={example.id}
-                      value={example}
-                      className={({ active }) =>
-                        `cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 ${
-                          active ? 'bg-purple-50' : 'bg-white hover:bg-gray-50'
-                        }`
-                      }
-                    >
-                      <div>
-                        <div className="font-semibold text-gray-900 mb-1">
-                          {highlightText(example.name, query)}
+                  filteredExamples.map((example) => {
+                    const complexityBadge = getComplexityBadge(example.complexity);
+                    return (
+                      <Combobox.Option
+                        key={example.id}
+                        value={example}
+                        className={({ active }) =>
+                          `cursor-pointer px-4 py-3 border-b border-gray-100 last:border-b-0 ${
+                            active ? 'bg-purple-50' : 'bg-white hover:bg-gray-50'
+                          }`
+                        }
+                      >
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-gray-900">
+                              {highlightText(example.name, query)}
+                            </span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${complexityBadge.color}`}>
+                              {complexityBadge.label}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600 mb-1">
+                            {highlightText(example.useCase || example.description, query)}
+                          </div>
+                          <div className="text-xs text-gray-500 uppercase font-medium">
+                            {example.sdk}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600 mb-2">
-                          {highlightText(example.description, query)}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          SDK: {example.sdk}
-                        </div>
-                      </div>
-                    </Combobox.Option>
-                  ))
+                      </Combobox.Option>
+                    );
+                  })
                 )}
               </div>
             </Combobox.Options>

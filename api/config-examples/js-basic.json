@@ -3,5 +3,8 @@
   "name": "JavaScript - Basic Setup",
   "description": "Minimal Sentry configuration for error tracking in a production application",
   "sdk": "javascript",
-  "configCode": "Sentry.init({\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  environment: \"production\",\n  release: \"my-app@1.0.0\",\n});"
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking",
+  "seGuidance": "Perfect for customers who are just getting started with Sentry. This configuration captures all errors and includes essential context (environment, release) for debugging. Recommend adding performance monitoring once error tracking is stable.",
+  "configCode": "Sentry.init({\n  // Your DSN from Sentry project settings\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  \n  // Identify the environment (production, staging, development)\n  environment: \"production\",\n  \n  // Track which version of your app is deployed\n  release: \"my-app@1.0.0\",\n});"
 }

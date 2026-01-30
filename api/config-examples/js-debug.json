@@ -1,7 +1,0 @@
-{
-  "id": "js-debug",
-  "name": "JavaScript - Debug Mode (Development)",
-  "description": "Configuration for local development with debug mode enabled",
-  "sdk": "javascript",
-  "configCode": "Sentry.init({\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  environment: \"development\",\n  \n  // Enable debug mode for development\n  debug: true,\n  \n  // Capture 100% of events in dev\n  tracesSampleRate: 1.0,\n  \n  // More breadcrumbs for debugging\n  maxBreadcrumbs: 200,\n});"
-}
