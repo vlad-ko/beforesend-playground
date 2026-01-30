@@ -117,10 +117,10 @@ export default function ConfigAnalyzerPlayground() {
         <div className="border border-gray-300 rounded-md overflow-hidden">
           <Editor
             height="300px"
-            defaultLanguage="javascript"
+            language={sdk === 'python' ? 'python' : 'javascript'}
             value={configCode}
             onChange={(value) => setConfigCode(value || '')}
-            theme="vs-light"
+            theme="vs-dark"
             options={{
               minimap: { enabled: false },
               fontSize: 14,
