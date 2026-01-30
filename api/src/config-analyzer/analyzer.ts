@@ -316,11 +316,11 @@ export class ConfigAnalyzer {
 
     // Check for tracesSampleRate if not set
     if (!this.parsedOptionsHas(parsed.options, 'tracesSampleRate') && !this.parsedOptionsHas(parsed.options, 'enableTracing')) {
-      const optionKey = formatKeyForSDK('tracesSampleRate', sdk);
+      const displayKey = formatKeyForSDK('tracesSampleRate', sdk);
       recommendations.push({
         title: 'Enable performance monitoring',
-        description: `Add ${optionKey} to enable performance monitoring and track application performance`,
-        optionKey,
+        description: `Add ${displayKey} to enable performance monitoring and track application performance`,
+        optionKey: 'tracesSampleRate', // Canonical key for lookups
         priority: 'medium',
         example: formatExample('tracesSampleRate', '0.1', sdk, 'Sample 10% of transactions'),
       });
@@ -328,25 +328,25 @@ export class ConfigAnalyzer {
 
     // Recommend beforeSend for PII scrubbing
     if (!this.parsedOptionsHas(parsed.options, 'beforeSend')) {
-      const optionKey = formatKeyForSDK('beforeSend', sdk);
+      const displayKey = formatKeyForSDK('beforeSend', sdk);
       recommendations.push({
-        title: `Add ${optionKey} for PII scrubbing`,
-        description: `Use ${optionKey} to remove sensitive data before events are sent to Sentry`,
-        optionKey,
+        title: `Add ${displayKey} for PII scrubbing`,
+        description: `Use ${displayKey} to remove sensitive data before events are sent to Sentry`,
+        optionKey: 'beforeSend', // Canonical key for lookups
         priority: 'medium',
-        example: `${optionKey}${sdkConfig.assignmentOperator}${getLambdaExample(sdk)}`,
+        example: `${displayKey}${sdkConfig.assignmentOperator}${getLambdaExample(sdk)}`,
       });
     }
 
     // Check for ignoreErrors
     if (!this.parsedOptionsHas(parsed.options, 'ignoreErrors')) {
-      const optionKey = formatKeyForSDK('ignoreErrors', sdk);
+      const displayKey = formatKeyForSDK('ignoreErrors', sdk);
       recommendations.push({
-        title: `Filter known errors with ${optionKey}`,
+        title: `Filter known errors with ${displayKey}`,
         description: isSnakeCase
-          ? `Use ${optionKey} to filter out known exceptions and reduce noise`
-          : `Use ${optionKey} to filter out browser quirks and third-party errors`,
-        optionKey,
+          ? `Use ${displayKey} to filter out known exceptions and reduce noise`
+          : `Use ${displayKey} to filter out browser quirks and third-party errors`,
+        optionKey: 'ignoreErrors', // Canonical key for lookups
         priority: 'low',
         example: formatExample('ignoreErrors', '["ConnectionError", "TimeoutError"]', sdk),
       });
