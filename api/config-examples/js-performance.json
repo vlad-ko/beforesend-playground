@@ -1,7 +1,0 @@
-{
-  "id": "js-performance",
-  "name": "JavaScript - Performance Monitoring",
-  "description": "Configuration with performance monitoring enabled and custom sampling",
-  "sdk": "javascript",
-  "configCode": "Sentry.init({\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  environment: \"production\",\n  release: \"my-app@2.0.0\",\n  \n  // Enable performance monitoring\n  tracesSampleRate: 0.1,\n  \n  // Or use custom sampler\n  tracesSampler: (samplingContext) => {\n    if (samplingContext.request?.url?.includes('/api/')) {\n      return 1.0; // 100% for API calls\n    }\n    return 0.1; // 10% for everything else\n  },\n  \n  // Profile 10% of transactions\n  profilesSampleRate: 0.1,\n});"
-}

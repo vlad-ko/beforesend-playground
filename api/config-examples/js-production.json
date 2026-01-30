@@ -1,0 +1,10 @@
+{
+  "id": "js-production",
+  "name": "JavaScript - Production Setup",
+  "description": "Comprehensive configuration for production with filtering, sampling, and performance monitoring",
+  "sdk": "javascript",
+  "complexity": "intermediate",
+  "useCase": "Production deployment with quota management and performance monitoring",
+  "seGuidance": "Recommended for customers concerned about quota usage or dealing with high-volume applications. Combines error filtering (ignoreErrors, denyUrls) to reduce noise, sampling to control costs, and performance monitoring for full observability. Adjust sample rates based on traffic volume.",
+  "configCode": "Sentry.init({\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  environment: \"production\",\n  release: \"my-app@2.0.0\",\n  \n  // === Error Filtering ===\n  \n  // Ignore known browser errors that aren't actionable\n  ignoreErrors: [\n    'Script error',\n    'ResizeObserver loop limit exceeded',\n    /NetworkError/i,\n  ],\n  \n  // Ignore errors from browser extensions (not your code)\n  denyUrls: [\n    /chrome-extension:/,\n    /extensions\\//,\n    /^file:\\/\\//,\n  ],\n  \n  // Only capture errors from your domain\n  allowUrls: [\n    /https?:\\/\\/(www\\.)?myapp\\.com/,\n  ],\n  \n  // === Sampling for Quota Management ===\n  \n  // Capture 50% of errors (reduces quota usage)\n  sampleRate: 0.5,\n  \n  // === Performance Monitoring ===\n  \n  // Capture 10% of transactions for performance data\n  tracesSampleRate: 0.1,\n  \n  // Or use custom sampler for more control\n  tracesSampler: (samplingContext) => {\n    // Sample 100% of critical API calls\n    if (samplingContext.request?.url?.includes('/api/checkout')) {\n      return 1.0;\n    }\n    // Sample 10% of everything else\n    return 0.1;\n  },\n  \n  // Filter out health check transactions (noise reduction)\n  ignoreTransactions: [\n    'GET /health',\n    'GET /ping',\n    /^OPTIONS/,\n  ],\n  \n  // Profile 10% of sampled transactions (CPU/memory profiling)\n  profilesSampleRate: 0.1,\n});"
+}

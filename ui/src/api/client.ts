@@ -189,6 +189,9 @@ export interface ConfigExample {
   description: string;
   sdk: string;
   configCode: string;
+  complexity?: 'basic' | 'intermediate' | 'advanced';
+  useCase?: string;
+  seGuidance?: string;
 }
 
 export interface ConfigExamplesResponse {
