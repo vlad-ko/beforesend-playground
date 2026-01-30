@@ -11,6 +11,7 @@
 import { configDictionary } from '../config-dictionary';
 import { IConfigParser, ParsedConfig, ParsedOption } from '../config-parsers/types';
 import { AnalysisResult, OptionAnalysis, Warning, Recommendation, WarningSeverity } from './types';
+import { getSDKConfig, formatKeyForSDK, formatExample, getLambdaExample, usesSnakeCase } from './sdk-config';
 
 export class ConfigAnalyzer {
   private parser: IConfigParser;
@@ -288,6 +289,8 @@ export class ConfigAnalyzer {
    */
   private generateRecommendations(parsed: ParsedConfig, sdk: string): Recommendation[] {
     const recommendations: Recommendation[] = [];
+    const sdkConfig = getSDKConfig(sdk);
+    const isSnakeCase = usesSnakeCase(sdk);
 
     // Check if environment is set
     if (!this.parsedOptionsHas(parsed.options, 'environment')) {
@@ -296,7 +299,7 @@ export class ConfigAnalyzer {
         description: 'Setting the environment helps separate events from different deployment stages',
         optionKey: 'environment',
         priority: 'high',
-        example: 'environment: "production"',
+        example: formatExample('environment', 'production', sdk),
       });
     }
 
@@ -307,40 +310,45 @@ export class ConfigAnalyzer {
         description: 'Setting release enables features like suspect commits and release health tracking',
         optionKey: 'release',
         priority: 'high',
-        example: 'release: "my-app@1.0.0"',
+        example: formatExample('release', 'my-app@1.0.0', sdk),
       });
     }
 
     // Check for tracesSampleRate if not set
     if (!this.parsedOptionsHas(parsed.options, 'tracesSampleRate') && !this.parsedOptionsHas(parsed.options, 'enableTracing')) {
+      const displayKey = formatKeyForSDK('tracesSampleRate', sdk);
       recommendations.push({
         title: 'Enable performance monitoring',
-        description: 'Add tracesSampleRate to enable performance monitoring and track application performance',
-        optionKey: 'tracesSampleRate',
+        description: `Add ${displayKey} to enable performance monitoring and track application performance`,
+        optionKey: 'tracesSampleRate', // Canonical key for lookups
         priority: 'medium',
-        example: 'tracesSampleRate: 0.1  // Sample 10% of transactions',
+        example: formatExample('tracesSampleRate', '0.1', sdk, 'Sample 10% of transactions'),
       });
     }
 
     // Recommend beforeSend for PII scrubbing
     if (!this.parsedOptionsHas(parsed.options, 'beforeSend')) {
+      const displayKey = formatKeyForSDK('beforeSend', sdk);
       recommendations.push({
-        title: 'Add beforeSend for PII scrubbing',
-        description: 'Use beforeSend to remove sensitive data before events are sent to Sentry',
-        optionKey: 'beforeSend',
+        title: `Add ${displayKey} for PII scrubbing`,
+        description: `Use ${displayKey} to remove sensitive data before events are sent to Sentry`,
+        optionKey: 'beforeSend', // Canonical key for lookups
         priority: 'medium',
-        example: 'beforeSend: (event) => { delete event.user; return event; }',
+        example: `${displayKey}${sdkConfig.assignmentOperator}${getLambdaExample(sdk)}`,
       });
     }
 
     // Check for ignoreErrors
     if (!this.parsedOptionsHas(parsed.options, 'ignoreErrors')) {
+      const displayKey = formatKeyForSDK('ignoreErrors', sdk);
       recommendations.push({
-        title: 'Filter known errors with ignoreErrors',
-        description: 'Use ignoreErrors to filter out browser quirks and third-party errors',
-        optionKey: 'ignoreErrors',
+        title: `Filter known errors with ${displayKey}`,
+        description: isSnakeCase
+          ? `Use ${displayKey} to filter out known exceptions and reduce noise`
+          : `Use ${displayKey} to filter out browser quirks and third-party errors`,
+        optionKey: 'ignoreErrors', // Canonical key for lookups
         priority: 'low',
-        example: 'ignoreErrors: ["Script error", /ResizeObserver/]',
+        example: formatExample('ignoreErrors', '["ConnectionError", "TimeoutError"]', sdk),
       });
     }
 

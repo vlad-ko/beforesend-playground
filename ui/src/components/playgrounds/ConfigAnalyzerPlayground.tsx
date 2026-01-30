@@ -117,10 +117,10 @@ export default function ConfigAnalyzerPlayground() {
         <div className="border border-gray-300 rounded-md overflow-hidden">
           <Editor
             height="300px"
-            defaultLanguage="javascript"
+            language={sdk === 'python' ? 'python' : 'javascript'}
             value={configCode}
             onChange={(value) => setConfigCode(value || '')}
-            theme="vs-light"
+            theme="vs-dark"
             options={{
               minimap: { enabled: false },
               fontSize: 14,
@@ -189,16 +189,34 @@ export default function ConfigAnalyzerPlayground() {
             </div>
           )}
 
-          {/* Warnings */}
-          {result.warnings.length > 0 && (
+          {/* Issues (errors and warnings only) */}
+          {result.warnings.filter(w => w.severity === 'error' || w.severity === 'warning').length > 0 && (
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Warnings ({result.warnings.length})
+                Issues ({result.warnings.filter(w => w.severity === 'error' || w.severity === 'warning').length})
               </h3>
               <div className="space-y-2">
-                {result.warnings.map((warning, idx) => (
-                  <WarningCard key={idx} warning={warning} />
-                ))}
+                {result.warnings
+                  .filter(w => w.severity === 'error' || w.severity === 'warning')
+                  .map((warning, idx) => (
+                    <WarningCard key={idx} warning={warning} />
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notes (info severity - setting details) */}
+          {result.warnings.filter(w => w.severity === 'info').length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Notes ({result.warnings.filter(w => w.severity === 'info').length})
+              </h3>
+              <div className="space-y-2">
+                {result.warnings
+                  .filter(w => w.severity === 'info')
+                  .map((warning, idx) => (
+                    <WarningCard key={idx} warning={warning} />
+                  ))}
               </div>
             </div>
           )}
