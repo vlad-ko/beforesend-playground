@@ -1,0 +1,10 @@
+{
+  "id": "py-django",
+  "name": "Python - Django Integration",
+  "description": "Sentry configuration for Django applications with automatic request tracking",
+  "sdk": "python",
+  "complexity": "intermediate",
+  "useCase": "Django web applications with performance monitoring",
+  "seGuidance": "Recommended for all Django customers. The DjangoIntegration automatically captures request context, user info, and SQL queries. Performance monitoring is essential for Django apps to identify slow database queries and view functions. Adjust traces_sample_rate based on traffic (high-volume apps may want 0.01-0.1).",
+  "configCode": "import sentry_sdk\nfrom sentry_sdk.integrations.django import DjangoIntegration\n\nsentry_sdk.init(\n    dsn=\"https://examplePublicKey@o0.ingest.sentry.io/0\",\n    environment=\"production\",\n    release=\"my-django-app@1.0.0\",\n    \n    # Django integration for automatic request tracking\n    integrations=[\n        DjangoIntegration(\n            # Capture SQL queries in breadcrumbs\n            transaction_style='url',\n        ),\n    ],\n    \n    # Performance monitoring at 10%\n    traces_sample_rate=0.1,\n    \n    # Capture user context automatically\n    send_default_pii=False,  # Set to True if needed (check privacy policy)\n    \n    # Limit breadcrumbs for performance\n    max_breadcrumbs=50,\n)"
+}

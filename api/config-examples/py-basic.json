@@ -1,0 +1,10 @@
+{
+  "id": "py-basic",
+  "name": "Python - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in Python applications",
+  "sdk": "python",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry in Python projects",
+  "seGuidance": "Ideal for customers new to Sentry or adding error tracking to Python scripts/services. This captures all uncaught exceptions automatically. For web frameworks like Django/Flask, recommend adding the framework-specific integration for better context.",
+  "configCode": "import sentry_sdk\n\nsentry_sdk.init(\n    # Your DSN from Sentry project settings\n    dsn=\"https://examplePublicKey@o0.ingest.sentry.io/0\",\n    \n    # Identify the environment\n    environment=\"production\",\n    \n    # Track which version is deployed\n    release=\"my-app@1.0.0\",\n)"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "py-flask",
+  "name": "Python - Flask Integration",
+  "description": "Sentry configuration for Flask applications with error filtering",
+  "sdk": "python",
+  "complexity": "intermediate",
+  "useCase": "Flask APIs with custom error filtering and transaction control",
+  "seGuidance": "Great for Flask customers building APIs. The FlaskIntegration captures request/response data automatically. The ignore_errors list prevents common HTTP exceptions (404s) from creating noise. The before_send_transaction hook filters out health checks, which is critical for high-volume APIs to save quota.",
+  "configCode": "import sentry_sdk\nfrom sentry_sdk.integrations.flask import FlaskIntegration\n\nsentry_sdk.init(\n    dsn=\"https://examplePublicKey@o0.ingest.sentry.io/0\",\n    environment=\"production\",\n    release=\"my-flask-app@1.0.0\",\n    \n    # Flask integration\n    integrations=[\n        FlaskIntegration(),\n    ],\n    \n    # Ignore common HTTP exceptions (404s create noise)\n    ignore_errors=[\n        \"werkzeug.exceptions.NotFound\",\n    ],\n    \n    # Performance monitoring at 10%\n    traces_sample_rate=0.1,\n    \n    # Filter out health check transactions (saves quota)\n    before_send_transaction=lambda event, hint: (\n        None if event.get(\"transaction\") == \"/health\" else event\n    ),\n)"
+}
