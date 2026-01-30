@@ -4,8 +4,9 @@
   "description": "API Gateway for SDK Playground testing",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && npm run copy-templates",
+    "build": "tsc && npm run copy-templates && npm run copy-config-examples",
     "copy-templates": "mkdir -p dist/webhook-templates && cp src/webhook-templates/*.json dist/webhook-templates/",
+    "copy-config-examples": "mkdir -p dist/config-examples && cp config-examples/*.json dist/config-examples/",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "test": "jest",

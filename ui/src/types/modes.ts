@@ -5,7 +5,8 @@
 export type PlaygroundMode =
   | 'beforeSend'
   | 'beforeSendTransaction'
-  | 'webhooks';
+  | 'webhooks'
+  | 'configAnalyzer';
 
 export interface ModeConfig {
   id: PlaygroundMode;
@@ -36,5 +37,12 @@ export const MODES: ModeConfig[] = [
     description: 'Test Sentry webhook integrations',
     helpText: 'Webhooks allow you to receive HTTP callbacks when events occur in your Sentry projects. Test your webhook endpoints and validate payload handling with real Sentry event data.',
     docsUrl: 'https://docs.sentry.io/product/integrations/integration-platform/webhooks/',
+  },
+  {
+    id: 'configAnalyzer',
+    name: 'Config Analyzer',
+    description: 'Analyze and validate Sentry.init() configurations',
+    helpText: 'The Config Analyzer helps validate your Sentry SDK configuration, provides SE-focused recommendations, and explains what each option does. Paste your Sentry.init() code to get instant feedback.',
+    docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/options/',
   },
 ];

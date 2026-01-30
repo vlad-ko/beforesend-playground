@@ -1,0 +1,7 @@
+{
+  "id": "js-pii-scrubbing",
+  "name": "JavaScript - PII Scrubbing",
+  "description": "Configuration with beforeSend for removing personally identifiable information",
+  "sdk": "javascript",
+  "configCode": "Sentry.init({\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  environment: \"production\",\n  release: \"my-app@1.0.0\",\n  \n  // Scrub PII before sending\n  beforeSend: (event, hint) => {\n    // Remove user email\n    if (event.user) {\n      delete event.user.email;\n      delete event.user.ip_address;\n    }\n    \n    // Filter sensitive breadcrumbs\n    if (event.breadcrumbs) {\n      event.breadcrumbs = event.breadcrumbs.filter(\n        crumb => !crumb.message?.includes('password')\n      );\n    }\n    \n    return event;\n  },\n  \n  // Don't send default PII\n  sendDefaultPii: false,\n});"
+}

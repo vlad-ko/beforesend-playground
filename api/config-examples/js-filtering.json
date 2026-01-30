@@ -1,0 +1,7 @@
+{
+  "id": "js-filtering",
+  "name": "JavaScript - Error Filtering",
+  "description": "Configuration with comprehensive error and transaction filtering",
+  "sdk": "javascript",
+  "configCode": "Sentry.init({\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  environment: \"production\",\n  release: \"my-app@1.0.0\",\n  \n  // Ignore known browser errors\n  ignoreErrors: [\n    'Script error',\n    'ResizeObserver loop limit exceeded',\n    /NetworkError/i,\n  ],\n  \n  // Ignore errors from browser extensions\n  denyUrls: [\n    /chrome-extension:/,\n    /extensions\\//,\n    /^file:\\/\\//,\n  ],\n  \n  // Only capture errors from your domain\n  allowUrls: [\n    /https?:\\/\\/(www\\.)?myapp\\.com/,\n  ],\n  \n  // Filter out health check transactions\n  ignoreTransactions: [\n    'GET /health',\n    'GET /ping',\n    /^OPTIONS/,\n  ],\n  \n  // Sample only 50% of errors\n  sampleRate: 0.5,\n  \n  // Performance monitoring at 10%\n  tracesSampleRate: 0.1,\n});"
+}

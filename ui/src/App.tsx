@@ -3,6 +3,7 @@ import ModeSelector from './components/ModeSelector';
 import ModeInfo from './components/ModeInfo';
 import BeforeSendPlayground from './components/playgrounds/BeforeSendPlayground';
 import WebhookPlayground from './components/playgrounds/WebhookPlayground';
+import ConfigAnalyzerPlayground from './components/playgrounds/ConfigAnalyzerPlayground';
 import { PlaygroundMode } from './types/modes';
 import sentryLogo from './assets/sentry-logo.png';
 
@@ -40,6 +41,8 @@ function App() {
         );
       case 'webhooks':
         return <WebhookPlayground />;
+      case 'configAnalyzer':
+        return <ConfigAnalyzerPlayground />;
       default:
         return <BeforeSendPlayground />;
     }
