@@ -125,6 +125,24 @@ describe('FingerprintingPlayground', () => {
     });
   });
 
+  it('shows event dropped message when transformedEvent is null', async () => {
+    mockedApiClient.transform.mockResolvedValue({
+      success: true,
+      originalEvent: { event_id: 'abc123' },
+      transformedEvent: null, // Event dropped
+    });
+
+    const user = userEvent.setup();
+    render(<FingerprintingPlayground />);
+
+    const transformButton = screen.getByText('Transform');
+    await user.click(transformButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Event Dropped')).toBeInTheDocument();
+    });
+  });
+
   it('changes SDK and updates default code', async () => {
     const user = userEvent.setup();
     render(<FingerprintingPlayground />);

@@ -172,6 +172,7 @@ export default function FingerprintingPlayground() {
   const editorLanguage = getLanguageForSdk(selectedSdk);
 
   // Extract fingerprint from result
+  const isEventDropped = result?.success && result?.transformedEvent === null;
   const originalFingerprint = result?.originalEvent?.fingerprint;
   const customFingerprint = result?.transformedEvent?.fingerprint;
   const hasCustomFingerprint = customFingerprint && Array.isArray(customFingerprint) && customFingerprint.length > 0;
@@ -273,7 +274,26 @@ export default function FingerprintingPlayground() {
 
         {result ? (
           <div className="space-y-4">
-            {/* Fingerprint Comparison */}
+            {/* Event Dropped Message */}
+            {isEventDropped && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🚫</span>
+                  <div>
+                    <h3 className="font-semibold text-red-800">Event Dropped</h3>
+                    <p className="text-sm text-red-700">
+                      Your callback returned <code className="bg-red-100 px-1 rounded">null</code>, which means
+                      this event will not be sent to Sentry. This is typically used to filter out unwanted events,
+                      not for fingerprinting. To set a custom fingerprint, return the event with <code className="bg-red-100 px-1 rounded">event.fingerprint</code> set.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Fingerprint Comparison - only show if event not dropped */}
+            {!isEventDropped && (
+            <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Default Fingerprint */}
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -343,6 +363,8 @@ export default function FingerprintingPlayground() {
                 </pre>
               </div>
             </details>
+            </>
+            )}
           </div>
         ) : (
           <div className="bg-gray-50 border border-gray-200 rounded p-8 text-center text-gray-500">
