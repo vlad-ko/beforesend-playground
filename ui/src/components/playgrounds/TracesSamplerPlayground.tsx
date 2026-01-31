@@ -465,9 +465,9 @@ export default function TracesSamplerPlayground() {
       </div>
 
       {/* Input/Editor Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-end">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Sampling Context Input */}
-        <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
           <div className="flex justify-between items-start mb-2">
             <div>
               <h3 className="text-lg font-semibold text-gray-800">Test Transaction</h3>
@@ -537,21 +537,25 @@ export default function TracesSamplerPlayground() {
               Static Asset
             </button>
           </div>
-          <EventInput
-            value={samplingContextJson}
-            onChange={setSamplingContextJson}
-            placeholder="Enter sampling context JSON..."
-          />
+          <div className="flex-grow">
+            <EventInput
+              value={samplingContextJson}
+              onChange={setSamplingContextJson}
+              placeholder="Enter sampling context JSON..."
+            />
+          </div>
         </div>
 
         {/* Code Editor */}
-        <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
           <h3 className="text-lg font-semibold mb-3 text-gray-800">tracesSampler Code</h3>
-          <BeforeSendEditor
-            value={tracesSamplerCode}
-            onChange={setTracesSamplerCode}
-            language={editorLanguage}
-          />
+          <div className="flex-grow">
+            <BeforeSendEditor
+              value={tracesSamplerCode}
+              onChange={setTracesSamplerCode}
+              language={editorLanguage}
+            />
+          </div>
         </div>
       </div>
 
