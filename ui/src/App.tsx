@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import ModeSelector from './components/ModeSelector';
 import ModeInfo from './components/ModeInfo';
 import BeforeSendPlayground from './components/playgrounds/BeforeSendPlayground';
+import BeforeSendTransactionPlayground from './components/playgrounds/BeforeSendTransactionPlayground';
 import WebhookPlayground from './components/playgrounds/WebhookPlayground';
 import ConfigAnalyzerPlayground from './components/playgrounds/ConfigAnalyzerPlayground';
 import ApiQueryTesterPlayground from './components/playgrounds/ApiQueryTesterPlayground';
@@ -27,19 +28,7 @@ function App() {
       case 'beforeSend':
         return <BeforeSendPlayground />;
       case 'beforeSendTransaction':
-        return (
-          <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <div className="text-gray-400 mb-4">
-              <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">Coming Soon</h3>
-            <p className="text-gray-500">
-              beforeSendTransaction playground will be available in a future update
-            </p>
-          </div>
-        );
+        return <BeforeSendTransactionPlayground />;
       case 'webhooks':
         return <WebhookPlayground />;
       case 'configAnalyzer':
