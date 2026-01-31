@@ -1,6 +1,6 @@
 # Multi-stage build for Cocoa SDK
 # Stage 1: Build with Swift
-FROM swift:5.9-jammy AS build
+FROM swift:5.10-jammy AS build
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ COPY Tests ./Tests
 RUN swift build -c release
 
 # Stage 2: Runtime with Swift runtime
-FROM swift:5.9-jammy-slim
+FROM swift:5.10-jammy-slim
 
 WORKDIR /app
 

@@ -452,7 +452,51 @@ export default function TracesSamplerPlayground() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Sampling Context Input */}
         <div className="bg-white rounded-lg shadow-md p-4">
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">Sampling Context</h3>
+          <div className="flex justify-between items-start mb-2">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Test Transaction</h3>
+              <p className="text-sm text-gray-500">The transaction to evaluate (one at a time)</p>
+            </div>
+          </div>
+          {/* Quick scenario buttons */}
+          <div className="flex flex-wrap gap-2 mb-3">
+            <button
+              onClick={() => setSamplingContextJson(JSON.stringify({
+                transactionContext: { name: 'POST /api/checkout', op: 'http.server' },
+                parentSampled: true
+              }, null, 2))}
+              className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+            >
+              Checkout
+            </button>
+            <button
+              onClick={() => setSamplingContextJson(JSON.stringify({
+                transactionContext: { name: 'GET /health', op: 'http.server' },
+                parentSampled: false
+              }, null, 2))}
+              className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+            >
+              Health Check
+            </button>
+            <button
+              onClick={() => setSamplingContextJson(JSON.stringify({
+                transactionContext: { name: 'GET /api/users', op: 'http.server' },
+                parentSampled: false
+              }, null, 2))}
+              className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+            >
+              API Call
+            </button>
+            <button
+              onClick={() => setSamplingContextJson(JSON.stringify({
+                transactionContext: { name: 'GET /static/logo.png', op: 'http.server' },
+                parentSampled: false
+              }, null, 2))}
+              className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+            >
+              Static Asset
+            </button>
+          </div>
           <EventInput
             value={samplingContextJson}
             onChange={setSamplingContextJson}
