@@ -1,0 +1,26 @@
+{
+  "id": "drop-health-checks-go",
+  "name": "Drop Health Checks (Go)",
+  "description": "Filter out health check and monitoring endpoints in Go services",
+  "sdk": "go",
+  "type": "beforeSendTransaction",
+  "transaction": {
+    "type": "transaction",
+    "transaction": "GET /health",
+    "transaction_info": {
+      "source": "route"
+    },
+    "contexts": {
+      "trace": {
+        "trace_id": "abc123",
+        "span_id": "span123",
+        "op": "http.server",
+        "status": "ok"
+      }
+    },
+    "spans": [],
+    "start_timestamp": 1704067200.0,
+    "timestamp": 1704067200.050
+  },
+  "beforeSendTransactionCode": "// Drop health check and monitoring transactions\ntxName, _ := event[\"transaction\"].(string)\ndropPatterns := []string{\"/health\", \"/ready\", \"/metrics\", \"/ping\"}\n\nfor _, pattern := range dropPatterns {\n    if strings.Contains(txName, pattern) {\n        return nil // Drop the transaction\n    }\n}\n\nreturn event"
+}

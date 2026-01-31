@@ -29,13 +29,20 @@ export interface SDKsResponse {
   sdks: SDK[];
 }
 
+export type ExampleType = 'beforeSend' | 'beforeSendTransaction';
+
 export interface Example {
   id: string;
   name: string;
   description: string;
   sdk: string;
-  event: Record<string, any>;
-  beforeSendCode: string;
+  type?: ExampleType;
+  // beforeSend examples
+  event?: Record<string, any>;
+  beforeSendCode?: string;
+  // beforeSendTransaction examples
+  transaction?: Record<string, any>;
+  beforeSendTransactionCode?: string;
 }
 
 export interface ExamplesResponse {
@@ -328,8 +335,9 @@ export const apiClient = {
     return response.data;
   },
 
-  async getExamples(): Promise<ExamplesResponse> {
-    const response = await axios.get<ExamplesResponse>(`${API_URL}/api/examples`);
+  async getExamples(type?: ExampleType): Promise<ExamplesResponse> {
+    const params = type ? { type } : {};
+    const response = await axios.get<ExamplesResponse>(`${API_URL}/api/examples`, { params });
     return response.data;
   },
 

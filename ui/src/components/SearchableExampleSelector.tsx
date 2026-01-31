@@ -1,9 +1,10 @@
 import { useState, useEffect, Fragment } from 'react';
 import { Combobox, Transition } from '@headlessui/react';
-import { apiClient, Example } from '../api/client';
+import { apiClient, Example, ExampleType } from '../api/client';
 
 interface SearchableExampleSelectorProps {
   onSelect: (example: Example) => void;
+  type?: ExampleType;
 }
 
 /**
@@ -69,7 +70,7 @@ function filterExamples(examples: Example[], query: string): Example[] {
   });
 }
 
-function SearchableExampleSelector({ onSelect }: SearchableExampleSelectorProps) {
+function SearchableExampleSelector({ onSelect, type }: SearchableExampleSelectorProps) {
   const [examples, setExamples] = useState<Example[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +81,7 @@ function SearchableExampleSelector({ onSelect }: SearchableExampleSelectorProps)
     async function fetchExamples() {
       try {
         setIsLoading(true);
-        const response = await apiClient.getExamples();
+        const response = await apiClient.getExamples(type);
         setExamples(response.examples);
         setError(null);
       } catch (err: any) {
@@ -92,7 +93,7 @@ function SearchableExampleSelector({ onSelect }: SearchableExampleSelectorProps)
     }
 
     fetchExamples();
-  }, []);
+  }, [type]);
 
   const filteredExamples = filterExamples(examples, query);
 

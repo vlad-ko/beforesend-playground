@@ -1,0 +1,26 @@
+{
+  "id": "drop-health-checks-javascript",
+  "name": "Drop Health Checks (JavaScript)",
+  "description": "Filter out health check and monitoring endpoints like /health, /ready, /metrics",
+  "sdk": "javascript",
+  "type": "beforeSendTransaction",
+  "transaction": {
+    "type": "transaction",
+    "transaction": "GET /health",
+    "transaction_info": {
+      "source": "route"
+    },
+    "contexts": {
+      "trace": {
+        "trace_id": "abc123",
+        "span_id": "span123",
+        "op": "http.server",
+        "status": "ok"
+      }
+    },
+    "spans": [],
+    "start_timestamp": 1704067200.0,
+    "timestamp": 1704067200.050
+  },
+  "beforeSendTransactionCode": "(transaction, hint) => {\n  // Drop health check and monitoring transactions\n  const dropPatterns = ['/health', '/ready', '/metrics', '/ping', '/livez', '/readyz'];\n  const txName = transaction.transaction || '';\n  \n  if (dropPatterns.some(p => txName.includes(p))) {\n    return null; // Drop the transaction\n  }\n  \n  return transaction;\n}"
+}

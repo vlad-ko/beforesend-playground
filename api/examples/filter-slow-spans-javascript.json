@@ -1,0 +1,51 @@
+{
+  "id": "filter-slow-spans-javascript",
+  "name": "Filter Slow Spans (JavaScript)",
+  "description": "Keep only spans that exceed a duration threshold to reduce noise",
+  "sdk": "javascript",
+  "type": "beforeSendTransaction",
+  "transaction": {
+    "type": "transaction",
+    "transaction": "GET /api/dashboard",
+    "transaction_info": {
+      "source": "route"
+    },
+    "contexts": {
+      "trace": {
+        "trace_id": "abc123",
+        "span_id": "span123",
+        "op": "http.server",
+        "status": "ok"
+      }
+    },
+    "spans": [
+      {
+        "span_id": "db-span-1",
+        "parent_span_id": "span123",
+        "op": "db.query",
+        "description": "SELECT * FROM cache",
+        "start_timestamp": 1704067200.0,
+        "timestamp": 1704067200.005
+      },
+      {
+        "span_id": "db-span-2",
+        "parent_span_id": "span123",
+        "op": "db.query",
+        "description": "SELECT * FROM large_table",
+        "start_timestamp": 1704067200.005,
+        "timestamp": 1704067200.500
+      },
+      {
+        "span_id": "http-span-1",
+        "parent_span_id": "span123",
+        "op": "http.client",
+        "description": "GET https://api.example.com/data",
+        "start_timestamp": 1704067200.500,
+        "timestamp": 1704067200.520
+      }
+    ],
+    "start_timestamp": 1704067200.0,
+    "timestamp": 1704067200.600
+  },
+  "beforeSendTransactionCode": "(transaction, hint) => {\n  const MIN_SPAN_DURATION_MS = 50; // Only keep spans slower than 50ms\n  \n  if (transaction.spans) {\n    transaction.spans = transaction.spans.filter(span => {\n      const durationMs = (span.timestamp - span.start_timestamp) * 1000;\n      return durationMs >= MIN_SPAN_DURATION_MS;\n    });\n  }\n  \n  // Add tag indicating filtering was applied\n  transaction.tags = {\n    ...transaction.tags,\n    spans_filtered: 'true',\n    min_span_duration_ms: String(MIN_SPAN_DURATION_MS)\n  };\n  \n  return transaction;\n}"
+}
