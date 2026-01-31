@@ -338,7 +338,7 @@ describe('Sentry Query Route', () => {
       expect(response.body.error).toContain('Sentry');
     });
 
-    it('should handle discover URL', async () => {
+    it('should handle discover URL with warning', async () => {
       const response = await request(app)
         .post('/api/sentry-query/parse-url')
         .send({
@@ -348,7 +348,9 @@ describe('Sentry Query Route', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.endpoint).toBe('discover');
+      // Discover URLs fall back to issues endpoint with a warning
+      expect(response.body.endpoint).toBe('issues');
+      expect(response.body.warning).toContain('Discover URLs are not fully supported');
     });
   });
 

@@ -240,11 +240,17 @@ router.post('/parse-url', (req: Request, res: Response) => {
 
     // Determine endpoint type from path
     const path = parsedUrl.pathname;
-    let endpoint: string = 'issues';
+    let endpoint: 'issues' | 'events' | 'projects' = 'issues';
+    let warning: string | undefined;
+
     if (path.includes('/discover/')) {
-      endpoint = 'discover';
+      // Discover URLs use a different query format, default to issues
+      endpoint = 'issues';
+      warning = 'Discover URLs are not fully supported. Query will be run against the Issues endpoint.';
     } else if (path.includes('/performance/')) {
-      endpoint = 'performance';
+      // Performance URLs use transactions, not issues
+      endpoint = 'issues';
+      warning = 'Performance URLs are not fully supported. Query will be run against the Issues endpoint.';
     } else if (path.includes('/issues/')) {
       endpoint = 'issues';
     }
@@ -263,6 +269,7 @@ router.post('/parse-url', (req: Request, res: Response) => {
       environment,
       project,
       statsPeriod,
+      warning,
     });
   } catch (error: any) {
     console.error('URL parsing error:', error);

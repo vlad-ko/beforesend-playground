@@ -280,6 +280,7 @@ export interface ParseUrlResponse {
   project?: string;
   statsPeriod?: string;
   error?: string;
+  warning?: string;
 }
 
 export interface QueryProperty {

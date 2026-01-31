@@ -31,6 +31,7 @@ export default function ApiQueryTesterPlayground() {
   const [urlInput, setUrlInput] = useState<string>('');
   const [showUrlParser, setShowUrlParser] = useState<boolean>(false);
   const [urlParseError, setUrlParseError] = useState<string | null>(null);
+  const [urlParseWarning, setUrlParseWarning] = useState<string | null>(null);
   const [urlParsing, setUrlParsing] = useState<boolean>(false);
   const [copiedCurl, setCopiedCurl] = useState<boolean>(false);
 
@@ -125,11 +126,18 @@ export default function ApiQueryTesterPlayground() {
         if (response.endpoint === 'issues' || response.endpoint === 'events' || response.endpoint === 'projects') {
           setEndpoint(response.endpoint);
         }
-        setShowUrlParser(false);
-        setUrlInput('');
         setUrlParseError(null);
+        // Show warning if present (e.g., for Discover/Performance URLs)
+        if (response.warning) {
+          setUrlParseWarning(response.warning);
+        } else {
+          setUrlParseWarning(null);
+          setShowUrlParser(false);
+        }
+        setUrlInput('');
       } else {
         setUrlParseError(response.error || 'Failed to parse URL');
+        setUrlParseWarning(null);
       }
     } catch (err: any) {
       // Provide more helpful error messages
@@ -224,6 +232,11 @@ export default function ApiQueryTesterPlayground() {
             {urlParseError && (
               <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
                 {urlParseError}
+              </div>
+            )}
+            {urlParseWarning && (
+              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
+                ⚠️ {urlParseWarning}
               </div>
             )}
             <p className="text-xs text-gray-500 mt-1">
