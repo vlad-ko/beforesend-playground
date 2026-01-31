@@ -1,4 +1,5 @@
 {
+  "id": "split-by-user-type",
   "name": "Split by User Type",
   "description": "Create separate issues for free vs premium user errors",
   "type": "fingerprinting",

@@ -1,4 +1,5 @@
 {
+  "id": "normalize-api-urls",
   "name": "Normalize API URL Errors",
   "description": "Group API errors by endpoint pattern, ignoring dynamic IDs",
   "type": "fingerprinting",
