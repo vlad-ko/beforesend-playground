@@ -29,12 +29,37 @@ export class ConfigAnalyzer {
   }
 
   /**
+   * Convert PascalCase to camelCase
+   * Used to normalize .NET/Go option names (TracesSampleRate -> tracesSampleRate, Dsn -> dsn)
+   */
+  private pascalToCamelCase(str: string): string {
+    if (!str || str.length === 0) return str;
+    return str.charAt(0).toLowerCase() + str.slice(1);
+  }
+
+  /**
+   * Check if a string is PascalCase (starts with uppercase, no underscores)
+   */
+  private isPascalCase(str: string): boolean {
+    return str.length > 0 &&
+           str.charAt(0) === str.charAt(0).toUpperCase() &&
+           !str.includes('_');
+  }
+
+  /**
    * Normalize option key to camelCase for dictionary lookup
+   * Handles: snake_case (Python/Ruby/PHP), PascalCase (.NET/Go), camelCase (JS)
    */
   private normalizeKey(key: string): string {
+    // snake_case -> camelCase
     if (key.includes('_')) {
       return this.snakeToCamelCase(key);
     }
+    // PascalCase -> camelCase
+    if (this.isPascalCase(key)) {
+      return this.pascalToCamelCase(key);
+    }
+    // Already camelCase
     return key;
   }
 
@@ -47,7 +72,16 @@ export class ConfigAnalyzer {
   }
 
   /**
-   * Check if parsed options contain a key (handles both snake_case and camelCase)
+   * Convert camelCase to PascalCase
+   * Used to check .NET/Go options (tracesSampleRate -> TracesSampleRate)
+   */
+  private camelToPascalCase(str: string): string {
+    if (!str || str.length === 0) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  /**
+   * Check if parsed options contain a key (handles snake_case, PascalCase, and camelCase)
    */
   private parsedOptionsHas(options: Map<string, ParsedOption>, key: string): boolean {
     // Check the key as-is first
@@ -57,6 +91,11 @@ export class ConfigAnalyzer {
     // Try snake_case version for Python configs
     const snakeKey = this.camelToSnakeCase(key);
     if (options.has(snakeKey)) {
+      return true;
+    }
+    // Try PascalCase version for .NET/Go configs
+    const pascalKey = this.camelToPascalCase(key);
+    if (options.has(pascalKey)) {
       return true;
     }
     return false;
