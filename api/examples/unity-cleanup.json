@@ -2,7 +2,7 @@
   "id": "unity-cleanup",
   "name": "Unity Metadata Cleanup",
   "description": "Extract device metadata from messy Unity/Android crash titles into searchable tags, then parse the actual exception for a clean issue title",
-  "type": "fingerprinting",
+  "type": "beforeSend",
   "sdk": "javascript",
   "complexity": "intermediate",
   "event": {
