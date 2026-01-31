@@ -5,21 +5,36 @@ import SdkSelector, { AVAILABLE_SDKS, getLanguageForSdk } from '../SdkSelector';
 import SearchableExampleSelector from '../SearchableExampleSelector';
 import { apiClient, TransformResponse, Example } from '../../api/client';
 
-const DEFAULT_SAMPLING_CONTEXT = JSON.stringify(
-  {
-    transactionContext: {
-      name: 'GET /api/payment/process',
-      op: 'http.server',
-    },
-    parentSampled: true,
-    request: {
-      url: 'https://example.com/api/payment/process',
-      method: 'GET',
-    },
-  },
-  null,
-  2
-);
+function getDefaultSamplingContext(sdk: string): string {
+  const isPython = sdk === 'python';
+  return JSON.stringify(
+    isPython
+      ? {
+          transaction_context: {
+            name: 'GET /api/payment/process',
+            op: 'http.server',
+          },
+          parent_sampled: true,
+          custom_sampling_context: {
+            request_url: 'https://example.com/api/payment/process',
+            request_method: 'GET',
+          },
+        }
+      : {
+          transactionContext: {
+            name: 'GET /api/payment/process',
+            op: 'http.server',
+          },
+          parentSampled: true,
+          request: {
+            url: 'https://example.com/api/payment/process',
+            method: 'GET',
+          },
+        },
+    null,
+    2
+  );
+}
 
 const DEFAULT_TRACES_SAMPLER_JS = `(samplingContext) => {
   const transactionName = samplingContext.transactionContext.name;
@@ -320,7 +335,7 @@ function getSamplingDecisionInfo(rate: number): { message: string; className: st
 }
 
 export default function TracesSamplerPlayground() {
-  const [samplingContextJson, setSamplingContextJson] = useState(DEFAULT_SAMPLING_CONTEXT);
+  const [samplingContextJson, setSamplingContextJson] = useState(getDefaultSamplingContext('javascript'));
   const [tracesSamplerCode, setTracesSamplerCode] = useState(DEFAULT_TRACES_SAMPLER_JS);
   const [selectedSdk, setSelectedSdk] = useState('javascript');
   const [result, setResult] = useState<TransformResponse | null>(null);
@@ -334,6 +349,7 @@ export default function TracesSamplerPlayground() {
   const handleSdkChange = (sdk: string) => {
     setSelectedSdk(sdk);
     setTracesSamplerCode(getDefaultCode(sdk));
+    setSamplingContextJson(getDefaultSamplingContext(sdk));
   };
 
   const handleExampleSelect = (example: Example) => {
@@ -361,7 +377,7 @@ export default function TracesSamplerPlayground() {
   };
 
   const handleReset = () => {
-    setSamplingContextJson(DEFAULT_SAMPLING_CONTEXT);
+    setSamplingContextJson(getDefaultSamplingContext(selectedSdk));
     setTracesSamplerCode(getDefaultCode(selectedSdk));
     setSelectedExample(null);
     setResult(null);
@@ -458,40 +474,64 @@ export default function TracesSamplerPlayground() {
               <p className="text-sm text-gray-500">The transaction to evaluate (one at a time)</p>
             </div>
           </div>
-          {/* Quick scenario buttons */}
+          {/* Quick scenario buttons - SDK-aware key naming */}
           <div className="flex flex-wrap gap-2 mb-3">
             <button
-              onClick={() => setSamplingContextJson(JSON.stringify({
-                transactionContext: { name: 'POST /api/checkout', op: 'http.server' },
-                parentSampled: true
-              }, null, 2))}
+              onClick={() => {
+                const isPython = selectedSdk === 'python';
+                setSamplingContextJson(JSON.stringify(isPython ? {
+                  transaction_context: { name: 'POST /api/checkout', op: 'http.server' },
+                  parent_sampled: true
+                } : {
+                  transactionContext: { name: 'POST /api/checkout', op: 'http.server' },
+                  parentSampled: true
+                }, null, 2));
+              }}
               className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
             >
               Checkout
             </button>
             <button
-              onClick={() => setSamplingContextJson(JSON.stringify({
-                transactionContext: { name: 'GET /health', op: 'http.server' },
-                parentSampled: false
-              }, null, 2))}
+              onClick={() => {
+                const isPython = selectedSdk === 'python';
+                setSamplingContextJson(JSON.stringify(isPython ? {
+                  transaction_context: { name: 'GET /health', op: 'http.server' },
+                  parent_sampled: false
+                } : {
+                  transactionContext: { name: 'GET /health', op: 'http.server' },
+                  parentSampled: false
+                }, null, 2));
+              }}
               className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
             >
               Health Check
             </button>
             <button
-              onClick={() => setSamplingContextJson(JSON.stringify({
-                transactionContext: { name: 'GET /api/users', op: 'http.server' },
-                parentSampled: false
-              }, null, 2))}
+              onClick={() => {
+                const isPython = selectedSdk === 'python';
+                setSamplingContextJson(JSON.stringify(isPython ? {
+                  transaction_context: { name: 'GET /api/users', op: 'http.server' },
+                  parent_sampled: false
+                } : {
+                  transactionContext: { name: 'GET /api/users', op: 'http.server' },
+                  parentSampled: false
+                }, null, 2));
+              }}
               className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
             >
               API Call
             </button>
             <button
-              onClick={() => setSamplingContextJson(JSON.stringify({
-                transactionContext: { name: 'GET /static/logo.png', op: 'http.server' },
-                parentSampled: false
-              }, null, 2))}
+              onClick={() => {
+                const isPython = selectedSdk === 'python';
+                setSamplingContextJson(JSON.stringify(isPython ? {
+                  transaction_context: { name: 'GET /static/logo.png', op: 'http.server' },
+                  parent_sampled: false
+                } : {
+                  transactionContext: { name: 'GET /static/logo.png', op: 'http.server' },
+                  parentSampled: false
+                }, null, 2));
+              }}
               className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
             >
               Static Asset

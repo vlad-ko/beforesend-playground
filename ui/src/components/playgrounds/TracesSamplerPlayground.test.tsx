@@ -24,7 +24,7 @@ describe('TracesSamplerPlayground', () => {
   it('renders sampling context input and editor', () => {
     render(<TracesSamplerPlayground />);
 
-    expect(screen.getByText('Sampling Context')).toBeInTheDocument();
+    expect(screen.getByText('Test Transaction')).toBeInTheDocument();
     expect(screen.getByText('tracesSampler Code')).toBeInTheDocument();
     expect(screen.getByText('Evaluate')).toBeInTheDocument();
   });

@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import json
 import sys
 import traceback
+import inspect
 
 app = Flask(__name__)
 
@@ -61,9 +62,18 @@ def transform():
             # Clone the event to avoid mutation issues
             event_clone = json.loads(json.dumps(event))
 
-            # Execute the beforeSend function
-            # Sentry's before_send receives (event, hint) but hint is optional
-            transformed_event = before_send_fn(event_clone, {})
+            # Check how many arguments the function takes
+            # beforeSend takes (event, hint), tracesSampler takes just (sampling_context)
+            sig = inspect.signature(before_send_fn)
+            num_params = len(sig.parameters)
+
+            # Execute the function with appropriate arguments
+            if num_params == 1:
+                # Single argument function (tracesSampler style)
+                transformed_event = before_send_fn(event_clone)
+            else:
+                # Two argument function (beforeSend style)
+                transformed_event = before_send_fn(event_clone, {})
 
             return jsonify({
                 'success': True,

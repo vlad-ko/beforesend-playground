@@ -70,8 +70,19 @@ app.post('/transform', async (req: Request<{}, {}, TransformRequest>, res: Respo
       // Clone the event to avoid mutation issues
       const eventClone = JSON.parse(JSON.stringify(event));
 
-      // Execute the beforeSend function
-      const transformedEvent = await beforeSendFn(eventClone, {});
+      // Check how many arguments the function takes
+      // beforeSend takes (event, hint), tracesSampler takes just (samplingContext)
+      const numParams = beforeSendFn.length;
+
+      // Execute the function with appropriate arguments
+      let transformedEvent;
+      if (numParams === 1) {
+        // Single argument function (tracesSampler style)
+        transformedEvent = await beforeSendFn(eventClone);
+      } else {
+        // Two argument function (beforeSend style)
+        transformedEvent = await beforeSendFn(eventClone, {});
+      }
 
       return res.json({
         success: true,
