@@ -19,11 +19,11 @@ function usesSnakeCase(sdk: string): boolean {
  * Some SDK backends are designed for beforeSend (event transformation) only
  * and cannot return numbers for tracesSampler evaluation.
  *
- * Supported: JavaScript, Python, Ruby, PHP, Elixir, React Native
- * Documentation only: Go, Rust, .NET, Java, Android, Cocoa
+ * Supported: JavaScript, Python, Ruby, PHP, Elixir, React Native, Go, .NET
+ * Documentation only: Rust, Java, Android, Cocoa
  */
 function supportsTracesSamplerExecution(sdk: string): boolean {
-  return ['javascript', 'python', 'ruby', 'php', 'elixir', 'react-native'].includes(sdk);
+  return ['javascript', 'python', 'ruby', 'php', 'elixir', 'react-native', 'go', 'dotnet'].includes(sdk);
 }
 
 function getDefaultSamplingContext(sdk: string): string {

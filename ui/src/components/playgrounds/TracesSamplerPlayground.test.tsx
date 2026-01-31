@@ -284,6 +284,54 @@ describe('TracesSamplerPlayground', () => {
 
     // Note: Rust SDK doesn't support tracesSampler execution - tested in 'SDK execution support indicator' section
 
+    it('sends camelCase JSON keys for Go SDK', async () => {
+      mockedApiClient.transform.mockResolvedValue({
+        success: true,
+        originalEvent: {},
+        transformedEvent: 0.1,
+      });
+
+      const user = userEvent.setup();
+      render(<TracesSamplerPlayground />);
+
+      const sdkSelector = screen.getByRole('combobox');
+      await user.selectOptions(sdkSelector, 'go');
+
+      const evaluateButton = screen.getByText('Evaluate');
+      await user.click(evaluateButton);
+
+      await waitFor(() => {
+        expect(mockedApiClient.transform).toHaveBeenCalled();
+        const callArg = mockedApiClient.transform.mock.calls[0][0];
+        // Go uses camelCase
+        expect(callArg.event).toHaveProperty('transactionContext');
+      });
+    });
+
+    it('sends camelCase JSON keys for .NET SDK', async () => {
+      mockedApiClient.transform.mockResolvedValue({
+        success: true,
+        originalEvent: {},
+        transformedEvent: 0.1,
+      });
+
+      const user = userEvent.setup();
+      render(<TracesSamplerPlayground />);
+
+      const sdkSelector = screen.getByRole('combobox');
+      await user.selectOptions(sdkSelector, 'dotnet');
+
+      const evaluateButton = screen.getByText('Evaluate');
+      await user.click(evaluateButton);
+
+      await waitFor(() => {
+        expect(mockedApiClient.transform).toHaveBeenCalled();
+        const callArg = mockedApiClient.transform.mock.calls[0][0];
+        // .NET uses camelCase
+        expect(callArg.event).toHaveProperty('transactionContext');
+      });
+    });
+
     it('sends snake_case JSON keys for Elixir SDK', async () => {
       mockedApiClient.transform.mockResolvedValue({
         success: true,
@@ -308,7 +356,7 @@ describe('TracesSamplerPlayground', () => {
       });
     });
 
-    // Note: Go, .NET, Java, Android, Cocoa SDKs don't support tracesSampler execution
+    // Note: Rust, Java, Android, Cocoa SDKs don't support tracesSampler execution
     // They are tested in 'SDK execution support indicator' section for disabled state
 
     it('sends camelCase JSON keys for React Native SDK', async () => {
@@ -457,7 +505,7 @@ describe('TracesSamplerPlayground', () => {
       render(<TracesSamplerPlayground />);
 
       const sdkSelector = screen.getByRole('combobox');
-      await user.selectOptions(sdkSelector, 'go');
+      await user.selectOptions(sdkSelector, 'rust');
 
       await waitFor(() => {
         expect(screen.getByText('Code Reference Only')).toBeInTheDocument();
@@ -478,6 +526,30 @@ describe('TracesSamplerPlayground', () => {
 
       const sdkSelector = screen.getByRole('combobox');
       await user.selectOptions(sdkSelector, 'python');
+
+      await waitFor(() => {
+        expect(screen.queryByText('Code Reference Only')).not.toBeInTheDocument();
+      });
+    });
+
+    it('does not show warning banner for Go SDK', async () => {
+      const user = userEvent.setup();
+      render(<TracesSamplerPlayground />);
+
+      const sdkSelector = screen.getByRole('combobox');
+      await user.selectOptions(sdkSelector, 'go');
+
+      await waitFor(() => {
+        expect(screen.queryByText('Code Reference Only')).not.toBeInTheDocument();
+      });
+    });
+
+    it('does not show warning banner for .NET SDK', async () => {
+      const user = userEvent.setup();
+      render(<TracesSamplerPlayground />);
+
+      const sdkSelector = screen.getByRole('combobox');
+      await user.selectOptions(sdkSelector, 'dotnet');
 
       await waitFor(() => {
         expect(screen.queryByText('Code Reference Only')).not.toBeInTheDocument();
@@ -510,7 +582,20 @@ describe('TracesSamplerPlayground', () => {
       });
     });
 
-    it('shows warning for .NET SDK', async () => {
+    it('enables Evaluate button for Go SDK', async () => {
+      const user = userEvent.setup();
+      render(<TracesSamplerPlayground />);
+
+      const sdkSelector = screen.getByRole('combobox');
+      await user.selectOptions(sdkSelector, 'go');
+
+      await waitFor(() => {
+        const evaluateButton = screen.getByText('Evaluate');
+        expect(evaluateButton).not.toBeDisabled();
+      });
+    });
+
+    it('enables Evaluate button for .NET SDK', async () => {
       const user = userEvent.setup();
       render(<TracesSamplerPlayground />);
 
@@ -518,7 +603,8 @@ describe('TracesSamplerPlayground', () => {
       await user.selectOptions(sdkSelector, 'dotnet');
 
       await waitFor(() => {
-        expect(screen.getByText('Code Reference Only')).toBeInTheDocument();
+        const evaluateButton = screen.getByText('Evaluate');
+        expect(evaluateButton).not.toBeDisabled();
       });
     });
   });

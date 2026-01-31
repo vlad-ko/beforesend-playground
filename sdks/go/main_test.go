@@ -465,6 +465,214 @@ func TestComplexUnityMetadataCleanup(t *testing.T) {
 	}
 }
 
+// ============================================
+// TracesSampler Tests - Return numbers instead of events
+// ============================================
+
+// TestTracesSamplerReturnsFloat tests that returning a float works for tracesSampler
+func TestTracesSamplerReturnsFloat(t *testing.T) {
+	router := setupRouter()
+
+	// Sampling context (what tracesSampler receives)
+	samplingContext := map[string]interface{}{
+		"transactionContext": map[string]interface{}{
+			"name": "GET /api/users",
+			"op":   "http.server",
+		},
+		"parentSampled": true,
+	}
+
+	// Code that returns a sample rate (float)
+	tracesSamplerCode := `return 0.5`
+
+	payload := map[string]interface{}{
+		"event":          samplingContext,
+		"beforeSendCode": tracesSamplerCode,
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "/transform", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	if response["success"] != true {
+		t.Errorf("Expected success=true, got %v. Error: %v", response["success"], response["error"])
+	}
+
+	// The transformedEvent should be a number (0.5)
+	transformedEvent := response["transformedEvent"]
+	if transformedEvent == nil {
+		t.Fatal("Expected transformedEvent to be a number, got nil")
+	}
+
+	// JSON unmarshals numbers as float64
+	sampleRate, ok := transformedEvent.(float64)
+	if !ok {
+		t.Errorf("Expected transformedEvent to be a float64, got %T", transformedEvent)
+	}
+
+	if sampleRate != 0.5 {
+		t.Errorf("Expected sample rate 0.5, got %v", sampleRate)
+	}
+}
+
+// TestTracesSamplerReturns100Percent tests returning 1.0 for full sampling
+func TestTracesSamplerReturns100Percent(t *testing.T) {
+	router := setupRouter()
+
+	samplingContext := map[string]interface{}{
+		"transactionContext": map[string]interface{}{
+			"name": "POST /api/checkout",
+			"op":   "http.server",
+		},
+	}
+
+	// Always sample critical endpoints
+	tracesSamplerCode := `
+	if ctx, ok := event["transactionContext"].(map[string]interface{}); ok {
+		if name, ok := ctx["name"].(string); ok {
+			if strings.Contains(name, "/checkout") {
+				return 1.0
+			}
+		}
+	}
+	return 0.1`
+
+	payload := map[string]interface{}{
+		"event":          samplingContext,
+		"beforeSendCode": tracesSamplerCode,
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "/transform", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
+	}
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	if response["success"] != true {
+		t.Errorf("Expected success=true, got %v", response["success"])
+	}
+
+	sampleRate, ok := response["transformedEvent"].(float64)
+	if !ok {
+		t.Errorf("Expected float64, got %T", response["transformedEvent"])
+	}
+
+	if sampleRate != 1.0 {
+		t.Errorf("Expected sample rate 1.0, got %v", sampleRate)
+	}
+}
+
+// TestTracesSamplerReturnsZero tests returning 0.0 to drop transaction
+func TestTracesSamplerReturnsZero(t *testing.T) {
+	router := setupRouter()
+
+	samplingContext := map[string]interface{}{
+		"transactionContext": map[string]interface{}{
+			"name": "GET /health",
+			"op":   "http.server",
+		},
+	}
+
+	// Never sample health checks
+	tracesSamplerCode := `
+	if ctx, ok := event["transactionContext"].(map[string]interface{}); ok {
+		if name, ok := ctx["name"].(string); ok {
+			if name == "GET /health" {
+				return 0.0
+			}
+		}
+	}
+	return 0.1`
+
+	payload := map[string]interface{}{
+		"event":          samplingContext,
+		"beforeSendCode": tracesSamplerCode,
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "/transform", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	sampleRate, ok := response["transformedEvent"].(float64)
+	if !ok {
+		t.Errorf("Expected float64, got %T", response["transformedEvent"])
+	}
+
+	if sampleRate != 0.0 {
+		t.Errorf("Expected sample rate 0.0, got %v", sampleRate)
+	}
+}
+
+// TestTracesSamplerWithIntegerReturn tests that integer returns are converted to float
+func TestTracesSamplerWithIntegerReturn(t *testing.T) {
+	router := setupRouter()
+
+	samplingContext := map[string]interface{}{
+		"transactionContext": map[string]interface{}{
+			"name": "GET /api/users",
+		},
+	}
+
+	// Return integer 1 (should be treated as 1.0)
+	tracesSamplerCode := `return 1`
+
+	payload := map[string]interface{}{
+		"event":          samplingContext,
+		"beforeSendCode": tracesSamplerCode,
+	}
+
+	body, _ := json.Marshal(payload)
+	req, _ := http.NewRequest("POST", "/transform", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("Expected status 200, got %d", w.Code)
+	}
+
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+
+	sampleRate, ok := response["transformedEvent"].(float64)
+	if !ok {
+		t.Errorf("Expected float64, got %T", response["transformedEvent"])
+	}
+
+	if sampleRate != 1.0 {
+		t.Errorf("Expected sample rate 1.0, got %v", sampleRate)
+	}
+}
+
 // TestHealthEndpoint tests the health check endpoint
 func TestHealthEndpoint(t *testing.T) {
 	router := setupRouter()

@@ -21,10 +21,10 @@ type TransformRequest struct {
 }
 
 type TransformResponse struct {
-	Success          bool                   `json:"success"`
-	TransformedEvent map[string]interface{} `json:"transformedEvent,omitempty"`
-	Error            string                 `json:"error,omitempty"`
-	Traceback        string                 `json:"traceback,omitempty"`
+	Success          bool        `json:"success"`
+	TransformedEvent interface{} `json:"transformedEvent,omitempty"`
+	Error            string      `json:"error,omitempty"`
+	Traceback        string      `json:"traceback,omitempty"`
 }
 
 type HealthResponse struct {
@@ -93,7 +93,11 @@ func transformHandler(c *gin.Context) {
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
+
+// Suppress unused import warning
+var _ = strings.Contains
 
 type Event map[string]interface{}
 type EventHint map[string]interface{}
@@ -106,22 +110,40 @@ func main() {
 		panic(err)
 	}
 
-	// User's beforeSend code
-	transformedEvent := func(event Event, hint EventHint) Event {
+	// User's beforeSend/tracesSampler code
+	// Returns interface{} to support both Event (map) and float64 (sample rate)
+	result := func(event Event, hint EventHint) interface{} {
 		%s
 	}(event, EventHint{})
 
-	if transformedEvent == nil {
+	if result == nil {
 		fmt.Println("null")
 		return
 	}
 
-	result, err := json.Marshal(transformedEvent)
-	if err != nil {
-		panic(err)
+	// Handle different return types
+	switch v := result.(type) {
+	case float64:
+		// tracesSampler returns a float
+		fmt.Printf("%%v\n", v)
+	case int:
+		// Integer (convert to float for consistency)
+		fmt.Printf("%%v\n", float64(v))
+	case Event, map[string]interface{}:
+		// beforeSend returns an event
+		output, err := json.Marshal(v)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(output))
+	default:
+		// Try to marshal as JSON (catches other map types)
+		output, err := json.Marshal(v)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(string(output))
 	}
-
-	fmt.Println(string(result))
 }
 `, quotedEventJSON, req.BeforeSendCode)
 
@@ -207,6 +229,16 @@ go 1.22
 		return
 	}
 
+	// Try to parse as a number first (for tracesSampler)
+	if num, err := strconv.ParseFloat(output, 64); err == nil {
+		c.JSON(http.StatusOK, TransformResponse{
+			Success:          true,
+			TransformedEvent: num,
+		})
+		return
+	}
+
+	// Otherwise parse as JSON object (for beforeSend)
 	var transformedEvent map[string]interface{}
 	if err := json.Unmarshal([]byte(output), &transformedEvent); err != nil {
 		c.JSON(http.StatusInternalServerError, TransformResponse{
