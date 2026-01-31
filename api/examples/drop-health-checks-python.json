@@ -1,0 +1,26 @@
+{
+  "id": "drop-health-checks-python",
+  "name": "Drop Health Checks (Python)",
+  "description": "Filter out health check and monitoring endpoints in Python applications",
+  "sdk": "python",
+  "type": "beforeSendTransaction",
+  "transaction": {
+    "type": "transaction",
+    "transaction": "GET /health",
+    "transaction_info": {
+      "source": "route"
+    },
+    "contexts": {
+      "trace": {
+        "trace_id": "abc123",
+        "span_id": "span123",
+        "op": "http.server",
+        "status": "ok"
+      }
+    },
+    "spans": [],
+    "start_timestamp": 1704067200.0,
+    "timestamp": 1704067200.050
+  },
+  "beforeSendTransactionCode": "def before_send_transaction(transaction, hint):\n    # Drop health check and monitoring transactions\n    drop_patterns = ['/health', '/ready', '/metrics', '/ping', '/livez', '/readyz']\n    tx_name = transaction.get('transaction', '')\n    \n    if any(p in tx_name for p in drop_patterns):\n        return None  # Drop the transaction\n    \n    return transaction"
+}

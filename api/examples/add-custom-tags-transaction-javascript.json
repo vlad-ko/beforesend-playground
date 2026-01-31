@@ -1,0 +1,29 @@
+{
+  "id": "add-custom-tags-transaction-javascript",
+  "name": "Add Custom Tags (JavaScript)",
+  "description": "Enrich transactions with business context like team ownership and service tier",
+  "sdk": "javascript",
+  "type": "beforeSendTransaction",
+  "transaction": {
+    "type": "transaction",
+    "transaction": "GET /api/users/:id",
+    "transaction_info": {
+      "source": "route"
+    },
+    "contexts": {
+      "trace": {
+        "trace_id": "abc123",
+        "span_id": "span123",
+        "op": "http.server",
+        "status": "ok"
+      }
+    },
+    "spans": [],
+    "start_timestamp": 1704067200.0,
+    "timestamp": 1704067200.300,
+    "tags": {
+      "environment": "production"
+    }
+  },
+  "beforeSendTransactionCode": "(transaction, hint) => {\n  const txName = transaction.transaction || '';\n  \n  // Add team ownership tag based on endpoint\n  transaction.tags = transaction.tags || {};\n  \n  if (txName.includes('/api/users')) {\n    transaction.tags.team = 'user-team';\n    transaction.tags.service_tier = 'critical';\n  } else if (txName.includes('/api/payments')) {\n    transaction.tags.team = 'payments-team';\n    transaction.tags.service_tier = 'critical';\n  } else {\n    transaction.tags.team = 'platform';\n    transaction.tags.service_tier = 'standard';\n  }\n  \n  // Add duration category\n  const duration = (transaction.timestamp - transaction.start_timestamp) * 1000;\n  transaction.tags.duration_category = duration > 1000 ? 'slow' : 'fast';\n  \n  return transaction;\n}"
+}

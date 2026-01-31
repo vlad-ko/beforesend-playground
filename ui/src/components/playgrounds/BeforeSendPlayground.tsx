@@ -401,7 +401,7 @@ export default function BeforeSendPlayground() {
       {/* Controls */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="flex items-center gap-4">
-          <SearchableExampleSelector key={selectedExampleName || 'default'} onSelect={handleExampleSelect} />
+          <SearchableExampleSelector key={selectedExampleName || 'default'} onSelect={handleExampleSelect} type="beforeSend" />
           <SdkSelector value={selectedSdk} onChange={handleSdkChange} />
 
           <button

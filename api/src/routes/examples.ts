@@ -9,8 +9,11 @@ interface Example {
   name: string;
   description: string;
   sdk: string;
-  event: Record<string, any>;
-  beforeSendCode: string;
+  type?: 'beforeSend' | 'beforeSendTransaction';  // defaults to 'beforeSend'
+  event?: Record<string, any>;
+  transaction?: Record<string, any>;
+  beforeSendCode?: string;
+  beforeSendTransactionCode?: string;
 }
 
 interface ExamplesResponse {
@@ -65,15 +68,32 @@ function loadExamples(): Example[] {
 
 /**
  * Validate example structure
+ * Supports both beforeSend examples (event + beforeSendCode)
+ * and beforeSendTransaction examples (transaction + beforeSendTransactionCode)
  */
 function isValidExample(example: any): example is Example {
+  if (
+    typeof example !== 'object' ||
+    example === null ||
+    typeof example.id !== 'string' ||
+    typeof example.name !== 'string' ||
+    typeof example.description !== 'string' ||
+    typeof example.sdk !== 'string'
+  ) {
+    return false;
+  }
+
+  // Check for beforeSendTransaction example
+  if (example.type === 'beforeSendTransaction') {
+    return (
+      typeof example.transaction === 'object' &&
+      example.transaction !== null &&
+      typeof example.beforeSendTransactionCode === 'string'
+    );
+  }
+
+  // Default: beforeSend example
   return (
-    typeof example === 'object' &&
-    example !== null &&
-    typeof example.id === 'string' &&
-    typeof example.name === 'string' &&
-    typeof example.description === 'string' &&
-    typeof example.sdk === 'string' &&
     typeof example.event === 'object' &&
     example.event !== null &&
     typeof example.beforeSendCode === 'string'
@@ -83,10 +103,22 @@ function isValidExample(example: any): example is Example {
 /**
  * GET /api/examples
  * Returns list of all available example templates
+ * Query params:
+ *   - type: 'beforeSend' | 'beforeSendTransaction' (optional, filters by example type)
  */
 router.get('/', (req: Request, res: Response<ExamplesResponse>) => {
   try {
-    const examples = loadExamples();
+    let examples = loadExamples();
+
+    // Filter by type if specified
+    const typeFilter = req.query.type as string | undefined;
+    if (typeFilter === 'beforeSend' || typeFilter === 'beforeSendTransaction') {
+      examples = examples.filter(ex => {
+        const exampleType = ex.type || 'beforeSend';  // default to beforeSend
+        return exampleType === typeFilter;
+      });
+    }
+
     res.json({ examples });
   } catch (error: any) {
     console.error('Error in GET /api/examples:', error);

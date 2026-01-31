@@ -11,12 +11,13 @@ vi.mock('../api/client', () => ({
   },
 }));
 
-const mockExamples: Example[] = [
+const mockBeforeSendExamples: Example[] = [
   {
     id: 'pii-scrubbing-python',
     name: 'PII Scrubbing (Python)',
     description: 'Remove sensitive data like emails and credit cards from events',
     sdk: 'python',
+    type: 'beforeSend',
     event: { message: 'test' },
     beforeSendCode: 'return event',
   },
@@ -25,6 +26,7 @@ const mockExamples: Example[] = [
     name: 'Add Custom Tags (JavaScript)',
     description: 'Enrich events with additional context tags',
     sdk: 'javascript',
+    type: 'beforeSend',
     event: { message: 'test' },
     beforeSendCode: 'return event',
   },
@@ -33,6 +35,7 @@ const mockExamples: Example[] = [
     name: 'Conditional Event Dropping (Rust)',
     description: 'Filter out noisy errors in Rust services',
     sdk: 'rust',
+    type: 'beforeSend',
     event: { message: 'test' },
     beforeSendCode: 'Some(event)',
   },
@@ -41,6 +44,7 @@ const mockExamples: Example[] = [
     name: 'PII Scrubbing (JavaScript)',
     description: 'Remove personally identifiable information from events',
     sdk: 'javascript',
+    type: 'beforeSend',
     event: { message: 'test' },
     beforeSendCode: 'return event',
   },
@@ -49,10 +53,34 @@ const mockExamples: Example[] = [
     name: 'Performance Tagging (Python)',
     description: 'Add performance metrics to events',
     sdk: 'python',
+    type: 'beforeSend',
     event: { message: 'test' },
     beforeSendCode: 'return event',
   },
 ];
+
+const mockTransactionExamples: Example[] = [
+  {
+    id: 'drop-health-checks',
+    name: 'Drop Health Checks (JavaScript)',
+    description: 'Filter out health check and monitoring endpoints',
+    sdk: 'javascript',
+    type: 'beforeSendTransaction',
+    transaction: { transaction: 'GET /health' },
+    beforeSendTransactionCode: 'return null',
+  },
+  {
+    id: 'scrub-urls-python',
+    name: 'Scrub Sensitive URLs (Python)',
+    description: 'Remove tokens and IDs from transaction names',
+    sdk: 'python',
+    type: 'beforeSendTransaction',
+    transaction: { transaction: 'GET /users/123' },
+    beforeSendTransactionCode: 'return transaction',
+  },
+];
+
+const mockExamples = mockBeforeSendExamples;
 
 describe('SearchableExampleSelector', () => {
   beforeEach(() => {
@@ -500,6 +528,68 @@ describe('SearchableExampleSelector', () => {
 
       const searchInput = screen.getByRole('combobox');
       expect(searchInput).toBeInTheDocument();
+    });
+  });
+
+  describe('Type Filtering', () => {
+    it('should pass type parameter to API when specified', async () => {
+      const onSelect = vi.fn();
+      render(<SearchableExampleSelector onSelect={onSelect} type="beforeSendTransaction" />);
+
+      await waitFor(() => {
+        expect(apiClient.getExamples).toHaveBeenCalledWith('beforeSendTransaction');
+      });
+    });
+
+    it('should not pass type parameter when not specified', async () => {
+      const onSelect = vi.fn();
+      render(<SearchableExampleSelector onSelect={onSelect} />);
+
+      await waitFor(() => {
+        expect(apiClient.getExamples).toHaveBeenCalledWith(undefined);
+      });
+    });
+
+    it('should show transaction examples when type is beforeSendTransaction', async () => {
+      (apiClient.getExamples as unknown as MockedFunction<typeof apiClient.getExamples>).mockResolvedValue({
+        examples: mockTransactionExamples,
+      });
+
+      const onSelect = vi.fn();
+      const user = userEvent.setup();
+      render(<SearchableExampleSelector onSelect={onSelect} type="beforeSendTransaction" />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /load example/i })).toBeInTheDocument();
+      });
+
+      const button = screen.getByRole('button', { name: /load example/i });
+      await user.click(button);
+
+      expect(screen.getByText('Drop Health Checks (JavaScript)')).toBeInTheDocument();
+      expect(screen.getByText('Scrub Sensitive URLs (Python)')).toBeInTheDocument();
+    });
+
+    it('should call onSelect with transaction example data', async () => {
+      (apiClient.getExamples as unknown as MockedFunction<typeof apiClient.getExamples>).mockResolvedValue({
+        examples: mockTransactionExamples,
+      });
+
+      const onSelect = vi.fn();
+      const user = userEvent.setup();
+      render(<SearchableExampleSelector onSelect={onSelect} type="beforeSendTransaction" />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /load example/i })).toBeInTheDocument();
+      });
+
+      const button = screen.getByRole('button', { name: /load example/i });
+      await user.click(button);
+
+      const exampleOption = screen.getByText('Drop Health Checks (JavaScript)');
+      await user.click(exampleOption);
+
+      expect(onSelect).toHaveBeenCalledWith(mockTransactionExamples[0]);
     });
   });
 });

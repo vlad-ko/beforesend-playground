@@ -1,0 +1,35 @@
+{
+  "id": "scrub-urls-javascript",
+  "name": "Scrub Sensitive URLs (JavaScript)",
+  "description": "Remove tokens, IDs, and sensitive data from transaction names and span descriptions",
+  "sdk": "javascript",
+  "type": "beforeSendTransaction",
+  "transaction": {
+    "type": "transaction",
+    "transaction": "GET /api/users/12345/profile",
+    "transaction_info": {
+      "source": "route"
+    },
+    "contexts": {
+      "trace": {
+        "trace_id": "abc123",
+        "span_id": "span123",
+        "op": "http.server",
+        "status": "ok"
+      }
+    },
+    "spans": [
+      {
+        "span_id": "db-span-1",
+        "parent_span_id": "span123",
+        "op": "db.query",
+        "description": "SELECT * FROM users WHERE id = 12345",
+        "start_timestamp": 1704067200.0,
+        "timestamp": 1704067200.100
+      }
+    ],
+    "start_timestamp": 1704067200.0,
+    "timestamp": 1704067200.200
+  },
+  "beforeSendTransactionCode": "(transaction, hint) => {\n  // Scrub numeric IDs from transaction name\n  if (transaction.transaction) {\n    transaction.transaction = transaction.transaction.replace(/\\/\\d+/g, '/:id');\n  }\n  \n  // Scrub IDs from span descriptions\n  if (transaction.spans) {\n    transaction.spans = transaction.spans.map(span => ({\n      ...span,\n      description: span.description?.replace(/= \\d+/g, '= :id')\n    }));\n  }\n  \n  return transaction;\n}"
+}

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import EventInput from '../EventInput';
 import BeforeSendEditor from '../BeforeSendEditor';
 import SdkSelector from '../SdkSelector';
+import SearchableExampleSelector from '../SearchableExampleSelector';
 import OutputViewer from '../OutputViewer';
-import { apiClient, TransformResponse } from '../../api/client';
+import { apiClient, TransformResponse, Example } from '../../api/client';
 
 const AVAILABLE_SDKS = [
   { key: 'javascript', name: 'JavaScript', language: 'javascript', package: '@sentry/node', version: '8.55.0' },
@@ -68,28 +69,6 @@ const DEFAULT_TRANSACTION = JSON.stringify(
   null,
   2
 );
-
-// Transaction examples for quick selection
-const TRANSACTION_EXAMPLES = [
-  {
-    id: 'drop-health-checks',
-    name: 'Drop Health Checks',
-    description: 'Filter out health check and monitoring endpoints',
-    sdk: 'javascript',
-  },
-  {
-    id: 'scrub-urls',
-    name: 'Scrub Sensitive URLs',
-    description: 'Remove tokens and IDs from transaction names',
-    sdk: 'javascript',
-  },
-  {
-    id: 'add-custom-tags',
-    name: 'Add Custom Tags',
-    description: 'Enrich transactions with business context',
-    sdk: 'javascript',
-  },
-];
 
 const DEFAULT_BEFORESEND_JS = `(transaction, hint) => {
   // Drop health check and monitoring transactions
@@ -339,12 +318,26 @@ export default function BeforeSendTransactionPlayground() {
     setBeforeSendCode(getDefaultCode(sdk));
   };
 
-  const handleExampleSelect = (exampleId: string) => {
-    setSelectedExample(exampleId);
-    // For now, all examples use the default transaction and code
-    // In a future update, we could load specific examples from the API
-    setEventJson(DEFAULT_TRANSACTION);
-    setBeforeSendCode(getDefaultCode(selectedSdk));
+  const handleExampleSelect = (example: Example) => {
+    setSelectedExample(example.name);
+
+    // Load transaction JSON from example
+    if (example.transaction) {
+      setEventJson(JSON.stringify(example.transaction, null, 2));
+    }
+
+    // Load code from example, or use SDK-specific default if not available
+    if (example.beforeSendTransactionCode) {
+      setBeforeSendCode(example.beforeSendTransactionCode);
+    } else {
+      setBeforeSendCode(getDefaultCode(example.sdk || selectedSdk));
+    }
+
+    // Switch to the example's SDK if specified
+    if (example.sdk && example.sdk !== selectedSdk) {
+      setSelectedSdk(example.sdk);
+    }
+
     setResult(null);
     setError(null);
   };
@@ -474,25 +467,11 @@ export default function BeforeSendTransactionPlayground() {
       {/* Controls */}
       <div className="bg-white rounded-lg shadow-md p-4 mb-6">
         <div className="flex items-center gap-4">
-          {/* Quick Examples */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Quick examples:</span>
-            {TRANSACTION_EXAMPLES.map((ex) => (
-              <button
-                key={ex.id}
-                onClick={() => handleExampleSelect(ex.id)}
-                className={`px-3 py-1 text-xs rounded-full transition-colors ${
-                  selectedExample === ex.id
-                    ? 'bg-sentry-purple text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                }`}
-                title={ex.description}
-              >
-                {ex.name}
-              </button>
-            ))}
-          </div>
-
+          <SearchableExampleSelector
+            key={selectedExample || 'default'}
+            onSelect={handleExampleSelect}
+            type="beforeSendTransaction"
+          />
           <SdkSelector value={selectedSdk} onChange={handleSdkChange} />
 
           <button
