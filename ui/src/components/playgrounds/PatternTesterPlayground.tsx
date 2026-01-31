@@ -426,14 +426,14 @@ export default function PatternTesterPlayground() {
 {`Sentry.init({
   // ... other options
   ${filterType}: [
-${patterns.map(p => `    ${p.isRegex ? p.value : `'${p.value.replace(/'/g, "\\'")}'`},`).join('\n')}
+${patterns.map(p => `    ${p.isRegex ? p.value : JSON.stringify(p.value)},`).join('\n')}
   ],
 });`}
         </pre>
         <button
           onClick={() => {
             const code = `${filterType}: [
-${patterns.map(p => `  ${p.isRegex ? p.value : `'${p.value.replace(/'/g, "\\'")}'`},`).join('\n')}
+${patterns.map(p => `  ${p.isRegex ? p.value : JSON.stringify(p.value)},`).join('\n')}
 ]`;
             navigator.clipboard.writeText(code);
           }}
