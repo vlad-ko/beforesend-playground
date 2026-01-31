@@ -10,6 +10,7 @@
 - ✅ Test with real Sentry SDKs (JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, Rust, **Elixir**)
 - ✅ **19 pre-built example templates** across 10 SDKs
 - ✅ **Webhook testing** - Test Sentry webhook payloads with HMAC signature generation and verification
+- ✅ **API Query Tester** - Test and validate Sentry API search queries with real-time validation
 - ✅ **Diff viewer** - See side-by-side comparison of original vs transformed events
 - ✅ **Real-time syntax validation** - Catch errors as you type with SDK-specific parsers (JavaScript, Python, Ruby, PHP, Go, .NET, Rust)
 - ✅ **Compile-on-the-fly** - Go and Rust SDKs compile and execute user code for authentic behavior
@@ -37,6 +38,8 @@ The playground will be available at **http://localhost:3000** 🎉
 **Choose your playground mode:**
 - **beforeSend** - Transform error events before sending to Sentry
 - **Webhooks** - Test webhook payloads with signature generation and verification
+- **Config Analyzer** - Analyze and validate Sentry.init() configurations
+- **API Query Tester** - Test and debug Sentry API search queries
 
 ### Stop Services
 
@@ -267,6 +270,64 @@ Understand what data Sentry sends in webhooks:
 3. Identify useful fields for automation
 4. Test with external services like webhook.site for raw inspection
 
+## API Query Tester
+
+Test and validate Sentry API search queries before using them in integrations or API calls. Perfect for debugging query syntax and understanding what data Sentry's API returns.
+
+### Features
+
+- **Real-time query validation** - Validates properties and values as you type
+- **Property suggestions** - Get corrections for typos (e.g., `assignee` → `assigned`)
+- **Execute queries** - Test queries against real Sentry data
+- **cURL generation** - Copy ready-to-use cURL commands
+- **URL parsing** - Load queries from Sentry UI URLs
+
+### Quick Example
+
+1. Switch to **API Query Tester** tab in the playground
+2. Enter your organization slug (e.g., `demo`)
+3. Enter your **Personal Auth Token** (create one at [demo.sentry.io/settings/account/api/auth-tokens/](https://demo.sentry.io/settings/account/api/auth-tokens/))
+   - **Note**: Organization Auth Tokens won't work - you need a Personal Auth Token
+4. Enter a query (e.g., `is:unresolved level:error`)
+5. Click **Execute Query**
+6. View results and copy the generated cURL command
+
+### Example Queries
+
+| Query | Description |
+|-------|-------------|
+| `is:unresolved level:error` | Unresolved error-level issues |
+| `assigned:me` | Issues assigned to you |
+| `level:fatal age:-24h` | Fatal errors from last 24 hours |
+| `!user.email:*@internal.com` | Exclude internal users |
+| `timesSeen:>100` | High-volume issues |
+| `error.type:TypeError` | Specific exception types |
+
+### Query Syntax
+
+Sentry queries use a `key:value` format with optional operators:
+
+- **Basic:** `level:error`, `is:unresolved`
+- **Negation:** `!level:error`, `!is:resolved`
+- **Comparison:** `age:>24h`, `timesSeen:>=100`
+- **Wildcards:** `user.email:*@example.com`
+- **Multiple values:** `release:[12.0, 13.0]`
+- **Quoted values:** `user.username:"Jane Doe"`
+
+See the [Sentry Search Docs](https://docs.sentry.io/concepts/search/) for complete syntax reference.
+
+### Supported Endpoints
+
+- **Issues** - Search organization issues (`/api/0/organizations/{org}/issues/`)
+- **Events** - Search project events (`/api/0/projects/{org}/{project}/events/`)
+- **Projects** - List organization projects (`/api/0/organizations/{org}/projects/`)
+
+### Security Notes
+
+- Auth tokens are stored in memory only (never persisted or logged)
+- Use the demo org (`demo`) at demo.sentry.io for testing
+- Tokens are masked in generated cURL commands
+
 ## Using the Playground
 
 ### 1. Load an Example (Recommended)
@@ -376,6 +437,9 @@ When you type, the editor will show red squiggles for syntax errors before you e
 - **[SDK-Specific Details](docs/config-analyzer/sdk-specifics.md)** - Per-SDK parsing details
 - **[Adding Options](docs/config-analyzer/adding-options.md)** - Extend the dictionary
 - **[Adding SDKs](docs/config-analyzer/adding-sdks.md)** - Add new SDK support
+
+### API Query Tester
+- **[API Query Tester Overview](docs/api-query-tester/README.md)** - Test Sentry API queries
 
 ### Advanced
 - **[API Reference](docs/api-reference.md)** - API endpoints and usage

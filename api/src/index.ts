@@ -6,6 +6,7 @@ import validateRouter from './routes/validate';
 import shareRouter from './routes/share';
 import webhooksRouter from './routes/webhooks';
 import configRouter from './routes/config';
+import sentryQueryRouter from './routes/sentry-query';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -48,6 +49,7 @@ app.use('/api/validate', validateRouter);
 app.use('/api/share', shareRouter);
 app.use('/api/webhooks', webhooksRouter);
 app.use('/api/config', configRouter);
+app.use('/api/sentry-query', sentryQueryRouter);
 
 // 404 handler
 app.use((req, res) => {
@@ -73,4 +75,5 @@ app.listen(PORT, () => {
   console.log(`   Examples API: http://localhost:${PORT}/api/examples`);
   console.log(`   Webhooks API: http://localhost:${PORT}/api/webhooks`);
   console.log(`   Config Analyzer: http://localhost:${PORT}/api/config`);
+  console.log(`   Sentry Query Tester: http://localhost:${PORT}/api/sentry-query`);
 });
