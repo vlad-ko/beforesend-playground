@@ -166,33 +166,17 @@ if strings.Contains(txName, "/static/") {
 // Default sampling
 return 0.1 // 10%`;
 
-const DEFAULT_TRACES_SAMPLER_DOTNET = `// Access transaction context from event contexts
-var txName = "";
-if (ev.Contexts.TryGetValue("transactionContext", out var txContext))
-{
-    txName = txContext["name"]?.ToString() ?? "";
-}
+const DEFAULT_TRACES_SAMPLER_DOTNET = `// In the actual Sentry .NET SDK, tracesSampler receives a SamplingContext
+// with properties like TransactionContext.Name, TransactionContext.Operation
+//
+// Example SDK configuration:
+// options.TracesSampler = ctx => {
+//     if (ctx.TransactionContext.Name.Contains("/payment")) return 1.0;
+//     return 0.1;
+// };
 
-// Always sample payment endpoints (critical)
-if (txName.Contains("/payment"))
-{
-    return 1.0; // 100%
-}
-
-// Never sample health checks
-if (txName == "GET /health")
-{
-    return 0.0; // 0%
-}
-
-// Lower sampling for static assets
-if (txName.Contains("/static/"))
-{
-    return 0.01; // 1%
-}
-
-// Default sampling
-return 0.1; // 10%`;
+// For this playground demo, return a sample rate directly:
+return 0.5; // 50% sampling`;
 
 const DEFAULT_TRACES_SAMPLER_JAVA = `(context) -> {
     String transactionName = context.getTransactionContext().getName();
@@ -429,6 +413,11 @@ export default function TracesSamplerPlayground() {
         event: samplingContext,
         beforeSendCode: tracesSamplerCode,
       });
+
+      if (!response.success) {
+        setError(response.error || 'Evaluation failed');
+        return;
+      }
 
       setResult(response);
     } catch (err: any) {
