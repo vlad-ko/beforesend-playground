@@ -1,4 +1,5 @@
 {
+  "id": "normalize-db-errors",
   "name": "Normalize Database Errors",
   "description": "Group all database connection errors together regardless of instance",
   "type": "fingerprinting",
