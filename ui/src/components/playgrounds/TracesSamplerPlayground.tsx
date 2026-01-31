@@ -14,6 +14,18 @@ function usesSnakeCase(sdk: string): boolean {
   return ['python', 'ruby', 'php', 'rust', 'elixir'].includes(sdk);
 }
 
+/**
+ * Determines if an SDK supports tracesSampler execution
+ * Some SDK backends are designed for beforeSend (event transformation) only
+ * and cannot return numbers for tracesSampler evaluation.
+ *
+ * Supported: JavaScript, Python, Ruby, PHP, Elixir, React Native
+ * Documentation only: Go, Rust, .NET, Java, Android, Cocoa
+ */
+function supportsTracesSamplerExecution(sdk: string): boolean {
+  return ['javascript', 'python', 'ruby', 'php', 'elixir', 'react-native'].includes(sdk);
+}
+
 function getDefaultSamplingContext(sdk: string): string {
   const snakeCase = usesSnakeCase(sdk);
   return JSON.stringify(
@@ -461,6 +473,9 @@ export default function TracesSamplerPlayground() {
   // Get sampling rate from result
   const samplingRate = typeof result?.transformedEvent === 'number' ? result.transformedEvent : null;
 
+  // Check if current SDK supports execution
+  const canExecute = supportsTracesSamplerExecution(selectedSdk);
+
   return (
     <div className="space-y-4">
       {/* SDK Selector and Examples Row */}
@@ -472,6 +487,23 @@ export default function TracesSamplerPlayground() {
           <SearchableExampleSelector onSelect={handleExampleSelect} type="tracesSampler" />
         </div>
       </div>
+
+      {/* Warning banner for SDKs that don't support execution */}
+      {!canExecute && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <span className="text-amber-600 text-xl">&#9888;</span>
+            <div>
+              <h4 className="text-amber-800 font-semibold">Code Reference Only</h4>
+              <p className="text-amber-700 text-sm mt-1">
+                The {AVAILABLE_SDKS.find(s => s.key === selectedSdk)?.name || selectedSdk} SDK backend doesn't support tracesSampler execution.
+                The code shown is for reference to demonstrate the SDK's syntax pattern.
+                Use JavaScript or Python for live evaluation.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Input/Editor Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -577,7 +609,8 @@ export default function TracesSamplerPlayground() {
       <div className="flex gap-4 justify-center">
         <button
           onClick={handleEvaluate}
-          disabled={isLoading}
+          disabled={isLoading || !canExecute}
+          title={!canExecute ? 'Execution not supported for this SDK - see warning above' : undefined}
           className="px-6 py-2 bg-sentry-purple text-white rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
         >
           {isLoading ? 'Evaluating...' : 'Evaluate'}
