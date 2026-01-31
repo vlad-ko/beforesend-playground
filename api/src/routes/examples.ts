@@ -9,13 +9,15 @@ interface Example {
   name: string;
   description: string;
   sdk: string;
-  type?: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb';  // defaults to 'beforeSend'
+  type?: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler';  // defaults to 'beforeSend'
   event?: Record<string, any>;
   transaction?: Record<string, any>;
   breadcrumb?: Record<string, any>;
+  samplingContext?: Record<string, any>;
   beforeSendCode?: string;
   beforeSendTransactionCode?: string;
   beforeBreadcrumbCode?: string;
+  tracesSamplerCode?: string;
 }
 
 interface ExamplesResponse {
@@ -72,7 +74,8 @@ function loadExamples(): Example[] {
  * Validate example structure
  * Supports beforeSend examples (event + beforeSendCode),
  * beforeSendTransaction examples (transaction + beforeSendTransactionCode),
- * and beforeBreadcrumb examples (breadcrumb + beforeBreadcrumbCode)
+ * beforeBreadcrumb examples (breadcrumb + beforeBreadcrumbCode),
+ * and tracesSampler examples (samplingContext + tracesSamplerCode)
  */
 function isValidExample(example: any): example is Example {
   if (
@@ -104,6 +107,15 @@ function isValidExample(example: any): example is Example {
     );
   }
 
+  // Check for tracesSampler example
+  if (example.type === 'tracesSampler') {
+    return (
+      typeof example.samplingContext === 'object' &&
+      example.samplingContext !== null &&
+      typeof example.tracesSamplerCode === 'string'
+    );
+  }
+
   // Default: beforeSend example
   return (
     typeof example.event === 'object' &&
@@ -116,7 +128,7 @@ function isValidExample(example: any): example is Example {
  * GET /api/examples
  * Returns list of all available example templates
  * Query params:
- *   - type: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb' (optional, filters by example type)
+ *   - type: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler' (optional, filters by example type)
  */
 router.get('/', (req: Request, res: Response<ExamplesResponse>) => {
   try {
@@ -124,7 +136,7 @@ router.get('/', (req: Request, res: Response<ExamplesResponse>) => {
 
     // Filter by type if specified
     const typeFilter = req.query.type as string | undefined;
-    if (typeFilter === 'beforeSend' || typeFilter === 'beforeSendTransaction' || typeFilter === 'beforeBreadcrumb') {
+    if (typeFilter === 'beforeSend' || typeFilter === 'beforeSendTransaction' || typeFilter === 'beforeBreadcrumb' || typeFilter === 'tracesSampler') {
       examples = examples.filter(ex => {
         const exampleType = ex.type || 'beforeSend';  // default to beforeSend
         return exampleType === typeFilter;

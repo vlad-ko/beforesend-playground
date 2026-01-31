@@ -1,0 +1,19 @@
+{
+  "id": "environment-based-sampling-python",
+  "name": "Environment-Based Sampling (Python)",
+  "description": "Different sampling rates per environment - 100% in development, 10% in production",
+  "sdk": "python",
+  "type": "tracesSampler",
+  "samplingContext": {
+    "transaction_context": {
+      "name": "GET /api/users",
+      "op": "http.server"
+    },
+    "parent_sampled": false,
+    "custom_sampling_context": {
+      "environment": "production",
+      "release": "v2.1.0"
+    }
+  },
+  "tracesSamplerCode": "def traces_sampler(sampling_context):\n    custom_ctx = sampling_context.get('custom_sampling_context', {})\n    environment = custom_ctx.get('environment', 'production')\n    transaction_name = sampling_context.get('transaction_context', {}).get('name', '')\n\n    # Always sample in development and staging\n    if environment in ('development', 'dev', 'local'):\n        return 1.0  # 100%\n    \n    if environment in ('staging', 'uat', 'qa'):\n        return 0.5  # 50%\n\n    # Production sampling strategy\n    if environment == 'production':\n        # Higher sampling for critical paths\n        if '/payment' in transaction_name or '/checkout' in transaction_name:\n            return 0.5  # 50%\n        \n        # Drop health checks entirely\n        if transaction_name in ('GET /health', 'GET /healthz'):\n            return 0.0\n        \n        # Default production sampling\n        return 0.1  # 10%\n\n    # Unknown environment - be conservative\n    return 0.05  # 5%"
+}

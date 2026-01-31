@@ -6,6 +6,7 @@ export type PlaygroundMode =
   | 'beforeSend'
   | 'beforeSendTransaction'
   | 'beforeBreadcrumb'
+  | 'tracesSampler'
   | 'webhooks'
   | 'configAnalyzer'
   | 'apiQueryTester'
@@ -40,6 +41,13 @@ export const MODES: ModeConfig[] = [
     description: 'Filter and modify breadcrumbs before they are added to events',
     helpText: 'The beforeBreadcrumb callback is invoked before each breadcrumb is added to the scope. Use it to filter noisy breadcrumbs, scrub PII from console logs or navigation URLs, or modify breadcrumb data.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
+  },
+  {
+    id: 'tracesSampler',
+    name: 'tracesSampler',
+    description: 'Test dynamic sampling strategies for performance monitoring',
+    helpText: 'The tracesSampler callback returns a sample rate (0.0-1.0) for each transaction. Use it to sample critical endpoints at higher rates, filter out health checks, or implement user-based sampling strategies.',
+    docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/sampling/',
   },
   {
     id: 'webhooks',

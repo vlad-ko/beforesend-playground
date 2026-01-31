@@ -27,16 +27,18 @@ export function validateSentryEvent(event: any): ValidationResult {
     };
   }
 
-  // Basic Sentry event/breadcrumb structure check
+  // Basic Sentry event/breadcrumb/sampling context structure check
   // Accepts events (event_id, exception, message) or breadcrumbs (category, type)
+  // or transactions (type=transaction, transaction) or sampling contexts (transactionContext, transaction_context)
   const isEvent = event.event_id || event.exception || event.message;
   const isBreadcrumb = event.category || (event.type && event.type !== 'transaction');
   const isTransaction = event.type === 'transaction' || event.transaction;
+  const isSamplingContext = event.transactionContext || event.transaction_context;
 
-  if (!isEvent && !isBreadcrumb && !isTransaction) {
+  if (!isEvent && !isBreadcrumb && !isTransaction && !isSamplingContext) {
     return {
       valid: false,
-      error: 'Input must be a valid Sentry event, transaction, or breadcrumb object',
+      error: 'Input must be a valid Sentry event, transaction, breadcrumb, or sampling context object',
     };
   }
 
