@@ -8,10 +8,10 @@ export type PlaygroundMode =
   | 'beforeSendTransaction'
   | 'beforeBreadcrumb'
   | 'tracesSampler'
-  | 'webhooks'
+  | 'patternTester'
   | 'configAnalyzer'
   | 'apiQueryTester'
-  | 'patternTester';
+  | 'webhooks';
 
 export interface ModeConfig {
   id: PlaygroundMode;
@@ -58,11 +58,11 @@ export const MODES: ModeConfig[] = [
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/sampling/',
   },
   {
-    id: 'webhooks',
-    name: 'Webhooks',
-    description: 'Test Sentry webhook integrations',
-    helpText: 'Webhooks allow you to receive HTTP callbacks when events occur in your Sentry projects. Test your webhook endpoints and validate payload handling with real Sentry event data.',
-    docsUrl: 'https://docs.sentry.io/product/integrations/integration-platform/webhooks/',
+    id: 'patternTester',
+    name: 'Pattern Tester',
+    description: 'Test ignoreErrors, denyUrls, and allowUrls filter patterns',
+    helpText: 'Validate regex patterns for filtering errors and URLs before deploying. Test ignoreErrors patterns against error messages, and denyUrls/allowUrls patterns against script URLs to ensure your filters work correctly.',
+    docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
   },
   {
     id: 'configAnalyzer',
@@ -79,10 +79,10 @@ export const MODES: ModeConfig[] = [
     docsUrl: 'https://docs.sentry.io/concepts/search/',
   },
   {
-    id: 'patternTester',
-    name: 'Pattern Tester',
-    description: 'Test ignoreErrors, denyUrls, and allowUrls filter patterns',
-    helpText: 'Validate regex patterns for filtering errors and URLs before deploying. Test ignoreErrors patterns against error messages, and denyUrls/allowUrls patterns against script URLs to ensure your filters work correctly.',
-    docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
+    id: 'webhooks',
+    name: 'Webhooks',
+    description: 'Test Sentry webhook integrations',
+    helpText: 'Webhooks allow you to receive HTTP callbacks when events occur in your Sentry projects. Test your webhook endpoints and validate payload handling with real Sentry event data.',
+    docsUrl: 'https://docs.sentry.io/product/integrations/integration-platform/webhooks/',
   },
 ];
