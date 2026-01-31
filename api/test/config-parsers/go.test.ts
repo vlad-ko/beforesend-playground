@@ -181,6 +181,48 @@ describe('GoConfigParser', () => {
       expect(result.valid).toBe(true);
       expect(result.options.size).toBe(2);
     });
+
+    it('should handle strings with escaped backslashes', () => {
+      // Test that escaped backslash at end of string doesn't swallow next option
+      const config = `sentry.Init(sentry.ClientOptions{
+  Dsn: "https://test@o0.ingest.sentry.io/0",
+  ServerName: "C:\\\\Users\\\\",
+  Environment: "production",
+})`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('ServerName')?.value).toBe('C:\\\\Users\\\\');
+      expect(result.options.get('Environment')?.value).toBe('production');
+    });
+
+    it('should handle escaped quotes inside strings', () => {
+      const config = `sentry.Init(sentry.ClientOptions{
+  Dsn: "https://test@o0.ingest.sentry.io/0",
+  Release: "version-\\"beta\\"",
+  Environment: "production",
+})`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('Environment')?.value).toBe('production');
+    });
+
+    it('should handle backtick raw strings without escape processing', () => {
+      // In Go, backtick strings are raw - backslashes are literal
+      const config = 'sentry.Init(sentry.ClientOptions{\n  Dsn: `https://test@o0.ingest.sentry.io/0`,\n  ServerName: `C:\\Users\\`,\n  Environment: "production",\n})';
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('ServerName')?.value).toBe('C:\\Users\\');
+      expect(result.options.get('Environment')?.value).toBe('production');
+    });
   });
 
   describe('validate', () => {

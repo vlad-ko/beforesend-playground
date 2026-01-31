@@ -215,4 +215,34 @@ describe('CocoaConfigParser', () => {
       expect(result.errors.length).toBeGreaterThan(0);
     });
   });
+
+  describe('escaped backslash handling', () => {
+    it('should handle strings ending with escaped backslash', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.serverName = "C:\\\\Users\\\\"
+    options.environment = "production"
+}`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+
+    it('should handle escaped quotes inside strings', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.releaseName = "version-\\"beta\\""
+    options.environment = "production"
+}`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+  });
 });

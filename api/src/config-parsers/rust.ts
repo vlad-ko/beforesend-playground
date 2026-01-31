@@ -5,6 +5,19 @@
 import { IConfigParser, ParsedConfig, ParsedOption, ParseError } from './types';
 
 export class RustConfigParser implements IConfigParser {
+  /**
+   * Check if character at index is escaped by counting preceding backslashes.
+   */
+  private isEscaped(str: string, index: number): boolean {
+    let backslashes = 0;
+    let i = index - 1;
+    while (i >= 0 && str[i] === '\\') {
+      backslashes++;
+      i--;
+    }
+    return backslashes % 2 === 1;
+  }
+
   parse(configCode: string): ParsedConfig {
     const result: ParsedConfig = {
       sdk: 'rust',
@@ -55,9 +68,8 @@ export class RustConfigParser implements IConfigParser {
     while (i < code.length) {
       const char = code[i];
       const nextChar = i + 1 < code.length ? code[i + 1] : '';
-      const prevChar = i > 0 ? code[i - 1] : '';
 
-      if (char === '"' && prevChar !== '\\') {
+      if (char === '"' && !this.isEscaped(code, i)) {
         inString = !inString;
         result += char;
         i++;
@@ -112,9 +124,8 @@ export class RustConfigParser implements IConfigParser {
 
     for (let i = 0; i < str.length; i++) {
       const char = str[i];
-      const prevChar = i > 0 ? str[i - 1] : '';
 
-      if (char === '"' && prevChar !== '\\') inString = !inString;
+      if (char === '"' && !this.isEscaped(str, i)) inString = !inString;
 
       if (!inString) {
         if (char === '{' || char === '[' || char === '(' || char === '<') depth++;

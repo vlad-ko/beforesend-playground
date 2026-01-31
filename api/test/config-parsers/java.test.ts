@@ -225,4 +225,34 @@ describe('JavaConfigParser', () => {
       expect(result.errors.length).toBeGreaterThan(0);
     });
   });
+
+  describe('escaped backslash handling', () => {
+    it('should handle strings ending with escaped backslash', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setServerName("C:\\\\Users\\\\");
+    options.setEnvironment("production");
+});`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+
+    it('should handle escaped quotes inside strings', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setRelease("version-\\"beta\\"");
+    options.setEnvironment("production");
+});`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+  });
 });

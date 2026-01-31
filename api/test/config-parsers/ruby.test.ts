@@ -224,4 +224,34 @@ end`;
       expect(result.errors.length).toBeGreaterThan(0);
     });
   });
+
+  describe('escaped backslash handling', () => {
+    it('should handle strings ending with escaped backslash', () => {
+      const config = `Sentry.init do |config|
+  config.dsn = "https://test@o0.ingest.sentry.io/0"
+  config.server_name = "C:\\\\Users\\\\"
+  config.environment = "production"
+end`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+
+    it('should handle escaped quotes inside strings', () => {
+      const config = `Sentry.init do |config|
+  config.dsn = "https://test@o0.ingest.sentry.io/0"
+  config.release = "version-\\"beta\\""
+  config.environment = "production"
+end`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+  });
 });

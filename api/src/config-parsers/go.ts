@@ -57,6 +57,20 @@ export class GoConfigParser implements IConfigParser {
     return null;
   }
 
+  /**
+   * Check if character at index is escaped by counting preceding backslashes.
+   * An odd number of backslashes means the character is escaped.
+   */
+  private isEscaped(str: string, index: number): boolean {
+    let backslashes = 0;
+    let i = index - 1;
+    while (i >= 0 && str[i] === '\\') {
+      backslashes++;
+      i--;
+    }
+    return backslashes % 2 === 1;
+  }
+
   private removeComments(code: string): string {
     let result = '';
     let i = 0;
@@ -66,14 +80,18 @@ export class GoConfigParser implements IConfigParser {
     while (i < code.length) {
       const char = code[i];
       const nextChar = i + 1 < code.length ? code[i + 1] : '';
-      const prevChar = i > 0 ? code[i - 1] : '';
 
-      if ((char === '"' || char === '`') && prevChar !== '\\') {
-        if (!inString) {
-          inString = true;
-          stringChar = char;
-        } else if (char === stringChar) {
-          inString = false;
+      // Handle string delimiters
+      // Note: backtick strings in Go are raw (no escaping), double-quoted strings use backslash escaping
+      if (char === '"' || char === '`') {
+        const isEscapedQuote = char === '"' && this.isEscaped(code, i);
+        if (!isEscapedQuote) {
+          if (!inString) {
+            inString = true;
+            stringChar = char;
+          } else if (char === stringChar) {
+            inString = false;
+          }
         }
         result += char;
         i++;
@@ -138,14 +156,17 @@ export class GoConfigParser implements IConfigParser {
 
     for (let i = 0; i < str.length; i++) {
       const char = str[i];
-      const prevChar = i > 0 ? str[i - 1] : '';
 
-      if ((char === '"' || char === '`') && prevChar !== '\\') {
-        if (!inString) {
-          inString = true;
-          stringChar = char;
-        } else if (char === stringChar) {
-          inString = false;
+      // Handle string delimiters with proper escape handling
+      if (char === '"' || char === '`') {
+        const isEscapedQuote = char === '"' && this.isEscaped(str, i);
+        if (!isEscapedQuote) {
+          if (!inString) {
+            inString = true;
+            stringChar = char;
+          } else if (char === stringChar) {
+            inString = false;
+          }
         }
       }
 

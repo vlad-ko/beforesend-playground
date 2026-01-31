@@ -214,4 +214,36 @@ describe('RustConfigParser', () => {
       expect(result.errors.length).toBeGreaterThan(0);
     });
   });
+
+  describe('escaped backslash handling', () => {
+    it('should handle strings ending with escaped backslash', () => {
+      const config = `sentry::init(sentry::ClientOptions {
+    dsn: Some("https://test@o0.ingest.sentry.io/0".into()),
+    server_name: Some("C:\\\\Users\\\\".into()),
+    environment: Some("production".into()),
+    ..Default::default()
+})`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toContain('production');
+    });
+
+    it('should handle escaped quotes inside strings', () => {
+      const config = `sentry::init(sentry::ClientOptions {
+    dsn: Some("https://test@o0.ingest.sentry.io/0".into()),
+    release: Some("version-\\"beta\\"".into()),
+    environment: Some("production".into()),
+    ..Default::default()
+})`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toContain('production');
+    });
+  });
 });
