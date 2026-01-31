@@ -7,7 +7,8 @@ export type PlaygroundMode =
   | 'beforeSendTransaction'
   | 'webhooks'
   | 'configAnalyzer'
-  | 'apiQueryTester';
+  | 'apiQueryTester'
+  | 'patternTester';
 
 export interface ModeConfig {
   id: PlaygroundMode;
@@ -52,5 +53,12 @@ export const MODES: ModeConfig[] = [
     description: 'Test and validate Sentry API search queries',
     helpText: 'Test API query syntax, validate search properties, and debug query issues. Use the demo org at demo.sentry.io for testing. Supports issues, events, and projects endpoints with real-time validation.',
     docsUrl: 'https://docs.sentry.io/concepts/search/',
+  },
+  {
+    id: 'patternTester',
+    name: 'Pattern Tester',
+    description: 'Test ignoreErrors, denyUrls, and allowUrls filter patterns',
+    helpText: 'Validate regex patterns for filtering errors and URLs before deploying. Test ignoreErrors patterns against error messages, and denyUrls/allowUrls patterns against script URLs to ensure your filters work correctly.',
+    docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
   },
 ];

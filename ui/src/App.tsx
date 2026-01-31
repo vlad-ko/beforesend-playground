@@ -6,6 +6,7 @@ import BeforeSendTransactionPlayground from './components/playgrounds/BeforeSend
 import WebhookPlayground from './components/playgrounds/WebhookPlayground';
 import ConfigAnalyzerPlayground from './components/playgrounds/ConfigAnalyzerPlayground';
 import ApiQueryTesterPlayground from './components/playgrounds/ApiQueryTesterPlayground';
+import PatternTesterPlayground from './components/playgrounds/PatternTesterPlayground';
 import { PlaygroundMode } from './types/modes';
 import sentryLogo from './assets/sentry-logo.png';
 
@@ -35,6 +36,8 @@ function App() {
         return <ConfigAnalyzerPlayground />;
       case 'apiQueryTester':
         return <ApiQueryTesterPlayground />;
+      case 'patternTester':
+        return <PatternTesterPlayground />;
       default:
         return <BeforeSendPlayground />;
     }
