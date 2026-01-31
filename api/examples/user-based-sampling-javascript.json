@@ -1,0 +1,27 @@
+{
+  "id": "user-based-sampling-javascript",
+  "name": "User-Based Sampling (JavaScript)",
+  "description": "Sample based on user attributes - higher sampling for VIP customers and beta testers",
+  "sdk": "javascript",
+  "type": "tracesSampler",
+  "samplingContext": {
+    "transactionContext": {
+      "name": "GET /api/dashboard",
+      "op": "http.server"
+    },
+    "parentSampled": false,
+    "customSamplingContext": {
+      "user": {
+        "id": "user-12345",
+        "email": "enterprise@bigcorp.com",
+        "plan": "enterprise",
+        "isBetaTester": true
+      }
+    },
+    "request": {
+      "url": "https://example.com/api/dashboard",
+      "method": "GET"
+    }
+  },
+  "tracesSamplerCode": "(samplingContext) => {\n  const customContext = samplingContext.customSamplingContext || {};\n  const user = customContext.user || {};\n\n  // Always sample enterprise customers (100%)\n  if (user.plan === 'enterprise') {\n    return 1.0;\n  }\n\n  // Always sample beta testers (helps debug new features)\n  if (user.isBetaTester) {\n    return 1.0;\n  }\n\n  // Higher sampling for paid plans\n  if (user.plan === 'pro' || user.plan === 'business') {\n    return 0.5; // 50%\n  }\n\n  // Higher sampling for internal employees\n  if (user.email && user.email.endsWith('@mycompany.com')) {\n    return 0.8; // 80%\n  }\n\n  // Lower sampling for free tier users (high volume)\n  if (user.plan === 'free') {\n    return 0.05; // 5%\n  }\n\n  // Default sampling for unknown/anonymous users\n  return 0.1; // 10%\n}"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "critical-endpoints-sampling-javascript",
+  "name": "Critical Endpoints Sampling (JavaScript)",
+  "description": "Sample payment and checkout endpoints at 100%, reduce sampling for less critical paths",
+  "sdk": "javascript",
+  "type": "tracesSampler",
+  "samplingContext": {
+    "transactionContext": {
+      "name": "POST /api/checkout/complete",
+      "op": "http.server"
+    },
+    "parentSampled": false,
+    "request": {
+      "url": "https://example.com/api/checkout/complete",
+      "method": "POST"
+    }
+  },
+  "tracesSamplerCode": "(samplingContext) => {\n  const transactionName = samplingContext.transactionContext.name;\n\n  // Always sample payment and checkout endpoints (business critical)\n  if (transactionName.includes('/payment') || transactionName.includes('/checkout')) {\n    return 1.0; // 100%\n  }\n\n  // Higher sampling for authentication (security important)\n  if (transactionName.includes('/auth') || transactionName.includes('/login')) {\n    return 0.5; // 50%\n  }\n\n  // Lower sampling for API endpoints\n  if (transactionName.includes('/api/')) {\n    return 0.1; // 10%\n  }\n\n  // Minimal sampling for static assets\n  if (transactionName.includes('/static/') || transactionName.includes('/assets/')) {\n    return 0.01; // 1%\n  }\n\n  // Default sampling\n  return 0.05; // 5%\n}"
+}

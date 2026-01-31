@@ -1,0 +1,19 @@
+{
+  "id": "health-check-filtering-javascript",
+  "name": "Health Check Filtering (JavaScript)",
+  "description": "Filter out health checks and monitoring endpoints to reduce noise and costs",
+  "sdk": "javascript",
+  "type": "tracesSampler",
+  "samplingContext": {
+    "transactionContext": {
+      "name": "GET /health",
+      "op": "http.server"
+    },
+    "parentSampled": true,
+    "request": {
+      "url": "https://example.com/health",
+      "method": "GET"
+    }
+  },
+  "tracesSamplerCode": "(samplingContext) => {\n  const transactionName = samplingContext.transactionContext.name;\n\n  // Never sample health check endpoints (high volume, low value)\n  if (transactionName === 'GET /health' ||\n      transactionName === 'GET /healthz' ||\n      transactionName === 'GET /ready' ||\n      transactionName === 'GET /readiness' ||\n      transactionName === 'GET /liveness') {\n    return 0.0; // Drop all\n  }\n\n  // Never sample metrics endpoints\n  if (transactionName.includes('/metrics') || transactionName.includes('/prometheus')) {\n    return 0.0; // Drop all\n  }\n\n  // Never sample favicon requests\n  if (transactionName.includes('favicon')) {\n    return 0.0; // Drop all\n  }\n\n  // Lower sampling for ping/status endpoints\n  if (transactionName.includes('/ping') || transactionName.includes('/status')) {\n    return 0.01; // 1% (occasional monitoring)\n  }\n\n  // Default sampling for everything else\n  return 0.2; // 20%\n}"
+}

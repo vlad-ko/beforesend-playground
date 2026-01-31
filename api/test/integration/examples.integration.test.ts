@@ -20,18 +20,45 @@ function loadExampleFiles() {
   });
 }
 
+// Helper to get the event/input data from an example based on its type
+function getExampleInput(example: any): Record<string, any> {
+  if (example.type === 'beforeSendTransaction') {
+    return example.transaction;
+  } else if (example.type === 'beforeBreadcrumb') {
+    return example.breadcrumb;
+  } else if (example.type === 'tracesSampler') {
+    return example.samplingContext;
+  }
+  return example.event; // default: beforeSend
+}
+
+// Helper to get the code from an example based on its type
+function getExampleCode(example: any): string {
+  if (example.type === 'beforeSendTransaction') {
+    return example.beforeSendTransactionCode;
+  } else if (example.type === 'beforeBreadcrumb') {
+    return example.beforeBreadcrumbCode;
+  } else if (example.type === 'tracesSampler') {
+    return example.tracesSamplerCode;
+  }
+  return example.beforeSendCode; // default: beforeSend
+}
+
 describe('Examples Integration Tests', () => {
   const examples = loadExampleFiles();
 
-  describe('All examples should transform without syntax errors', () => {
-    examples.forEach((example) => {
+  // Filter to only beforeSend examples for transform tests (they need SDK containers)
+  const beforeSendExamples = examples.filter(ex => !ex.type || ex.type === 'beforeSend');
+
+  describe('All beforeSend examples should transform without syntax errors', () => {
+    beforeSendExamples.forEach((example) => {
       it(`should transform successfully: ${example.name} (${example.sdk})`, async () => {
         const response = await request(app)
           .post('/api/transform')
           .send({
             sdk: example.sdk,
-            event: example.event,
-            beforeSendCode: example.beforeSendCode,
+            event: getExampleInput(example),
+            beforeSendCode: getExampleCode(example),
           })
           .set('Content-Type', 'application/json');
 
@@ -57,15 +84,15 @@ describe('Examples Integration Tests', () => {
     });
   });
 
-  describe('Examples should return valid event structure', () => {
-    examples.forEach((example) => {
+  describe('beforeSend Examples should return valid event structure', () => {
+    beforeSendExamples.forEach((example) => {
       it(`should return event with event_id: ${example.name}`, async () => {
         const response = await request(app)
           .post('/api/transform')
           .send({
             sdk: example.sdk,
-            event: example.event,
-            beforeSendCode: example.beforeSendCode,
+            event: getExampleInput(example),
+            beforeSendCode: getExampleCode(example),
           })
           .set('Content-Type', 'application/json');
 
@@ -109,23 +136,47 @@ describe('Examples Integration Tests', () => {
   describe('Example structure validation', () => {
     examples.forEach((example) => {
       it(`should have all required fields: ${example.name}`, () => {
+        // Common required fields
         expect(example).toHaveProperty('id');
         expect(example).toHaveProperty('name');
         expect(example).toHaveProperty('description');
         expect(example).toHaveProperty('sdk');
-        expect(example).toHaveProperty('event');
-        expect(example).toHaveProperty('beforeSendCode');
 
         expect(typeof example.id).toBe('string');
         expect(typeof example.name).toBe('string');
         expect(typeof example.description).toBe('string');
         expect(typeof example.sdk).toBe('string');
-        expect(typeof example.event).toBe('object');
-        expect(typeof example.beforeSendCode).toBe('string');
 
         expect(example.id.length).toBeGreaterThan(0);
         expect(example.name.length).toBeGreaterThan(0);
-        expect(example.beforeSendCode.length).toBeGreaterThan(0);
+
+        // Type-specific field validation
+        if (example.type === 'beforeSendTransaction') {
+          expect(example).toHaveProperty('transaction');
+          expect(example).toHaveProperty('beforeSendTransactionCode');
+          expect(typeof example.transaction).toBe('object');
+          expect(typeof example.beforeSendTransactionCode).toBe('string');
+          expect(example.beforeSendTransactionCode.length).toBeGreaterThan(0);
+        } else if (example.type === 'beforeBreadcrumb') {
+          expect(example).toHaveProperty('breadcrumb');
+          expect(example).toHaveProperty('beforeBreadcrumbCode');
+          expect(typeof example.breadcrumb).toBe('object');
+          expect(typeof example.beforeBreadcrumbCode).toBe('string');
+          expect(example.beforeBreadcrumbCode.length).toBeGreaterThan(0);
+        } else if (example.type === 'tracesSampler') {
+          expect(example).toHaveProperty('samplingContext');
+          expect(example).toHaveProperty('tracesSamplerCode');
+          expect(typeof example.samplingContext).toBe('object');
+          expect(typeof example.tracesSamplerCode).toBe('string');
+          expect(example.tracesSamplerCode.length).toBeGreaterThan(0);
+        } else {
+          // Default: beforeSend
+          expect(example).toHaveProperty('event');
+          expect(example).toHaveProperty('beforeSendCode');
+          expect(typeof example.event).toBe('object');
+          expect(typeof example.beforeSendCode).toBe('string');
+          expect(example.beforeSendCode.length).toBeGreaterThan(0);
+        }
       });
     });
   });
