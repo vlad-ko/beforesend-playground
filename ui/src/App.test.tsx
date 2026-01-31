@@ -545,7 +545,7 @@ describe('App', () => {
       expect(localStorage.getItem('sentry-playground-mode')).toBe('webhooks');
 
       // Switch back to beforeSend
-      const beforeSendButton = screen.getByRole('button', { name: /^beforeSend$/i });
+      const beforeSendButton = screen.getByRole('button', { name: /^Before Send$/i });
       await user.click(beforeSendButton);
 
       await waitFor(() => {

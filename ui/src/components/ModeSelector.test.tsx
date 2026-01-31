@@ -9,8 +9,8 @@ describe('ModeSelector', () => {
     const mockOnChange = vi.fn();
     render(<ModeSelector currentMode="beforeSend" onModeChange={mockOnChange} />);
 
-    expect(screen.getByRole('button', { name: 'beforeSend' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'beforeSendTransaction' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Before Send' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Before Send Transaction' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Webhooks' })).toBeInTheDocument();
   });
 
@@ -18,7 +18,7 @@ describe('ModeSelector', () => {
     const mockOnChange = vi.fn();
     render(<ModeSelector currentMode="beforeSend" onModeChange={mockOnChange} />);
 
-    const beforeSendTab = screen.getByRole('button', { name: 'beforeSend' });
+    const beforeSendTab = screen.getByRole('button', { name: 'Before Send' });
     expect(beforeSendTab).toHaveClass('bg-blue-600');
   });
 
@@ -38,7 +38,7 @@ describe('ModeSelector', () => {
     const user = userEvent.setup();
     render(<ModeSelector currentMode="beforeSend" onModeChange={mockOnChange} />);
 
-    const transactionTab = screen.getByRole('button', { name: 'beforeSendTransaction' });
+    const transactionTab = screen.getByRole('button', { name: 'Before Send Transaction' });
     await user.click(transactionTab);
     expect(mockOnChange).toHaveBeenCalledWith('beforeSendTransaction');
 
@@ -51,7 +51,7 @@ describe('ModeSelector', () => {
     const mockOnChange = vi.fn();
     render(<ModeSelector currentMode="beforeSend" onModeChange={mockOnChange} />);
 
-    const beforeSendTab = screen.getByRole('button', { name: 'beforeSend' });
+    const beforeSendTab = screen.getByRole('button', { name: 'Before Send' });
     expect(beforeSendTab).toHaveAttribute('title', 'Transform error events before they are sent to Sentry');
   });
 });

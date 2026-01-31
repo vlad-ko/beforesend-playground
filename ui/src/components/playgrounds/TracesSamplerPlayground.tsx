@@ -548,7 +548,12 @@ export default function TracesSamplerPlayground() {
 
         {/* Code Editor */}
         <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
-          <h3 className="text-lg font-semibold mb-3 text-gray-800">tracesSampler Code</h3>
+          <div className="mb-2">
+            <h3 className="text-lg font-semibold text-gray-800">tracesSampler Code</h3>
+            <p className="text-sm text-gray-500">Return a sample rate between 0.0 and 1.0</p>
+          </div>
+          {/* Spacer to align with quick scenario buttons */}
+          <div className="h-[26px] mb-3"></div>
           <div className="flex-grow">
             <BeforeSendEditor
               value={tracesSamplerCode}

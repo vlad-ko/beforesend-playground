@@ -23,28 +23,28 @@ export interface ModeConfig {
 export const MODES: ModeConfig[] = [
   {
     id: 'beforeSend',
-    name: 'beforeSend',
+    name: 'Before Send',
     description: 'Transform error events before they are sent to Sentry',
     helpText: 'The beforeSend callback is invoked before error events are sent to Sentry. Use it to modify events, filter out sensitive data, or drop events entirely by returning null.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
   },
   {
     id: 'beforeSendTransaction',
-    name: 'beforeSendTransaction',
+    name: 'Before Send Transaction',
     description: 'Transform transaction events before they are sent to Sentry',
     helpText: 'The beforeSendTransaction callback is invoked before performance transaction events are sent to Sentry. Use it to modify transaction data, adjust sampling decisions, or filter performance events.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
   },
   {
     id: 'beforeBreadcrumb',
-    name: 'beforeBreadcrumb',
+    name: 'Before Breadcrumb',
     description: 'Filter and modify breadcrumbs before they are added to events',
     helpText: 'The beforeBreadcrumb callback is invoked before each breadcrumb is added to the scope. Use it to filter noisy breadcrumbs, scrub PII from console logs or navigation URLs, or modify breadcrumb data.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
   },
   {
     id: 'tracesSampler',
-    name: 'tracesSampler',
+    name: 'Traces Sampler',
     description: 'Test dynamic sampling strategies for performance monitoring',
     helpText: 'The tracesSampler callback returns a sample rate (0.0-1.0) for each transaction. Use it to sample critical endpoints at higher rates, filter out health checks, or implement user-based sampling strategies.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/sampling/',
