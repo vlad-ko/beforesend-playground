@@ -9,6 +9,8 @@ import { ConfigAnalyzer } from '../../src/config-analyzer/analyzer';
 import { PythonConfigParser } from '../../src/config-parsers/python';
 import { JavaScriptConfigParser } from '../../src/config-parsers/javascript';
 import { CocoaConfigParser } from '../../src/config-parsers/cocoa';
+import { DotNetConfigParser } from '../../src/config-parsers/dotnet';
+import { GoConfigParser } from '../../src/config-parsers/go';
 
 describe('ConfigAnalyzer', () => {
   describe('Python snake_case key normalization', () => {
@@ -317,6 +319,164 @@ describe('ConfigAnalyzer', () => {
 }`;
 
       const result = analyzer.analyze(config, 'cocoa');
+
+      // Should have no unknown option warnings
+      const unknownWarnings = result.warnings.filter(
+        w => w.message.includes('Unknown option')
+      );
+      expect(unknownWarnings.length).toBe(0);
+      expect(result.score).toBeGreaterThanOrEqual(70);
+    });
+  });
+
+  describe('.NET PascalCase key normalization', () => {
+    let analyzer: ConfigAnalyzer;
+
+    beforeEach(() => {
+      analyzer = new ConfigAnalyzer(new DotNetConfigParser());
+    });
+
+    it('should recognize Dsn as dsn', () => {
+      const config = `SentrySdk.Init(o => {
+    o.Dsn = "https://test@o0.ingest.sentry.io/0";
+});`;
+
+      const result = analyzer.analyze(config, 'dotnet');
+
+      const dsnOption = result.options.find(o => o.key === 'Dsn');
+      expect(dsnOption).toBeDefined();
+      expect(dsnOption?.recognized).toBe(true);
+    });
+
+    it('should recognize TracesSampleRate as tracesSampleRate', () => {
+      const config = `SentrySdk.Init(o => {
+    o.Dsn = "https://test@o0.ingest.sentry.io/0";
+    o.TracesSampleRate = 0.1;
+});`;
+
+      const result = analyzer.analyze(config, 'dotnet');
+
+      const traceOption = result.options.find(o => o.key === 'TracesSampleRate');
+      expect(traceOption).toBeDefined();
+      expect(traceOption?.recognized).toBe(true);
+      expect(traceOption?.displayName).toBe('Traces Sample Rate');
+    });
+
+    it('should recognize Debug as debug', () => {
+      const config = `SentrySdk.Init(o => {
+    o.Dsn = "https://test@o0.ingest.sentry.io/0";
+    o.Debug = true;
+});`;
+
+      const result = analyzer.analyze(config, 'dotnet');
+
+      const debugOption = result.options.find(o => o.key === 'Debug');
+      expect(debugOption).toBeDefined();
+      expect(debugOption?.recognized).toBe(true);
+    });
+
+    it('should recognize SendDefaultPii as sendDefaultPii', () => {
+      const config = `SentrySdk.Init(o => {
+    o.Dsn = "https://test@o0.ingest.sentry.io/0";
+    o.SendDefaultPii = true;
+});`;
+
+      const result = analyzer.analyze(config, 'dotnet');
+
+      const piiOption = result.options.find(o => o.key === 'SendDefaultPii');
+      expect(piiOption).toBeDefined();
+      expect(piiOption?.recognized).toBe(true);
+    });
+
+    it('should validate TracesSampleRate value', () => {
+      const config = `SentrySdk.Init(o => {
+    o.Dsn = "https://test@o0.ingest.sentry.io/0";
+    o.TracesSampleRate = 1.0;
+});`;
+
+      const result = analyzer.analyze(config, 'dotnet');
+
+      // Should have a warning about 100% sampling
+      const samplingWarning = result.warnings.find(
+        w => w.message.includes('100% transaction sampling')
+      );
+      expect(samplingWarning).toBeDefined();
+    });
+
+    it('should warn about Debug = true', () => {
+      const config = `SentrySdk.Init(o => {
+    o.Dsn = "https://test@o0.ingest.sentry.io/0";
+    o.Debug = true;
+});`;
+
+      const result = analyzer.analyze(config, 'dotnet');
+
+      const debugWarning = result.warnings.find(
+        w => w.message.includes('Debug mode')
+      );
+      expect(debugWarning).toBeDefined();
+    });
+
+    it('should give high score for well-configured .NET app', () => {
+      const config = `SentrySdk.Init(o => {
+    o.Dsn = "https://test@o0.ingest.sentry.io/0";
+    o.Environment = "production";
+    o.Release = "1.0.0";
+    o.TracesSampleRate = 0.1;
+});`;
+
+      const result = analyzer.analyze(config, 'dotnet');
+
+      // Should have no unknown option warnings
+      const unknownWarnings = result.warnings.filter(
+        w => w.message.includes('Unknown option')
+      );
+      expect(unknownWarnings.length).toBe(0);
+      expect(result.score).toBeGreaterThanOrEqual(70);
+    });
+  });
+
+  describe('Go PascalCase key normalization', () => {
+    let analyzer: ConfigAnalyzer;
+
+    beforeEach(() => {
+      analyzer = new ConfigAnalyzer(new GoConfigParser());
+    });
+
+    it('should recognize Dsn as dsn', () => {
+      const config = `sentry.Init(sentry.ClientOptions{
+    Dsn: "https://test@o0.ingest.sentry.io/0",
+})`;
+
+      const result = analyzer.analyze(config, 'go');
+
+      const dsnOption = result.options.find(o => o.key === 'Dsn');
+      expect(dsnOption).toBeDefined();
+      expect(dsnOption?.recognized).toBe(true);
+    });
+
+    it('should recognize TracesSampleRate as tracesSampleRate', () => {
+      const config = `sentry.Init(sentry.ClientOptions{
+    Dsn: "https://test@o0.ingest.sentry.io/0",
+    TracesSampleRate: 0.1,
+})`;
+
+      const result = analyzer.analyze(config, 'go');
+
+      const traceOption = result.options.find(o => o.key === 'TracesSampleRate');
+      expect(traceOption).toBeDefined();
+      expect(traceOption?.recognized).toBe(true);
+    });
+
+    it('should give high score for well-configured Go app', () => {
+      const config = `sentry.Init(sentry.ClientOptions{
+    Dsn: "https://test@o0.ingest.sentry.io/0",
+    Environment: "production",
+    Release: "1.0.0",
+    TracesSampleRate: 0.1,
+})`;
+
+      const result = analyzer.analyze(config, 'go');
 
       // Should have no unknown option warnings
       const unknownWarnings = result.warnings.filter(
