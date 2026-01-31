@@ -141,52 +141,58 @@ const DEFAULT_TRACES_SAMPLER_PHP = `function($samplingContext) {
     return 0.1; // 10%
 }`;
 
-const DEFAULT_TRACES_SAMPLER_GO = `func(ctx sentry.SamplingContext) float64 {
-    transactionName := ctx.Span.Name
+const DEFAULT_TRACES_SAMPLER_GO = `// Access transaction name from event context
+txContext, _ := event["transactionContext"].(map[string]interface{})
+txName := ""
+if txContext != nil {
+    txName, _ = txContext["name"].(string)
+}
 
-    // Always sample payment endpoints (critical)
-    if strings.Contains(transactionName, "/payment") {
-        return 1.0 // 100%
-    }
+// Always sample payment endpoints (critical)
+if strings.Contains(txName, "/payment") {
+    return 1.0 // 100%
+}
 
-    // Never sample health checks
-    if transactionName == "GET /health" {
-        return 0.0 // 0%
-    }
+// Never sample health checks
+if txName == "GET /health" {
+    return 0.0 // 0%
+}
 
-    // Lower sampling for static assets
-    if strings.Contains(transactionName, "/static/") {
-        return 0.01 // 1%
-    }
+// Lower sampling for static assets
+if strings.Contains(txName, "/static/") {
+    return 0.01 // 1%
+}
 
-    // Default sampling
-    return 0.1 // 10%
-}`;
+// Default sampling
+return 0.1 // 10%`;
 
-const DEFAULT_TRACES_SAMPLER_DOTNET = `(context) => {
-    var transactionName = context.TransactionContext.Name;
+const DEFAULT_TRACES_SAMPLER_DOTNET = `// Access transaction context from event contexts
+var txName = "";
+if (ev.Contexts.TryGetValue("transactionContext", out var txContext))
+{
+    txName = txContext["name"]?.ToString() ?? "";
+}
 
-    // Always sample payment endpoints (critical)
-    if (transactionName.Contains("/payment"))
-    {
-        return 1.0; // 100%
-    }
+// Always sample payment endpoints (critical)
+if (txName.Contains("/payment"))
+{
+    return 1.0; // 100%
+}
 
-    // Never sample health checks
-    if (transactionName == "GET /health")
-    {
-        return 0.0; // 0%
-    }
+// Never sample health checks
+if (txName == "GET /health")
+{
+    return 0.0; // 0%
+}
 
-    // Lower sampling for static assets
-    if (transactionName.Contains("/static/"))
-    {
-        return 0.01; // 1%
-    }
+// Lower sampling for static assets
+if (txName.Contains("/static/"))
+{
+    return 0.01; // 1%
+}
 
-    // Default sampling
-    return 0.1; // 10%
-}`;
+// Default sampling
+return 0.1; // 10%`;
 
 const DEFAULT_TRACES_SAMPLER_JAVA = `(context) -> {
     String transactionName = context.getTransactionContext().getName();
