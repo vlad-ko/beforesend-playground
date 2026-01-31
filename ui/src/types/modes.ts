@@ -6,7 +6,8 @@ export type PlaygroundMode =
   | 'beforeSend'
   | 'beforeSendTransaction'
   | 'webhooks'
-  | 'configAnalyzer';
+  | 'configAnalyzer'
+  | 'apiQueryTester';
 
 export interface ModeConfig {
   id: PlaygroundMode;
@@ -44,5 +45,12 @@ export const MODES: ModeConfig[] = [
     description: 'Analyze and validate Sentry.init() configurations',
     helpText: 'The Config Analyzer helps validate your Sentry SDK configuration, provides SE-focused recommendations, and explains what each option does. Paste your Sentry.init() code to get instant feedback.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/options/',
+  },
+  {
+    id: 'apiQueryTester',
+    name: 'API Query Tester',
+    description: 'Test and validate Sentry API search queries',
+    helpText: 'Test API query syntax, validate search properties, and debug query issues. Use the demo org at demo.sentry.io for testing. Supports issues, events, and projects endpoints with real-time validation.',
+    docsUrl: 'https://docs.sentry.io/concepts/search/',
   },
 ];
