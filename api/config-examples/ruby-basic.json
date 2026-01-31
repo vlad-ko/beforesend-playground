@@ -1,0 +1,10 @@
+{
+  "id": "ruby-basic",
+  "name": "Ruby - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in a Ruby application",
+  "sdk": "ruby",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking in Ruby",
+  "seGuidance": "Perfect for Ruby applications just getting started with Sentry. This configuration captures all errors with essential context (environment, release). The SDK automatically captures uncaught exceptions.",
+  "configCode": "Sentry.init do |config|\n  # Your DSN from Sentry project settings\n  config.dsn = 'https://examplePublicKey@o0.ingest.sentry.io/0'\n  \n  # Identify the environment\n  config.environment = 'production'\n  \n  # Track which version is deployed\n  config.release = 'my-ruby-app@1.0.0'\nend"
+}

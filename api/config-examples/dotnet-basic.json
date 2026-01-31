@@ -1,0 +1,10 @@
+{
+  "id": "dotnet-basic",
+  "name": ".NET - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in a .NET application",
+  "sdk": "dotnet",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking in .NET",
+  "seGuidance": "Perfect for .NET applications just getting started with Sentry. This configuration captures all unhandled exceptions with essential context (environment, release). The SDK automatically integrates with the .NET exception handling pipeline.",
+  "configCode": "using Sentry;\n\nSentrySdk.Init(o => {\n    // Your DSN from Sentry project settings\n    o.Dsn = \"https://examplePublicKey@o0.ingest.sentry.io/0\";\n    \n    // Identify the environment\n    o.Environment = \"production\";\n    \n    // Track which version is deployed\n    o.Release = \"my-dotnet-app@1.0.0\";\n});"
+}

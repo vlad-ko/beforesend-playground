@@ -1,0 +1,10 @@
+{
+  "id": "rust-actix",
+  "name": "Rust - Actix Web Framework",
+  "description": "Sentry configuration for Actix Web framework with automatic request tracking",
+  "sdk": "rust",
+  "complexity": "intermediate",
+  "useCase": "Rust web applications using the Actix Web framework",
+  "seGuidance": "Recommended for Actix Web customers. The sentry-actix integration automatically captures request context and panic recovery. Use Hub::current() to access Sentry within handlers. Adjust traces_sample_rate based on traffic volume.",
+  "configCode": "use sentry;\nuse sentry_actix::Sentry;\nuse actix_web::{web, App, HttpServer};\n\n#[actix_web::main]\nasync fn main() -> std::io::Result<()> {\n    let _guard = sentry::init(sentry::ClientOptions {\n        dsn: Some(\"https://examplePublicKey@o0.ingest.sentry.io/0\".into()),\n        environment: Some(\"production\".into()),\n        release: Some(\"my-actix-app@1.0.0\".into()),\n        \n        // Performance monitoring\n        traces_sample_rate: 0.1,\n        \n        // Capture session data\n        auto_session_tracking: true,\n        \n        // Server identification\n        server_name: Some(\"api-server-1\".into()),\n        \n        ..Default::default()\n    });\n    \n    HttpServer::new(|| {\n        App::new()\n            .wrap(Sentry::new())\n            .route(\"/\", web::get().to(index))\n    })\n    .bind(\"127.0.0.1:8080\")?\n    .run()\n    .await\n}"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "php-laravel",
+  "name": "PHP - Laravel Integration",
+  "description": "Sentry configuration for Laravel applications with automatic request tracking",
+  "sdk": "php",
+  "complexity": "intermediate",
+  "useCase": "Laravel web applications with performance monitoring",
+  "seGuidance": "Recommended for all Laravel customers. The Laravel integration automatically captures request context, user info, and queue job failures. Performance monitoring helps identify slow database queries and controller actions. Set SENTRY_DSN in your .env file.",
+  "configCode": "<?php\n// config/sentry.php\n\nreturn [\n    'dsn' => env('SENTRY_DSN'),\n    \n    // Environment from Laravel config\n    'environment' => env('APP_ENV', 'production'),\n    \n    // Release version\n    'release' => env('SENTRY_RELEASE', '1.0.0'),\n    \n    // Performance monitoring\n    'traces_sample_rate' => (float) env('SENTRY_TRACES_SAMPLE_RATE', 0.1),\n    \n    // Capture user context\n    'send_default_pii' => false,\n    \n    // Breadcrumb limit\n    'max_breadcrumbs' => 50,\n    \n    // Exclude routes from tracing\n    'trace_propagation_targets' => [\n        env('APP_URL'),\n    ],\n];"
+}

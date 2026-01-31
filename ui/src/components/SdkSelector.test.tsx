@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import SdkSelector from './SdkSelector';
+import SdkSelector, { getLanguageForSdk, AVAILABLE_SDKS } from './SdkSelector';
 
 describe('SdkSelector', () => {
   it('renders SDK label and dropdown', () => {
@@ -52,5 +52,55 @@ describe('SdkSelector', () => {
 
     await user.selectOptions(select, 'javascript');
     expect(mockOnChange).toHaveBeenCalledWith('javascript');
+  });
+});
+
+describe('getLanguageForSdk', () => {
+  it('returns correct language for each SDK', () => {
+    expect(getLanguageForSdk('javascript')).toBe('javascript');
+    expect(getLanguageForSdk('python')).toBe('python');
+    expect(getLanguageForSdk('ruby')).toBe('ruby');
+    expect(getLanguageForSdk('php')).toBe('php');
+    expect(getLanguageForSdk('go')).toBe('go');
+    expect(getLanguageForSdk('dotnet')).toBe('csharp');
+    expect(getLanguageForSdk('java')).toBe('java');
+    expect(getLanguageForSdk('android')).toBe('kotlin');
+    expect(getLanguageForSdk('cocoa')).toBe('swift');
+    expect(getLanguageForSdk('react-native')).toBe('javascript');
+    expect(getLanguageForSdk('rust')).toBe('rust');
+    expect(getLanguageForSdk('elixir')).toBe('elixir');
+  });
+
+  it('returns javascript as default for unknown SDK', () => {
+    expect(getLanguageForSdk('unknown-sdk')).toBe('javascript');
+    expect(getLanguageForSdk('')).toBe('javascript');
+  });
+});
+
+describe('AVAILABLE_SDKS', () => {
+  it('contains all expected SDKs', () => {
+    const sdkKeys = AVAILABLE_SDKS.map(sdk => sdk.key);
+    expect(sdkKeys).toContain('javascript');
+    expect(sdkKeys).toContain('python');
+    expect(sdkKeys).toContain('ruby');
+    expect(sdkKeys).toContain('php');
+    expect(sdkKeys).toContain('go');
+    expect(sdkKeys).toContain('dotnet');
+    expect(sdkKeys).toContain('java');
+    expect(sdkKeys).toContain('android');
+    expect(sdkKeys).toContain('cocoa');
+    expect(sdkKeys).toContain('react-native');
+    expect(sdkKeys).toContain('rust');
+    expect(sdkKeys).toContain('elixir');
+  });
+
+  it('each SDK has required properties', () => {
+    AVAILABLE_SDKS.forEach(sdk => {
+      expect(sdk).toHaveProperty('key');
+      expect(sdk).toHaveProperty('name');
+      expect(sdk).toHaveProperty('language');
+      expect(sdk).toHaveProperty('package');
+      expect(sdk).toHaveProperty('version');
+    });
   });
 });

@@ -1,0 +1,10 @@
+{
+  "id": "ruby-performance",
+  "name": "Ruby - Performance Monitoring",
+  "description": "Advanced Ruby configuration with performance monitoring and custom hooks",
+  "sdk": "ruby",
+  "complexity": "advanced",
+  "useCase": "Production Ruby applications requiring detailed performance insights",
+  "seGuidance": "Use this configuration for high-traffic Ruby applications. The before_send hook allows filtering or modifying events before they're sent. Use traces_sampler for dynamic sampling based on transaction context. The inspect_exception_causes_for_exclusion setting helps with exception filtering.",
+  "configCode": "Sentry.init do |config|\n  config.dsn = ENV['SENTRY_DSN']\n  config.environment = Rails.env\n  config.release = ENV.fetch('SENTRY_RELEASE', '1.0.0')\n  \n  # Performance monitoring\n  config.traces_sample_rate = 0.1\n  \n  # Custom traces sampler\n  config.traces_sampler = lambda do |sampling_context|\n    transaction_context = sampling_context[:transaction_context]\n    \n    # Don't trace health checks\n    if transaction_context[:name] == 'GET /health'\n      return 0.0\n    end\n    \n    # Sample API calls at 10%\n    0.1\n  end\n  \n  # Filter events before sending\n  config.before_send = lambda do |event, hint|\n    # Filter out specific errors\n    if hint[:exception].is_a?(MyApp::IgnoredException)\n      return nil\n    end\n    \n    # Scrub sensitive data\n    event.extra.delete(:password) if event.extra\n    event\n  end\n  \n  # Inspect exception causes for exclusion\n  config.inspect_exception_causes_for_exclusion = true\n  \n  # Breadcrumb settings\n  config.max_breadcrumbs = 100\n  config.capture_exception_frame_locals = true\nend"
+}

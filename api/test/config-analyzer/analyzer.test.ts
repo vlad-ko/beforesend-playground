@@ -8,6 +8,7 @@
 import { ConfigAnalyzer } from '../../src/config-analyzer/analyzer';
 import { PythonConfigParser } from '../../src/config-parsers/python';
 import { JavaScriptConfigParser } from '../../src/config-parsers/javascript';
+import { CocoaConfigParser } from '../../src/config-parsers/cocoa';
 
 describe('ConfigAnalyzer', () => {
   describe('Python snake_case key normalization', () => {
@@ -218,6 +219,111 @@ describe('ConfigAnalyzer', () => {
         w => w.message.includes('100% transaction sampling')
       );
       expect(samplingWarning).toBeDefined();
+    });
+  });
+
+  describe('Cocoa SDK options', () => {
+    let analyzer: ConfigAnalyzer;
+
+    beforeEach(() => {
+      analyzer = new ConfigAnalyzer(new CocoaConfigParser());
+    });
+
+    it('should recognize releaseName option', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.releaseName = "my-app@1.0.0"
+}`;
+
+      const result = analyzer.analyze(config, 'cocoa');
+
+      const releaseOption = result.options.find(o => o.key === 'releaseName');
+      expect(releaseOption).toBeDefined();
+      expect(releaseOption?.recognized).toBe(true);
+    });
+
+    it('should recognize enableAutoSessionTracking option', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.enableAutoSessionTracking = true
+}`;
+
+      const result = analyzer.analyze(config, 'cocoa');
+
+      const sessionOption = result.options.find(o => o.key === 'enableAutoSessionTracking');
+      expect(sessionOption).toBeDefined();
+      expect(sessionOption?.recognized).toBe(true);
+    });
+
+    it('should recognize enableUIViewControllerTracing option', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.enableUIViewControllerTracing = true
+}`;
+
+      const result = analyzer.analyze(config, 'cocoa');
+
+      const tracingOption = result.options.find(o => o.key === 'enableUIViewControllerTracing');
+      expect(tracingOption).toBeDefined();
+      expect(tracingOption?.recognized).toBe(true);
+    });
+
+    it('should recognize enableSwizzling option', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.enableSwizzling = true
+}`;
+
+      const result = analyzer.analyze(config, 'cocoa');
+
+      const swizzlingOption = result.options.find(o => o.key === 'enableSwizzling');
+      expect(swizzlingOption).toBeDefined();
+      expect(swizzlingOption?.recognized).toBe(true);
+    });
+
+    it('should recognize enableNetworkBreadcrumbs option', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.enableNetworkBreadcrumbs = true
+}`;
+
+      const result = analyzer.analyze(config, 'cocoa');
+
+      const breadcrumbsOption = result.options.find(o => o.key === 'enableNetworkBreadcrumbs');
+      expect(breadcrumbsOption).toBeDefined();
+      expect(breadcrumbsOption?.recognized).toBe(true);
+    });
+
+    it('should recognize enableCaptureFailedRequests option', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.enableCaptureFailedRequests = true
+}`;
+
+      const result = analyzer.analyze(config, 'cocoa');
+
+      const failedReqOption = result.options.find(o => o.key === 'enableCaptureFailedRequests');
+      expect(failedReqOption).toBeDefined();
+      expect(failedReqOption?.recognized).toBe(true);
+    });
+
+    it('should give high score for well-configured Cocoa app', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.environment = "production"
+    options.releaseName = "my-app@1.0.0"
+    options.tracesSampleRate = 0.1
+    options.enableAutoSessionTracking = true
+}`;
+
+      const result = analyzer.analyze(config, 'cocoa');
+
+      // Should have no unknown option warnings
+      const unknownWarnings = result.warnings.filter(
+        w => w.message.includes('Unknown option')
+      );
+      expect(unknownWarnings.length).toBe(0);
+      expect(result.score).toBeGreaterThanOrEqual(70);
     });
   });
 });

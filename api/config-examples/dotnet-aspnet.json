@@ -1,0 +1,10 @@
+{
+  "id": "dotnet-aspnet",
+  "name": ".NET - ASP.NET Core Integration",
+  "description": "Sentry configuration for ASP.NET Core applications with automatic request tracking",
+  "sdk": "dotnet",
+  "complexity": "intermediate",
+  "useCase": "ASP.NET Core web applications with performance monitoring",
+  "seGuidance": "Recommended for all ASP.NET Core customers. UseSentry() automatically captures request context, user info, and HTTP errors. Performance monitoring helps identify slow endpoints and middleware. Add Sentry.AspNetCore NuGet package.",
+  "configCode": "// Program.cs or Startup.cs\n\nvar builder = WebApplication.CreateBuilder(args);\n\nbuilder.WebHost.UseSentry(o => {\n    o.Dsn = \"https://examplePublicKey@o0.ingest.sentry.io/0\";\n    \n    // Environment from ASPNETCORE_ENVIRONMENT\n    o.Environment = builder.Environment.EnvironmentName;\n    \n    // Release version\n    o.Release = \"my-aspnet-app@1.0.0\";\n    \n    // Performance monitoring\n    o.TracesSampleRate = 0.1;\n    \n    // Capture user context from HttpContext.User\n    o.SendDefaultPii = false;\n    \n    // Breadcrumb settings\n    o.MaxBreadcrumbs = 50;\n    \n    // Filter out health checks from transactions\n    o.SetBeforeSendTransaction((transaction) => {\n        if (transaction.Name == \"GET /health\")\n            return null;\n        return transaction;\n    });\n});"
+}

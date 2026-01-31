@@ -1,0 +1,10 @@
+{
+  "id": "go-performance",
+  "name": "Go - Performance Monitoring",
+  "description": "Advanced Go configuration with performance monitoring and custom sampling",
+  "sdk": "go",
+  "complexity": "advanced",
+  "useCase": "Production Go services requiring detailed performance insights",
+  "seGuidance": "Use this configuration for high-traffic Go services. The TracesSampler function allows dynamic sampling based on transaction name or other context. ProfilesSampleRate enables profiling to identify CPU hotspots. Consider lowering sample rates for very high volume services.",
+  "configCode": "package main\n\nimport (\n\t\"github.com/getsentry/sentry-go\"\n)\n\nfunc main() {\n\terr := sentry.Init(sentry.ClientOptions{\n\t\tDsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n\t\tEnvironment: \"production\",\n\t\tRelease: \"my-go-service@1.0.0\",\n\t\t\n\t\t// Enable tracing\n\t\tEnableTracing: true,\n\t\t\n\t\t// Custom traces sampler for dynamic sampling\n\t\tTracesSampler: func(ctx sentry.SamplingContext) float64 {\n\t\t\t// Always sample health checks at 0%\n\t\t\tif ctx.Span.Name == \"GET /health\" {\n\t\t\t\treturn 0.0\n\t\t\t}\n\t\t\t// Sample API calls at 10%\n\t\t\treturn 0.1\n\t\t},\n\t\t\n\t\t// Enable profiling (10% of traced transactions)\n\t\tProfilesSampleRate: 0.1,\n\t\t\n\t\t// Debug mode for development\n\t\tDebug: false,\n\t})\n\tif err != nil {\n\t\tlog.Fatalf(\"sentry.Init: %s\", err)\n\t}\n\tdefer sentry.Flush(2 * time.Second)\n}"
+}

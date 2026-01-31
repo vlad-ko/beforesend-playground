@@ -1,0 +1,10 @@
+{
+  "id": "java-performance",
+  "name": "Java - Performance Monitoring",
+  "description": "Advanced Java configuration with performance monitoring and custom hooks",
+  "sdk": "java",
+  "complexity": "advanced",
+  "useCase": "Production Java applications requiring detailed performance insights",
+  "seGuidance": "Use this configuration for high-traffic Java applications. The beforeSend hook allows filtering or modifying events before they're sent. Use tracesSampler for dynamic sampling based on transaction context. Configure inAppIncludes for better stack trace filtering.",
+  "configCode": "import io.sentry.Sentry;\nimport io.sentry.SentryOptions;\nimport io.sentry.SamplingContext;\n\nSentry.init(options -> {\n    options.setDsn(\"https://examplePublicKey@o0.ingest.sentry.io/0\");\n    options.setEnvironment(\"production\");\n    options.setRelease(\"my-java-app@1.0.0\");\n    \n    // Performance monitoring\n    options.setTracesSampleRate(0.1);\n    \n    // Custom traces sampler\n    options.setTracesSampler((SamplingContext context) -> {\n        String transactionName = context.getTransactionContext().getName();\n        \n        // Don't trace health checks\n        if (transactionName.equals(\"GET /health\")) {\n            return 0.0;\n        }\n        \n        // Sample API calls at 10%\n        return 0.1;\n    });\n    \n    // Filter events before sending\n    options.setBeforeSend((event, hint) -> {\n        // Filter out specific exceptions\n        if (event.getThrowable() instanceof IgnoredException) {\n            return null;\n        }\n        return event;\n    });\n    \n    // Include only app code in stack traces\n    options.addInAppInclude(\"com.mycompany.myapp\");\n    options.addInAppExclude(\"org.springframework\");\n    \n    // Capture user context\n    options.setSendDefaultPii(false);\n    \n    // Debug mode\n    options.setDebug(false);\n    \n    // Attach stacktrace to all events\n    options.setAttachStacktrace(true);\n});"
+}

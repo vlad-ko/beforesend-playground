@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Editor from '@monaco-editor/react';
-import SdkSelector from '../SdkSelector';
+import SdkSelector, { getLanguageForSdk } from '../SdkSelector';
 import SearchableConfigExampleSelector from '../SearchableConfigExampleSelector';
 import { apiClient, AnalysisResult, OptionAnalysis, ConfigWarning, ConfigRecommendation, ConfigExample } from '../../api/client';
 
@@ -117,7 +117,7 @@ export default function ConfigAnalyzerPlayground() {
         <div className="border border-gray-300 rounded-md overflow-hidden">
           <Editor
             height="300px"
-            language={sdk === 'python' ? 'python' : 'javascript'}
+            language={getLanguageForSdk(sdk)}
             value={configCode}
             onChange={(value) => setConfigCode(value || '')}
             theme="vs-dark"
@@ -161,7 +161,7 @@ export default function ConfigAnalyzerPlayground() {
 
       {/* Results Section */}
       {result && (
-        <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="bg-white rounded-lg shadow-md p-4 min-h-[400px]">
           <h2 className="text-lg font-semibold mb-3">Analysis Results</h2>
 
           {/* Health Score */}
@@ -258,8 +258,8 @@ export default function ConfigAnalyzerPlayground() {
 
       {/* Empty State */}
       {!error && !result && !loading && (
-        <div className="bg-white rounded-lg shadow-md p-4">
-          <div className="bg-gray-50 border border-gray-200 rounded p-8 text-center text-gray-500 min-h-96 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-md p-4 min-h-[400px]">
+          <div className="bg-gray-50 border border-gray-200 rounded p-8 text-center text-gray-500 h-full min-h-[350px] flex items-center justify-center">
             Paste your Sentry.init() configuration above and click Analyze Configuration to see results.
           </div>
         </div>

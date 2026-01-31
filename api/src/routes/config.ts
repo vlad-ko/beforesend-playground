@@ -4,17 +4,52 @@
 
 import { Router, Request, Response } from 'express';
 import { configDictionary } from '../config-dictionary';
-import { JavaScriptConfigParser, PythonConfigParser } from '../config-parsers';
+import {
+  JavaScriptConfigParser,
+  PythonConfigParser,
+  GoConfigParser,
+  RustConfigParser,
+  PHPConfigParser,
+  RubyConfigParser,
+  DotNetConfigParser,
+  CocoaConfigParser,
+  JavaConfigParser,
+  ElixirConfigParser,
+} from '../config-parsers';
 import { ConfigAnalyzer } from '../config-analyzer';
 
 const router = Router();
 
-// Create parser and analyzer instances
+// Create parser and analyzer instances for all SDKs
 const jsParser = new JavaScriptConfigParser();
 const jsAnalyzer = new ConfigAnalyzer(jsParser);
 
 const pyParser = new PythonConfigParser();
 const pyAnalyzer = new ConfigAnalyzer(pyParser);
+
+const goParser = new GoConfigParser();
+const goAnalyzer = new ConfigAnalyzer(goParser);
+
+const rustParser = new RustConfigParser();
+const rustAnalyzer = new ConfigAnalyzer(rustParser);
+
+const phpParser = new PHPConfigParser();
+const phpAnalyzer = new ConfigAnalyzer(phpParser);
+
+const rubyParser = new RubyConfigParser();
+const rubyAnalyzer = new ConfigAnalyzer(rubyParser);
+
+const dotnetParser = new DotNetConfigParser();
+const dotnetAnalyzer = new ConfigAnalyzer(dotnetParser);
+
+const cocoaParser = new CocoaConfigParser();
+const cocoaAnalyzer = new ConfigAnalyzer(cocoaParser);
+
+const javaParser = new JavaConfigParser();
+const javaAnalyzer = new ConfigAnalyzer(javaParser);
+
+const elixirParser = new ElixirConfigParser();
+const elixirAnalyzer = new ConfigAnalyzer(elixirParser);
 
 /**
  * POST /api/config/analyze
@@ -39,9 +74,33 @@ router.post('/analyze', async (req: Request, res: Response) => {
       case 'python':
         analyzer = pyAnalyzer;
         break;
+      case 'go':
+        analyzer = goAnalyzer;
+        break;
+      case 'rust':
+        analyzer = rustAnalyzer;
+        break;
+      case 'php':
+        analyzer = phpAnalyzer;
+        break;
+      case 'ruby':
+        analyzer = rubyAnalyzer;
+        break;
+      case 'dotnet':
+        analyzer = dotnetAnalyzer;
+        break;
+      case 'cocoa':
+        analyzer = cocoaAnalyzer;
+        break;
+      case 'java':
+        analyzer = javaAnalyzer;
+        break;
+      case 'elixir':
+        analyzer = elixirAnalyzer;
+        break;
       default:
         return res.status(400).json({
-          error: `SDK "${sdk}" is not yet supported. Currently supported: javascript, python`,
+          error: `SDK "${sdk}" is not yet supported. Currently supported: javascript, python, go, rust, php, ruby, dotnet, cocoa, java, elixir`,
         });
     }
 

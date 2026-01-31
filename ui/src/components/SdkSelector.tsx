@@ -3,7 +3,7 @@ interface SdkSelectorProps {
   onChange: (sdk: string) => void;
 }
 
-const AVAILABLE_SDKS = [
+export const AVAILABLE_SDKS = [
   { key: 'javascript', name: 'JavaScript', language: 'javascript', package: '@sentry/node', version: '8.55.0' },
   { key: 'python', name: 'Python', language: 'python', package: 'sentry-sdk', version: '2.20.0' },
   { key: 'ruby', name: 'Ruby', language: 'ruby', package: 'sentry-ruby', version: '5.22.0' },
@@ -12,11 +12,16 @@ const AVAILABLE_SDKS = [
   { key: 'dotnet', name: '.NET', language: 'csharp', package: 'Sentry', version: '5.0.0' },
   { key: 'java', name: 'Java', language: 'java', package: 'io.sentry:sentry', version: '7.16.0' },
   { key: 'android', name: 'Android', language: 'kotlin', package: 'io.sentry:sentry-android', version: '7.16.0' },
-  { key: 'cocoa', name: 'Cocoa (iOS/macOS)', language: 'javascript', package: 'Sentry', version: '8.40.1' },
+  { key: 'cocoa', name: 'Cocoa (iOS/macOS)', language: 'swift', package: 'Sentry', version: '8.40.1' },
   { key: 'react-native', name: 'React Native', language: 'javascript', package: '@sentry/react-native', version: '6.3.0' },
   { key: 'rust', name: 'Rust', language: 'rust', package: 'sentry', version: '0.34.0' },
   { key: 'elixir', name: 'Elixir', language: 'elixir', package: 'sentry', version: '10.9.0' },
 ];
+
+export function getLanguageForSdk(sdkKey: string): string {
+  const sdk = AVAILABLE_SDKS.find(s => s.key === sdkKey);
+  return sdk?.language || 'javascript';
+}
 
 function SdkSelector({ value, onChange }: SdkSelectorProps) {
   return (

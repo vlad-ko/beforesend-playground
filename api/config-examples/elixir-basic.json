@@ -1,0 +1,10 @@
+{
+  "id": "elixir-basic",
+  "name": "Elixir - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in an Elixir application",
+  "sdk": "elixir",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking in Elixir",
+  "seGuidance": "Perfect for Elixir applications just getting started with Sentry. This configuration captures all errors with essential context. Add sentry dependency to mix.exs and configure in config/config.exs or config/runtime.exs.",
+  "configCode": "# config/config.exs or config/runtime.exs\n\nconfig :sentry,\n  # Your DSN from Sentry project settings\n  dsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n  \n  # Identify the environment\n  environment_name: :prod,\n  \n  # Enable source code context\n  enable_source_code_context: true,\n  \n  # Root source code paths for context\n  root_source_code_paths: [File.cwd!()]"
+}

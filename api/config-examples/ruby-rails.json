@@ -1,0 +1,10 @@
+{
+  "id": "ruby-rails",
+  "name": "Ruby - Rails Integration",
+  "description": "Sentry configuration for Rails applications with automatic request tracking",
+  "sdk": "ruby",
+  "complexity": "intermediate",
+  "useCase": "Rails web applications with performance monitoring",
+  "seGuidance": "Recommended for all Rails customers. The Rails integration automatically captures request context, user info, and Active Record queries. Performance monitoring helps identify slow database queries and controller actions. Add sentry-rails gem to your Gemfile.",
+  "configCode": "# config/initializers/sentry.rb\n\nSentry.init do |config|\n  config.dsn = ENV['SENTRY_DSN']\n  \n  # Environment from Rails config\n  config.environment = Rails.env\n  \n  # Release version\n  config.release = ENV.fetch('SENTRY_RELEASE', '1.0.0')\n  \n  # Performance monitoring\n  config.traces_sample_rate = 0.1\n  \n  # Capture user context (requires helper)\n  config.send_default_pii = false\n  \n  # Breadcrumb limit\n  config.max_breadcrumbs = 50\n  \n  # Only report errors from these environments\n  config.enabled_environments = %w[production staging]\n  \n  # Exclude common Rails exceptions\n  config.excluded_exceptions += [\n    'ActionController::RoutingError',\n    'ActiveRecord::RecordNotFound'\n  ]\nend"
+}

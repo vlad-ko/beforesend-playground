@@ -1,0 +1,10 @@
+{
+  "id": "dotnet-performance",
+  "name": ".NET - Performance Monitoring",
+  "description": "Advanced .NET configuration with performance monitoring and custom hooks",
+  "sdk": "dotnet",
+  "complexity": "advanced",
+  "useCase": "Production .NET applications requiring detailed performance insights",
+  "seGuidance": "Use this configuration for high-traffic .NET applications. The BeforeSend hook allows filtering or modifying events before they're sent. Use TracesSampler for dynamic sampling based on transaction context. ProfilesSampleRate enables profiling.",
+  "configCode": "SentrySdk.Init(o => {\n    o.Dsn = \"https://examplePublicKey@o0.ingest.sentry.io/0\";\n    o.Environment = \"production\";\n    o.Release = \"my-dotnet-app@1.0.0\";\n    \n    // Performance monitoring\n    o.TracesSampleRate = 0.1;\n    \n    // Custom traces sampler\n    o.TracesSampler = context => {\n        // Don't trace health checks\n        if (context.TransactionContext.Name == \"GET /health\")\n            return 0.0;\n        \n        // Sample API calls at 10%\n        return 0.1;\n    };\n    \n    // Profiling (10% of traced transactions)\n    o.ProfilesSampleRate = 0.1;\n    \n    // Filter events before sending\n    o.SetBeforeSend((sentryEvent, hint) => {\n        // Filter out specific exceptions\n        if (sentryEvent.Exception is IgnoredException)\n            return null;\n        \n        // Scrub sensitive data\n        if (sentryEvent.Extra.ContainsKey(\"password\"))\n            sentryEvent.Extra.Remove(\"password\");\n        \n        return sentryEvent;\n    });\n    \n    // Include only app code in stack traces\n    o.AddInAppExclude(\"Microsoft.\");\n    o.AddInAppExclude(\"System.\");\n    o.AddInAppInclude(\"MyApp.\");\n    \n    // Debug mode\n    o.Debug = false;\n    \n    // Attach stacktrace to all events\n    o.AttachStacktrace = true;\n});"
+}

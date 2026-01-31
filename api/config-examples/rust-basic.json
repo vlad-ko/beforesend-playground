@@ -1,0 +1,10 @@
+{
+  "id": "rust-basic",
+  "name": "Rust - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in a Rust application",
+  "sdk": "rust",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking in Rust",
+  "seGuidance": "Perfect for Rust applications just getting started with Sentry. The guard returned by sentry::init must be kept alive for the duration of the application. When dropped, it will flush remaining events. Use capture_error! or capture_message! macros for reporting.",
+  "configCode": "use sentry;\n\nfn main() {\n    let _guard = sentry::init(sentry::ClientOptions {\n        // Your DSN from Sentry project settings\n        dsn: Some(\"https://examplePublicKey@o0.ingest.sentry.io/0\".into()),\n        \n        // Identify the environment\n        environment: Some(\"production\".into()),\n        \n        // Track which version is deployed\n        release: Some(\"my-rust-app@1.0.0\".into()),\n        \n        ..Default::default()\n    });\n    \n    // Your application code here\n}"
+}
