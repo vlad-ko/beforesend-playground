@@ -8,19 +8,22 @@ Use this guide to determine which playground mode best fits your testing needs.
 What do you want to test?
 │
 ├─ Modify error events before sending?
-│   └─ Use: beforeSend Mode
+│   └─ Use: Before Send Mode
+│
+├─ Control how errors are grouped into issues?
+│   └─ Use: Fingerprinting Mode
 │
 ├─ Modify transaction/performance data?
-│   └─ Use: beforeSendTransaction Mode
+│   └─ Use: Before Send Transaction Mode
 │
 ├─ Filter or modify breadcrumbs?
-│   └─ Use: beforeBreadcrumb Mode
+│   └─ Use: Before Breadcrumb Mode
 │
 ├─ Control which transactions are sampled?
-│   └─ Use: tracesSampler Mode
+│   └─ Use: Traces Sampler Mode
 │
-├─ Test webhook integrations?
-│   └─ Use: Webhooks Mode
+├─ Test error/URL filter patterns?
+│   └─ Use: Pattern Tester Mode
 │
 ├─ Validate SDK configuration?
 │   └─ Use: Config Analyzer Mode
@@ -28,26 +31,27 @@ What do you want to test?
 ├─ Test API search queries?
 │   └─ Use: API Query Tester Mode
 │
-└─ Test error/URL filter patterns?
-    └─ Use: Pattern Tester Mode
+└─ Test webhook integrations?
+    └─ Use: Webhooks Mode
 ```
 
 ## Mode Comparison Table
 
 | Mode | Input | Output | Difficulty | Common Use Cases |
 |------|-------|--------|------------|------------------|
-| **beforeSend** | Error Event JSON | Modified event or `null` | Beginner | PII scrubbing, custom tags, dropping errors |
-| **beforeSendTransaction** | Transaction JSON | Modified transaction or `null` | Beginner | Drop health checks, add context, filter by name |
-| **beforeBreadcrumb** | Breadcrumb JSON | Modified breadcrumb or `null` | Beginner | Filter console logs, scrub URLs, categorize |
-| **tracesSampler** | Sampling Context | Number (0.0-1.0) | Intermediate | Dynamic sampling rates, cost optimization |
-| **Webhooks** | Webhook Payload | HTTP Response | Intermediate | Test integrations, debug signatures |
+| **Before Send** | Error Event JSON | Modified event or `null` | Beginner | PII scrubbing, custom tags, dropping errors |
+| **Fingerprinting** | Error Event JSON | Event with `fingerprint` set | Beginner | Custom grouping, normalizing dynamic data |
+| **Before Send Transaction** | Transaction JSON | Modified transaction or `null` | Beginner | Drop health checks, add context, filter by name |
+| **Before Breadcrumb** | Breadcrumb JSON | Modified breadcrumb or `null` | Beginner | Filter console logs, scrub URLs, categorize |
+| **Traces Sampler** | Sampling Context | Number (0.0-1.0) | Intermediate | Dynamic sampling rates, cost optimization |
+| **Pattern Tester** | Patterns + Test Cases | Match Results | Intermediate | Validate regex, test filters |
 | **Config Analyzer** | Sentry.init() code | Analysis Report | Beginner | Validate config, get recommendations |
 | **API Query Tester** | Search Query | API Results | Intermediate | Build queries, test syntax |
-| **Pattern Tester** | Patterns + Test Cases | Match Results | Intermediate | Validate regex, test filters |
+| **Webhooks** | Webhook Payload | HTTP Response | Intermediate | Test integrations, debug signatures |
 
 ## When to Use Each Mode
 
-### beforeSend Mode
+### Before Send Mode
 
 **Use when you need to:**
 - Remove sensitive data (PII) from error events
@@ -61,7 +65,24 @@ What do you want to test?
 - Want to tag errors by team/service
 - Filter out known benign errors
 
-### beforeSendTransaction Mode
+### Fingerprinting Mode
+
+**Use when you need to:**
+- Group similar errors together regardless of dynamic values
+- Normalize database instance names, user IDs, or timestamps
+- Split overly-broad issue groupings by context
+- Create separate issues for different user segments
+- Control issue grouping without modifying Sentry's algorithm
+
+**Example scenarios:**
+- Database errors creating separate issues per instance
+- API errors with dynamic IDs in message creating noise
+- Want premium user errors in separate issues
+- Error messages contain timestamps causing over-grouping
+
+**Note:** Fingerprinting is done via `beforeSend` by setting `event.fingerprint`. This mode provides a focused environment for testing fingerprinting strategies with visual feedback.
+
+### Before Send Transaction Mode
 
 **Use when you need to:**
 - Filter out health check transactions
@@ -75,7 +96,7 @@ What do you want to test?
 - Need to add team ownership tags to transactions
 - Want to normalize transaction names
 
-### beforeBreadcrumb Mode
+### Before Breadcrumb Mode
 
 **Use when you need to:**
 - Reduce breadcrumb noise (console.log spam)
@@ -89,7 +110,7 @@ What do you want to test?
 - Tokens appearing in navigation breadcrumbs
 - Need to organize breadcrumbs by service
 
-### tracesSampler Mode
+### Traces Sampler Mode
 
 **Use when you need to:**
 - Sample different endpoints at different rates
@@ -103,19 +124,19 @@ What do you want to test?
 - Need to reduce tracing costs by 80%
 - Different sampling for dev vs production
 
-### Webhooks Mode
+### Pattern Tester Mode
 
 **Use when you need to:**
-- Test webhook endpoint integration
-- Debug HMAC signature verification
-- Understand webhook payload structure
-- Demonstrate webhook security to customers
-- Verify endpoint is receiving data correctly
+- Validate ignoreErrors patterns
+- Test denyUrls/allowUrls patterns
+- Generate Sentry.init() configuration
+- Debug why errors aren't being filtered
+- Test regex patterns before deployment
 
 **Example scenarios:**
-- Customer's webhook verification is failing
-- Building a new webhook integration
-- Demonstrating Sentry webhooks in a demo
+- Customer wants to ignore specific error messages
+- Need to filter errors from third-party scripts
+- Testing URL patterns for browser SDK
 
 ### Config Analyzer Mode
 
@@ -145,19 +166,19 @@ What do you want to test?
 - Customer needs help with search syntax
 - Testing queries for dashboards/alerts
 
-### Pattern Tester Mode
+### Webhooks Mode
 
 **Use when you need to:**
-- Validate ignoreErrors patterns
-- Test denyUrls/allowUrls patterns
-- Generate Sentry.init() configuration
-- Debug why errors aren't being filtered
-- Test regex patterns before deployment
+- Test webhook endpoint integration
+- Debug HMAC signature verification
+- Understand webhook payload structure
+- Demonstrate webhook security to customers
+- Verify endpoint is receiving data correctly
 
 **Example scenarios:**
-- Customer wants to ignore specific error messages
-- Need to filter errors from third-party scripts
-- Testing URL patterns for browser SDK
+- Customer's webhook verification is failing
+- Building a new webhook integration
+- Demonstrating Sentry webhooks in a demo
 
 ## Tips for Mode Selection
 
