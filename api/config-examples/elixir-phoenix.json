@@ -1,0 +1,10 @@
+{
+  "id": "elixir-phoenix",
+  "name": "Elixir - Phoenix Framework",
+  "description": "Sentry configuration for Phoenix applications with automatic request tracking",
+  "sdk": "elixir",
+  "complexity": "intermediate",
+  "useCase": "Phoenix web applications with performance monitoring",
+  "seGuidance": "Recommended for all Phoenix customers. Sentry integrates with Phoenix and Plug to automatically capture request context and errors. Add Sentry.PlugCapture and Sentry.PlugContext to your endpoint. Use Sentry.LoggerBackend for comprehensive logging.",
+  "configCode": "# config/runtime.exs\n\nconfig :sentry,\n  dsn: System.get_env(\"SENTRY_DSN\"),\n  \n  # Environment from Mix\n  environment_name: config_env(),\n  \n  # Release version\n  release: System.get_env(\"SENTRY_RELEASE\", \"1.0.0\"),\n  \n  # Enable source code context\n  enable_source_code_context: true,\n  root_source_code_paths: [File.cwd!()],\n  \n  # Only report in these environments\n  included_environments: [:prod, :staging],\n  \n  # Capture metadata\n  tags: %{\n    env: config_env()\n  },\n  \n  # Configure client\n  client: Sentry.HackneyClient,\n  \n  # Log backend integration\n  log_level: :warning\n\n# config/config.exs\nconfig :logger,\n  backends: [:console, Sentry.LoggerBackend]"
+}

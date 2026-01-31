@@ -1,0 +1,10 @@
+{
+  "id": "java-spring",
+  "name": "Java - Spring Boot Integration",
+  "description": "Sentry configuration for Spring Boot applications with automatic request tracking",
+  "sdk": "java",
+  "complexity": "intermediate",
+  "useCase": "Spring Boot web applications with performance monitoring",
+  "seGuidance": "Recommended for all Spring Boot customers. The Spring integration automatically captures request context, user info, and transaction data. Performance monitoring helps identify slow database queries and controller methods. Add sentry-spring-boot-starter dependency.",
+  "configCode": "import io.sentry.Sentry;\nimport io.sentry.spring.boot.SentryAutoConfiguration;\n\n// application.properties or application.yml approach:\n// sentry.dsn=https://examplePublicKey@o0.ingest.sentry.io/0\n// sentry.environment=production\n// sentry.traces-sample-rate=0.1\n\n// Programmatic configuration:\nSentry.init(options -> {\n    options.setDsn(\"https://examplePublicKey@o0.ingest.sentry.io/0\");\n    \n    // Environment from Spring profile\n    options.setEnvironment(System.getProperty(\"spring.profiles.active\", \"production\"));\n    \n    // Release version\n    options.setRelease(\"my-spring-app@1.0.0\");\n    \n    // Performance monitoring\n    options.setTracesSampleRate(0.1);\n    \n    // Capture user context\n    options.setSendDefaultPii(false);\n    \n    // Breadcrumb settings\n    options.setMaxBreadcrumbs(50);\n});"
+}

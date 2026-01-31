@@ -1,0 +1,10 @@
+{
+  "id": "java-basic",
+  "name": "Java - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in a Java application",
+  "sdk": "java",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking in Java",
+  "seGuidance": "Perfect for Java applications just getting started with Sentry. This configuration captures all uncaught exceptions with essential context. Initialize Sentry as early as possible in your application lifecycle.",
+  "configCode": "import io.sentry.Sentry;\n\npublic class Main {\n    public static void main(String[] args) {\n        Sentry.init(options -> {\n            // Your DSN from Sentry project settings\n            options.setDsn(\"https://examplePublicKey@o0.ingest.sentry.io/0\");\n            \n            // Identify the environment\n            options.setEnvironment(\"production\");\n            \n            // Track which version is deployed\n            options.setRelease(\"my-java-app@1.0.0\");\n        });\n    }\n}"
+}

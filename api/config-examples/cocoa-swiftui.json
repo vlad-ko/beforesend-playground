@@ -1,0 +1,10 @@
+{
+  "id": "cocoa-swiftui",
+  "name": "Cocoa/Swift - SwiftUI Integration",
+  "description": "Sentry configuration for SwiftUI applications with automatic view tracking",
+  "sdk": "cocoa",
+  "complexity": "intermediate",
+  "useCase": "SwiftUI applications with performance monitoring",
+  "seGuidance": "Recommended for SwiftUI customers. The SDK automatically captures UI lifecycle events and navigation. Performance monitoring helps identify slow view renders and API calls. Initialize in your App struct's init() method.",
+  "configCode": "import Sentry\nimport SwiftUI\n\n@main\nstruct MyApp: App {\n    init() {\n        SentrySDK.start { options in\n            options.dsn = \"https://examplePublicKey@o0.ingest.sentry.io/0\"\n            options.environment = \"production\"\n            options.releaseName = Bundle.main.infoDictionary?[\"CFBundleShortVersionString\"] as? String ?? \"1.0.0\"\n            \n            // Performance monitoring\n            options.tracesSampleRate = NSNumber(value: 0.1)\n            \n            // Automatic session tracking\n            options.enableAutoSessionTracking = true\n            \n            // Capture HTTP Client errors\n            options.enableCaptureFailedRequests = true\n            \n            // UI performance tracking\n            options.enableUIViewControllerTracing = true\n            options.enableSwizzling = true\n            \n            // Network breadcrumbs\n            options.enableNetworkBreadcrumbs = true\n        }\n    }\n    \n    var body: some Scene {\n        WindowGroup {\n            ContentView()\n        }\n    }\n}"
+}

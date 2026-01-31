@@ -1,0 +1,10 @@
+{
+  "id": "elixir-performance",
+  "name": "Elixir - Performance Monitoring",
+  "description": "Advanced Elixir configuration with filtering and custom hooks",
+  "sdk": "elixir",
+  "complexity": "advanced",
+  "useCase": "Production Elixir applications requiring detailed error filtering",
+  "seGuidance": "Use this configuration for production Elixir apps that need fine-grained control over what gets reported. The before_send_event and filter modules allow filtering or modifying events. Use deduplication to reduce noise from repeated errors.",
+  "configCode": "# config/runtime.exs\n\nconfig :sentry,\n  dsn: System.get_env(\"SENTRY_DSN\"),\n  environment_name: config_env(),\n  release: System.get_env(\"SENTRY_RELEASE\", \"1.0.0\"),\n  \n  # Enable source code context\n  enable_source_code_context: true,\n  root_source_code_paths: [File.cwd!()],\n  \n  # Only report in production/staging\n  included_environments: [:prod, :staging],\n  \n  # Custom filtering\n  filter: MyApp.SentryFilter,\n  \n  # Event modification before sending\n  before_send_event: {MyApp.Sentry, :before_send},\n  \n  # Deduplication\n  dedup_events: true,\n  \n  # Max context size\n  context_lines: 5,\n  max_breadcrumbs: 50,\n  \n  # Tags\n  tags: %{\n    env: config_env(),\n    app: \"my_app\"\n  },\n  \n  # Result type\n  result: :sync\n\n# lib/my_app/sentry_filter.ex\ndefmodule MyApp.SentryFilter do\n  @behaviour Sentry.EventFilter\n  \n  def exclude_exception?(%Phoenix.Router.NoRouteError{}, :plug), do: true\n  def exclude_exception?(%Ecto.NoResultsError{}, _source), do: true\n  def exclude_exception?(_exception, _source), do: false\nend"
+}

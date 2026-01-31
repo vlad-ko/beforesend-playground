@@ -1,0 +1,10 @@
+{
+  "id": "rust-performance",
+  "name": "Rust - Performance Monitoring",
+  "description": "Advanced Rust configuration with performance monitoring and custom filtering",
+  "sdk": "rust",
+  "complexity": "advanced",
+  "useCase": "Production Rust services requiring detailed performance insights",
+  "seGuidance": "Use this configuration for Rust services where performance data is critical. The before_send hook allows filtering events before they're sent. Use spans to instrument specific code sections. The sample_rate controls how many events are actually sent to Sentry.",
+  "configCode": "use sentry;\nuse sentry::types::Dsn;\n\nfn main() {\n    let _guard = sentry::init(sentry::ClientOptions {\n        dsn: Some(\"https://examplePublicKey@o0.ingest.sentry.io/0\".into()),\n        environment: Some(\"production\".into()),\n        release: Some(\"my-rust-service@1.0.0\".into()),\n        \n        // Enable tracing\n        traces_sample_rate: 0.1,\n        \n        // Sample 100% of errors\n        sample_rate: 1.0,\n        \n        // Filter events before sending\n        before_send: Some(Box::new(|event| {\n            // Filter out specific errors\n            if event.message.as_ref().map_or(false, |m| m.contains(\"harmless\")) {\n                return None;\n            }\n            Some(event)\n        })),\n        \n        // Debug mode for development\n        debug: false,\n        \n        // Include in-app frames only\n        in_app_include: vec![\"my_crate\"],\n        \n        ..Default::default()\n    });\n}"
+}

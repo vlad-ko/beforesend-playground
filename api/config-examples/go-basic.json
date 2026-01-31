@@ -1,0 +1,10 @@
+{
+  "id": "go-basic",
+  "name": "Go - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in a Go application",
+  "sdk": "go",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking in Go",
+  "seGuidance": "Perfect for customers just getting started with Sentry in Go. This configuration captures all errors with essential context (environment, release). Remember to call sentry.Flush() before program exit to ensure events are sent.",
+  "configCode": "package main\n\nimport (\n\t\"log\"\n\t\"github.com/getsentry/sentry-go\"\n)\n\nfunc main() {\n\terr := sentry.Init(sentry.ClientOptions{\n\t\t// Your DSN from Sentry project settings\n\t\tDsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n\t\t\n\t\t// Identify the environment\n\t\tEnvironment: \"production\",\n\t\t\n\t\t// Track which version is deployed\n\t\tRelease: \"my-go-app@1.0.0\",\n\t})\n\tif err != nil {\n\t\tlog.Fatalf(\"sentry.Init: %s\", err)\n\t}\n\t// Flush buffered events before program exits\n\tdefer sentry.Flush(2 * time.Second)\n}"
+}

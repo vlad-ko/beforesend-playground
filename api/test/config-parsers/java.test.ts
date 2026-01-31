@@ -1,21 +1,21 @@
 /**
- * Tests for JavaScript configuration parser
+ * Tests for Java configuration parser
  */
 
-import { JavaScriptConfigParser } from '../../src/config-parsers/javascript';
+import { JavaConfigParser } from '../../src/config-parsers/java';
 
-describe('JavaScriptConfigParser', () => {
-  let parser: JavaScriptConfigParser;
+describe('JavaConfigParser', () => {
+  let parser: JavaConfigParser;
 
   beforeEach(() => {
-    parser = new JavaScriptConfigParser();
+    parser = new JavaConfigParser();
   });
 
   describe('parse', () => {
-    it('should parse a basic configuration', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  environment: "production"
+    it('should parse a basic lambda configuration', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setEnvironment("production");
 });`;
 
       const result = parser.parse(config);
@@ -27,10 +27,10 @@ describe('JavaScriptConfigParser', () => {
     });
 
     it('should handle single-line comments', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  // Performance monitoring
-  tracesSampleRate: 0.1
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    // Performance monitoring
+    options.setTracesSampleRate(0.1);
 });`;
 
       const result = parser.parse(config);
@@ -39,16 +39,14 @@ describe('JavaScriptConfigParser', () => {
       expect(result.options.size).toBe(2);
       expect(result.options.has('dsn')).toBe(true);
       expect(result.options.has('tracesSampleRate')).toBe(true);
-      // Make sure comment is not part of the key
-      expect(result.options.get('tracesSampleRate')?.key).toBe('tracesSampleRate');
     });
 
     it('should handle multi-line comments', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  /* This is a
-     multi-line comment */
-  sampleRate: 0.5
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    /* This is a
+       multi-line comment */
+    options.setSampleRate(0.5);
 });`;
 
       const result = parser.parse(config);
@@ -56,39 +54,12 @@ describe('JavaScriptConfigParser', () => {
       expect(result.valid).toBe(true);
       expect(result.options.size).toBe(2);
       expect(result.options.has('sampleRate')).toBe(true);
-      expect(result.options.get('sampleRate')?.key).toBe('sampleRate');
-    });
-
-    it('should handle comments before multiple properties', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-
-  // Ignore known browser errors
-  ignoreErrors: ["Script error"],
-
-  // Performance monitoring at 10%
-  tracesSampleRate: 0.1,
-
-  // Sample only 50% of errors
-  sampleRate: 0.5
-});`;
-
-      const result = parser.parse(config);
-
-      expect(result.valid).toBe(true);
-      expect(result.options.size).toBe(4);
-
-      // All keys should be clean without comments
-      expect(result.options.get('dsn')?.key).toBe('dsn');
-      expect(result.options.get('ignoreErrors')?.key).toBe('ignoreErrors');
-      expect(result.options.get('tracesSampleRate')?.key).toBe('tracesSampleRate');
-      expect(result.options.get('sampleRate')?.key).toBe('sampleRate');
     });
 
     it('should not remove comments inside strings', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  release: "version-1.0 // not a comment"
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setRelease("version-1.0 // not a comment");
 });`;
 
       const result = parser.parse(config);
@@ -98,10 +69,10 @@ describe('JavaScriptConfigParser', () => {
     });
 
     it('should handle numbers', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  tracesSampleRate: 0.1,
-  maxBreadcrumbs: 100
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setTracesSampleRate(0.1);
+    options.setMaxBreadcrumbs(100);
 });`;
 
       const result = parser.parse(config);
@@ -114,10 +85,10 @@ describe('JavaScriptConfigParser', () => {
     });
 
     it('should handle booleans', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  debug: true,
-  enabled: false
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setDebug(true);
+    options.setAttachStacktrace(false);
 });`;
 
       const result = parser.parse(config);
@@ -125,27 +96,26 @@ describe('JavaScriptConfigParser', () => {
       expect(result.valid).toBe(true);
       expect(result.options.get('debug')?.type).toBe('boolean');
       expect(result.options.get('debug')?.value).toBe(true);
-      expect(result.options.get('enabled')?.type).toBe('boolean');
-      expect(result.options.get('enabled')?.value).toBe(false);
+      expect(result.options.get('attachStacktrace')?.type).toBe('boolean');
+      expect(result.options.get('attachStacktrace')?.value).toBe(false);
     });
 
-    it('should handle arrays', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  ignoreErrors: ["Script error", "NetworkError"]
+    it('should handle List.of() arrays', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setInAppIncludes(List.of("com.myapp", "com.mylib"));
 });`;
 
       const result = parser.parse(config);
 
       expect(result.valid).toBe(true);
-      expect(result.options.get('ignoreErrors')?.type).toBe('array');
-      expect(result.options.get('ignoreErrors')?.value).toEqual(['Script error', 'NetworkError']);
+      expect(result.options.get('inAppIncludes')?.type).toBe('array');
     });
 
-    it('should handle functions', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  beforeSend: (event) => { return event; }
+    it('should handle lambda callbacks', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setBeforeSend((event, hint) -> event);
 });`;
 
       const result = parser.parse(config);
@@ -154,23 +124,23 @@ describe('JavaScriptConfigParser', () => {
       expect(result.options.get('beforeSend')?.type).toBe('function');
     });
 
-    it('should handle nested objects', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  integrations: [new BrowserTracing()]
+    it('should handle method reference callbacks', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setBeforeSend(MyClass::filterEvent);
 });`;
 
       const result = parser.parse(config);
 
       expect(result.valid).toBe(true);
-      expect(result.options.has('integrations')).toBe(true);
+      expect(result.options.get('beforeSend')?.type).toBe('function');
     });
 
-    it('should handle just an object literal without Sentry.init', () => {
-      const config = `{
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  environment: "production"
-}`;
+    it('should handle different parameter names', () => {
+      const config = `Sentry.init(opts -> {
+    opts.setDsn("https://test@o0.ingest.sentry.io/0");
+    opts.setEnvironment("production");
+});`;
 
       const result = parser.parse(config);
 
@@ -178,10 +148,10 @@ describe('JavaScriptConfigParser', () => {
       expect(result.options.size).toBe(2);
     });
 
-    it('should handle trailing commas', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  environment: "production",
+    it('should handle SentryAndroid.init', () => {
+      const config = `SentryAndroid.init(this, options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setEnvironment("production");
 });`;
 
       const result = parser.parse(config);
@@ -191,7 +161,8 @@ describe('JavaScriptConfigParser', () => {
     });
 
     it('should handle empty configuration', () => {
-      const config = `Sentry.init({});`;
+      const config = `Sentry.init(options -> {
+});`;
 
       const result = parser.parse(config);
 
@@ -207,12 +178,36 @@ describe('JavaScriptConfigParser', () => {
       expect(result.valid).toBe(false);
       expect(result.parseErrors.length).toBeGreaterThan(0);
     });
+
+    it('should handle enable* methods', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.enableTracing(true);
+});`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.has('tracing')).toBe(true);
+    });
+
+    it('should handle add* methods', () => {
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.addInAppInclude("com.myapp");
+});`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.has('inAppInclude')).toBe(true);
+    });
   });
 
   describe('validate', () => {
     it('should validate valid configuration', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0"
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
 });`;
 
       const result = parser.validate(config);
@@ -233,10 +228,10 @@ describe('JavaScriptConfigParser', () => {
 
   describe('escaped backslash handling', () => {
     it('should handle strings ending with escaped backslash', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  serverName: "C:\\\\Users\\\\",
-  environment: "production",
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setServerName("C:\\\\Users\\\\");
+    options.setEnvironment("production");
 });`;
 
       const result = parser.parse(config);
@@ -247,10 +242,10 @@ describe('JavaScriptConfigParser', () => {
     });
 
     it('should handle escaped quotes inside strings', () => {
-      const config = `Sentry.init({
-  dsn: "https://test@o0.ingest.sentry.io/0",
-  release: "version-\\"beta\\"",
-  environment: "production",
+      const config = `Sentry.init(options -> {
+    options.setDsn("https://test@o0.ingest.sentry.io/0");
+    options.setRelease("version-\\"beta\\"");
+    options.setEnvironment("production");
 });`;
 
       const result = parser.parse(config);

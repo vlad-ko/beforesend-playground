@@ -1,0 +1,10 @@
+{
+  "id": "go-gin",
+  "name": "Go - Gin Framework",
+  "description": "Sentry configuration for Gin web framework with automatic request tracking",
+  "sdk": "go",
+  "complexity": "intermediate",
+  "useCase": "Go web applications using the Gin framework",
+  "seGuidance": "Recommended for all Gin customers. The sentrygin middleware automatically captures request context, user info, and performance data. Use Hub.Recover to capture panics in goroutines. Adjust TracesSampleRate based on traffic volume.",
+  "configCode": "package main\n\nimport (\n\t\"github.com/getsentry/sentry-go\"\n\tsentrygin \"github.com/getsentry/sentry-go/gin\"\n\t\"github.com/gin-gonic/gin\"\n)\n\nfunc main() {\n\terr := sentry.Init(sentry.ClientOptions{\n\t\tDsn: \"https://examplePublicKey@o0.ingest.sentry.io/0\",\n\t\tEnvironment: \"production\",\n\t\tRelease: \"my-gin-app@1.0.0\",\n\t\t\n\t\t// Performance monitoring\n\t\tEnableTracing: true,\n\t\tTracesSampleRate: 0.1,\n\t\t\n\t\t// Capture server name for distributed tracing\n\t\tServerName: \"api-server-1\",\n\t\t\n\t\t// Attach stacktrace to all messages\n\t\tAttachStacktrace: true,\n\t})\n\tif err != nil {\n\t\tlog.Fatalf(\"sentry.Init: %s\", err)\n\t}\n\tdefer sentry.Flush(2 * time.Second)\n\t\n\trouter := gin.Default()\n\trouter.Use(sentrygin.New(sentrygin.Options{\n\t\tRepanic: true,\n\t}))\n}"
+}

@@ -73,6 +73,20 @@ export class JavaScriptConfigParser implements IConfigParser {
   }
 
   /**
+   * Check if character at index is escaped by counting preceding backslashes.
+   * An odd number of backslashes means the character is escaped.
+   */
+  private isEscaped(str: string, index: number): boolean {
+    let backslashes = 0;
+    let i = index - 1;
+    while (i >= 0 && str[i] === '\\') {
+      backslashes++;
+      i--;
+    }
+    return backslashes % 2 === 1;
+  }
+
+  /**
    * Remove JavaScript comments from code
    * Handles both single-line and multi-line comments
    */
@@ -85,15 +99,17 @@ export class JavaScriptConfigParser implements IConfigParser {
     while (i < code.length) {
       const char = code[i];
       const nextChar = i + 1 < code.length ? code[i + 1] : '';
-      const prevChar = i > 0 ? code[i - 1] : '';
 
       // Handle strings - don't remove comments inside strings
-      if ((char === '"' || char === "'" || char === '`') && prevChar !== '\\') {
-        if (!inString) {
-          inString = true;
-          stringChar = char;
-        } else if (char === stringChar) {
-          inString = false;
+      // Backtick strings are template literals but still use backslash escaping
+      if (char === '"' || char === "'" || char === '`') {
+        if (!this.isEscaped(code, i)) {
+          if (!inString) {
+            inString = true;
+            stringChar = char;
+          } else if (char === stringChar) {
+            inString = false;
+          }
         }
         result += char;
         i++;
@@ -191,13 +207,15 @@ export class JavaScriptConfigParser implements IConfigParser {
       const char = str[i];
       const prevChar = i > 0 ? str[i - 1] : '';
 
-      // Handle strings
-      if ((char === '"' || char === "'" || char === '`') && prevChar !== '\\') {
-        if (!inString) {
-          inString = true;
-          stringChar = char;
-        } else if (char === stringChar) {
-          inString = false;
+      // Handle strings with proper escape handling
+      if (char === '"' || char === "'" || char === '`') {
+        if (!this.isEscaped(str, i)) {
+          if (!inString) {
+            inString = true;
+            stringChar = char;
+          } else if (char === stringChar) {
+            inString = false;
+          }
         }
       }
 

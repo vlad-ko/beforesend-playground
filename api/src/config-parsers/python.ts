@@ -21,7 +21,7 @@ export class PythonConfigParser implements IConfigParser {
       // Extract the arguments from sentry_sdk.init(...)
       const configArgs = this.extractConfigArgs(configCode);
 
-      if (!configArgs) {
+      if (configArgs === null) {
         result.valid = false;
         result.parseErrors.push({
           message: 'Could not find sentry_sdk.init() configuration',
@@ -62,8 +62,8 @@ export class PythonConfigParser implements IConfigParser {
     const initPattern = /sentry_sdk\.init\s*\(([\s\S]*?)\)(?:\s*$|[;\n])/;
     const match = code.match(initPattern);
 
-    if (match && match[1]) {
-      return match[1];
+    if (match) {
+      return match[1] ?? '';
     }
 
     // If no function call found, check if it's just kwargs
@@ -72,6 +72,19 @@ export class PythonConfigParser implements IConfigParser {
     }
 
     return null;
+  }
+
+  /**
+   * Check if character at index is escaped by counting preceding backslashes.
+   */
+  private isEscaped(str: string, index: number): boolean {
+    let backslashes = 0;
+    let i = index - 1;
+    while (i >= 0 && str[i] === '\\') {
+      backslashes++;
+      i--;
+    }
+    return backslashes % 2 === 1;
   }
 
   /**
@@ -85,10 +98,9 @@ export class PythonConfigParser implements IConfigParser {
 
     while (i < code.length) {
       const char = code[i];
-      const prevChar = i > 0 ? code[i - 1] : '';
 
       // Handle strings - don't remove comments inside strings
-      if ((char === '"' || char === "'") && prevChar !== '\\') {
+      if ((char === '"' || char === "'") && !this.isEscaped(code, i)) {
         if (!inString) {
           inString = true;
           stringChar = char;
@@ -165,10 +177,9 @@ export class PythonConfigParser implements IConfigParser {
 
     for (let i = 0; i < str.length; i++) {
       const char = str[i];
-      const prevChar = i > 0 ? str[i - 1] : '';
 
-      // Handle strings
-      if ((char === '"' || char === "'") && prevChar !== '\\') {
+      // Handle strings with proper escape handling
+      if ((char === '"' || char === "'") && !this.isEscaped(str, i)) {
         if (!inString) {
           inString = true;
           stringChar = char;

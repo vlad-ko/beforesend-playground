@@ -369,6 +369,14 @@ When you type, the editor will show red squiggles for syntax errors before you e
 - **[SDK Support](docs/sdk-support.md)** - Available SDKs and versions
 - **[Validation Guide](docs/validation.md)** - How real-time validation works
 
+### Config Analyzer
+- **[Config Analyzer Overview](docs/config-analyzer/README.md)** - Analyze SDK configurations
+- **[Architecture](docs/config-analyzer/architecture.md)** - How the analyzer works
+- **[Options Dictionary](docs/config-analyzer/options-dictionary.md)** - Configuration options database
+- **[SDK-Specific Details](docs/config-analyzer/sdk-specifics.md)** - Per-SDK parsing details
+- **[Adding Options](docs/config-analyzer/adding-options.md)** - Extend the dictionary
+- **[Adding SDKs](docs/config-analyzer/adding-sdks.md)** - Add new SDK support
+
 ### Advanced
 - **[API Reference](docs/api-reference.md)** - API endpoints and usage
 - **[Architecture](docs/architecture.md)** - System design and structure

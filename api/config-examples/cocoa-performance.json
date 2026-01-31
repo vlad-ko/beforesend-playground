@@ -1,0 +1,10 @@
+{
+  "id": "cocoa-performance",
+  "name": "Cocoa/Swift - Performance Monitoring",
+  "description": "Advanced Swift configuration with performance monitoring and custom hooks",
+  "sdk": "cocoa",
+  "complexity": "advanced",
+  "useCase": "Production iOS/macOS applications requiring detailed performance insights",
+  "seGuidance": "Use this configuration for iOS/macOS apps where performance data is critical. The beforeSend hook allows filtering or modifying events before they're sent. tracesSampler enables dynamic sampling based on context. ProfilesSampleRate enables profiling.",
+  "configCode": "import Sentry\n\nSentrySDK.start { options in\n    options.dsn = \"https://examplePublicKey@o0.ingest.sentry.io/0\"\n    options.environment = \"production\"\n    options.releaseName = \"my-ios-app@1.0.0\"\n    \n    // Performance monitoring\n    options.tracesSampleRate = NSNumber(value: 0.1)\n    \n    // Profiling (10% of traced transactions)\n    options.profilesSampleRate = NSNumber(value: 0.1)\n    \n    // Custom traces sampler\n    options.tracesSampler = { context in\n        // Don't trace background fetches\n        if context.transactionContext.name.contains(\"background\") {\n            return NSNumber(value: 0.0)\n        }\n        return NSNumber(value: 0.1)\n    }\n    \n    // Filter events before sending\n    options.beforeSend = { event in\n        // Filter out specific errors\n        if event.message?.formatted.contains(\"harmless\") == true {\n            return nil\n        }\n        return event\n    }\n    \n    // Automatic session tracking\n    options.enableAutoSessionTracking = true\n    \n    // Capture HTTP Client errors (4xx, 5xx)\n    options.enableCaptureFailedRequests = true\n    options.failedRequestStatusCodes = [HttpStatusCodeRange(min: 400, max: 599)]\n    \n    // App hang detection (only main thread blocks > 2s)\n    options.appHangTimeoutInterval = 2\n    \n    // Debug mode\n    options.debug = false\n}"
+}

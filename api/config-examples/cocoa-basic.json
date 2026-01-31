@@ -1,0 +1,10 @@
+{
+  "id": "cocoa-basic",
+  "name": "Cocoa/Swift - Basic Setup",
+  "description": "Minimal Sentry configuration for error tracking in iOS/macOS applications",
+  "sdk": "cocoa",
+  "complexity": "basic",
+  "useCase": "Getting started with Sentry error tracking in iOS/macOS apps",
+  "seGuidance": "Perfect for iOS/macOS applications just getting started with Sentry. This configuration captures all crashes and errors with essential context. Initialize Sentry as early as possible in AppDelegate or @main struct.",
+  "configCode": "import Sentry\n\n// In AppDelegate.swift or @main struct\nSentrySDK.start { options in\n    // Your DSN from Sentry project settings\n    options.dsn = \"https://examplePublicKey@o0.ingest.sentry.io/0\"\n    \n    // Identify the environment\n    options.environment = \"production\"\n    \n    // Track which version is deployed (usually from Info.plist)\n    options.releaseName = \"my-ios-app@1.0.0\"\n}"
+}

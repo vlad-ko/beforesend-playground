@@ -1,0 +1,10 @@
+{
+  "id": "php-performance",
+  "name": "PHP - Performance Monitoring",
+  "description": "Advanced PHP configuration with performance monitoring and custom hooks",
+  "sdk": "php",
+  "complexity": "advanced",
+  "useCase": "Production PHP applications requiring detailed performance insights",
+  "seGuidance": "Use this configuration for high-traffic PHP applications. The before_send hook allows filtering or modifying events before they're sent. Use traces_sampler for dynamic sampling based on transaction context. Consider using queue workers to send events asynchronously.",
+  "configCode": "<?php\n\nuse Sentry\\Event;\nuse Sentry\\EventHint;\nuse Sentry\\SamplingContext;\n\n\\Sentry\\init([\n    'dsn' => 'https://examplePublicKey@o0.ingest.sentry.io/0',\n    'environment' => 'production',\n    'release' => 'my-php-app@1.0.0',\n    \n    // Performance monitoring\n    'traces_sample_rate' => 0.1,\n    \n    // Custom traces sampler\n    'traces_sampler' => function (SamplingContext $context): float {\n        // Don't trace health checks\n        if ($context->getTransactionContext()->getName() === 'GET /health') {\n            return 0.0;\n        }\n        return 0.1;\n    },\n    \n    // Filter events before sending\n    'before_send' => function (Event $event, ?EventHint $hint): ?Event {\n        // Filter out specific exceptions\n        if ($hint !== null && $hint->exception instanceof \\App\\Exceptions\\IgnoredException) {\n            return null;\n        }\n        return $event;\n    },\n    \n    // Capture user context\n    'send_default_pii' => false,\n    \n    // Include only app code in stack traces\n    'in_app_include' => ['app/'],\n    'in_app_exclude' => ['vendor/'],\n]);"
+}
