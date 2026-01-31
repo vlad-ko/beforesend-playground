@@ -2,6 +2,7 @@
   "id": "add-custom-tags-cocoa",
   "name": "Add Custom Tags & Context (Cocoa)",
   "description": "Enrich iOS/macOS events with mobile-specific tags, device info, and app context for better debugging",
+  "type": "beforeSend",
   "sdk": "cocoa",
   "event": {
     "event_id": "cocoa-context-777",

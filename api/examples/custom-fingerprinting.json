@@ -2,6 +2,7 @@
   "id": "custom-fingerprinting",
   "name": "Custom Fingerprinting",
   "description": "Group similar errors together by customizing the fingerprint, useful for dynamic error messages with unique IDs",
+  "type": "fingerprinting",
   "sdk": "javascript",
   "event": {
     "event_id": "fingerprint-test-456",

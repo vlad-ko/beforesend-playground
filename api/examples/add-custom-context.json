@@ -2,6 +2,7 @@
   "id": "add-custom-context",
   "name": "Add Custom Tags & Context",
   "description": "Enrich events with custom tags, extra context, and metadata for better filtering and debugging",
+  "type": "beforeSend",
   "sdk": "javascript",
   "event": {
     "event_id": "context-test-789",

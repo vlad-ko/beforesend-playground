@@ -2,6 +2,7 @@
   "id": "pii-scrubbing",
   "name": "PII Scrubbing",
   "description": "Remove personally identifiable information (emails, phone numbers, SSNs) from events before sending to Sentry",
+  "type": "beforeSend",
   "sdk": "javascript",
   "event": {
     "event_id": "test-pii-123",

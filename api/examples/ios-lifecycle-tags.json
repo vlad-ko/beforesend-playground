@@ -2,6 +2,7 @@
   "id": "ios-lifecycle-tags",
   "name": "iOS Lifecycle & App State Tags",
   "description": "Add iOS-specific lifecycle events, memory warnings, and app state transition context for mobile debugging",
+  "type": "beforeSend",
   "sdk": "cocoa",
   "event": {
     "event_id": "ios-lifecycle-111",

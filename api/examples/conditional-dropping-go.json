@@ -2,6 +2,7 @@
   "id": "conditional-dropping-go",
   "name": "Conditional Event Dropping (Go)",
   "description": "Filter out noisy errors in Go services - health checks, known errors, development environments",
+  "type": "beforeSend",
   "sdk": "go",
   "event": {
     "event_id": "go-drop-321",

@@ -2,6 +2,7 @@
   "id": "pii-scrubbing-python",
   "name": "PII Scrubbing (Python)",
   "description": "Remove personally identifiable information from Python events using Python beforeSend callback",
+  "type": "beforeSend",
   "sdk": "python",
   "event": {
     "event_id": "python-pii-123",

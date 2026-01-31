@@ -2,6 +2,7 @@
   "id": "conditional-dropping-php",
   "name": "Conditional Event Dropping (PHP)",
   "description": "Filter out noisy or irrelevant errors in PHP applications - bots, third-party scripts, test users",
+  "type": "beforeSend",
   "sdk": "php",
   "event": {
     "event_id": "php-drop-789",

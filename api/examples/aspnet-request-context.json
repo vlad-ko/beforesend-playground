@@ -2,6 +2,7 @@
   "id": "aspnet-request-context",
   "name": "ASP.NET Request Context",
   "description": "Enrich .NET backend events with ASP.NET-specific request context (controller, action, route data, claims)",
+  "type": "beforeSend",
   "sdk": "dotnet",
   "event": {
     "event_id": "aspnet-context-999",
