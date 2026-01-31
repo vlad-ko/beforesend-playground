@@ -1,0 +1,23 @@
+{
+  "name": "Normalize Database Errors",
+  "description": "Group all database connection errors together regardless of instance",
+  "type": "fingerprinting",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "db-error-001",
+    "message": "Database connection failed to db-prod-user-12345",
+    "exception": {
+      "values": [
+        {
+          "type": "DatabaseError",
+          "value": "Connection timeout after 30000ms"
+        }
+      ]
+    },
+    "tags": {
+      "environment": "production",
+      "db_instance": "db-prod-user-12345"
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  // Group all database connection errors into one issue\n  // regardless of which specific database instance failed\n  if (event.message && event.message.includes('Database connection failed')) {\n    event.fingerprint = ['database-connection-error'];\n  }\n\n  return event;\n}"
+}

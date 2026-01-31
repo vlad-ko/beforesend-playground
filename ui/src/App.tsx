@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import ModeSelector from './components/ModeSelector';
 import ModeInfo from './components/ModeInfo';
 import BeforeSendPlayground from './components/playgrounds/BeforeSendPlayground';
+import FingerprintingPlayground from './components/playgrounds/FingerprintingPlayground';
 import BeforeSendTransactionPlayground from './components/playgrounds/BeforeSendTransactionPlayground';
 import BeforeBreadcrumbPlayground from './components/playgrounds/BeforeBreadcrumbPlayground';
 import TracesSamplerPlayground from './components/playgrounds/TracesSamplerPlayground';
@@ -30,6 +31,8 @@ function App() {
     switch (currentMode) {
       case 'beforeSend':
         return <BeforeSendPlayground />;
+      case 'fingerprinting':
+        return <FingerprintingPlayground />;
       case 'beforeSendTransaction':
         return <BeforeSendTransactionPlayground />;
       case 'beforeBreadcrumb':

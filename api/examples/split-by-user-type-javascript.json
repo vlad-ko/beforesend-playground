@@ -1,0 +1,26 @@
+{
+  "name": "Split by User Type",
+  "description": "Create separate issues for free vs premium user errors",
+  "type": "fingerprinting",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "user-error-001",
+    "message": "Payment processing failed",
+    "exception": {
+      "values": [
+        {
+          "type": "PaymentError",
+          "value": "Card declined"
+        }
+      ]
+    },
+    "user": {
+      "id": "user-123",
+      "subscription": "premium"
+    },
+    "tags": {
+      "environment": "production"
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  // Split payment errors by user subscription type\n  // Premium users get separate issue for faster response\n  const userType = event.user?.subscription || 'free';\n  \n  if (event.exception?.values?.[0]?.type === 'PaymentError') {\n    event.fingerprint = [\n      'payment-error',\n      userType,\n      '{{ default }}'\n    ];\n  }\n\n  return event;\n}"
+}

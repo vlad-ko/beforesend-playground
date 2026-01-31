@@ -4,6 +4,7 @@
 
 export type PlaygroundMode =
   | 'beforeSend'
+  | 'fingerprinting'
   | 'beforeSendTransaction'
   | 'beforeBreadcrumb'
   | 'tracesSampler'
@@ -27,6 +28,13 @@ export const MODES: ModeConfig[] = [
     description: 'Transform error events before they are sent to Sentry',
     helpText: 'The beforeSend callback is invoked before error events are sent to Sentry. Use it to modify events, filter out sensitive data, or drop events entirely by returning null.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
+  },
+  {
+    id: 'fingerprinting',
+    name: 'Fingerprinting',
+    description: 'Control how Sentry groups errors into issues',
+    helpText: 'This is a convenience mode for testing custom fingerprinting. Fingerprinting is done via beforeSend by setting event.fingerprint. Use it to group similar errors together or split overly-broad groupings.',
+    docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/grouping/',
   },
   {
     id: 'beforeSendTransaction',

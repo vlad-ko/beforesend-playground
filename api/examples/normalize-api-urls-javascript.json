@@ -1,0 +1,26 @@
+{
+  "name": "Normalize API URL Errors",
+  "description": "Group API errors by endpoint pattern, ignoring dynamic IDs",
+  "type": "fingerprinting",
+  "sdk": "javascript",
+  "event": {
+    "event_id": "api-error-001",
+    "message": "API request failed: GET /api/users/12345/orders/67890",
+    "exception": {
+      "values": [
+        {
+          "type": "APIError",
+          "value": "Request failed with status 500"
+        }
+      ]
+    },
+    "request": {
+      "url": "https://api.example.com/api/users/12345/orders/67890",
+      "method": "GET"
+    },
+    "tags": {
+      "environment": "production"
+    }
+  },
+  "beforeSendCode": "(event, hint) => {\n  // Normalize API URLs by replacing dynamic IDs with placeholders\n  // This groups all /users/:id/orders/:id errors together\n  if (event.message && event.message.includes('API request failed')) {\n    // Replace numeric IDs with placeholder\n    const normalizedUrl = event.message.replace(/\\/\\d+/g, '/:id');\n    event.fingerprint = ['api-error', normalizedUrl];\n  }\n\n  return event;\n}"
+}
