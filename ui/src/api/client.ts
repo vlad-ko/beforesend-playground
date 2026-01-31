@@ -29,7 +29,7 @@ export interface SDKsResponse {
   sdks: SDK[];
 }
 
-export type ExampleType = 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler';
+export type ExampleType = 'beforeSend' | 'fingerprinting' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler';
 
 export interface Example {
   id: string;

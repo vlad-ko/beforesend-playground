@@ -9,7 +9,7 @@ interface Example {
   name: string;
   description: string;
   sdk: string;
-  type?: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler';  // defaults to 'beforeSend'
+  type?: 'beforeSend' | 'fingerprinting' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler';  // defaults to 'beforeSend'
   event?: Record<string, any>;
   transaction?: Record<string, any>;
   breadcrumb?: Record<string, any>;
@@ -116,6 +116,15 @@ function isValidExample(example: any): example is Example {
     );
   }
 
+  // Check for fingerprinting example (uses same structure as beforeSend)
+  if (example.type === 'fingerprinting') {
+    return (
+      typeof example.event === 'object' &&
+      example.event !== null &&
+      typeof example.beforeSendCode === 'string'
+    );
+  }
+
   // Default: beforeSend example
   return (
     typeof example.event === 'object' &&
@@ -128,7 +137,7 @@ function isValidExample(example: any): example is Example {
  * GET /api/examples
  * Returns list of all available example templates
  * Query params:
- *   - type: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler' (optional, filters by example type)
+ *   - type: 'beforeSend' | 'fingerprinting' | 'beforeSendTransaction' | 'beforeBreadcrumb' | 'tracesSampler' (optional, filters by example type)
  */
 router.get('/', (req: Request, res: Response<ExamplesResponse>) => {
   try {
@@ -136,7 +145,8 @@ router.get('/', (req: Request, res: Response<ExamplesResponse>) => {
 
     // Filter by type if specified
     const typeFilter = req.query.type as string | undefined;
-    if (typeFilter === 'beforeSend' || typeFilter === 'beforeSendTransaction' || typeFilter === 'beforeBreadcrumb' || typeFilter === 'tracesSampler') {
+    const validTypes = ['beforeSend', 'fingerprinting', 'beforeSendTransaction', 'beforeBreadcrumb', 'tracesSampler'];
+    if (typeFilter && validTypes.includes(typeFilter)) {
       examples = examples.filter(ex => {
         const exampleType = ex.type || 'beforeSend';  // default to beforeSend
         return exampleType === typeFilter;
