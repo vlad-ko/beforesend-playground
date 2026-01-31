@@ -4,10 +4,10 @@
 
 ## Overview
 
-**Learn by doing.** The SDK Playground is a comprehensive testing platform for Sentry SDK features. Test event transformation callbacks, sampling strategies, filter patterns, webhook integrations, and configuration analysis—all in a safe sandbox environment. With **8 specialized testing modes**, **50+ pre-built examples**, and support for **12 SDK languages**, you can master Sentry integration patterns before touching production.
+**Learn by doing.** The SDK Playground is a comprehensive testing platform for Sentry SDK features. Test event transformation callbacks, sampling strategies, filter patterns, webhook integrations, and configuration analysis—all in a safe sandbox environment. With **9 specialized testing modes**, **50+ pre-built examples**, and support for **12 SDK languages**, you can master Sentry integration patterns before touching production.
 
 **Key Capabilities:**
-- **8 Testing Modes** - beforeSend, beforeSendTransaction, beforeBreadcrumb, tracesSampler, webhooks, config analyzer, API query tester, pattern tester
+- **9 Testing Modes** - Before Send, Fingerprinting, Before Send Transaction, Before Breadcrumb, Traces Sampler, Pattern Tester, Config Analyzer, API Query Tester, Webhooks
 - **12 SDK Languages** - JavaScript, Python, Ruby, PHP, Go, .NET, Java, Android, Cocoa, React Native, Rust, Elixir
 - **50+ Example Templates** - Real-world patterns for PII scrubbing, sampling, filtering, and more
 - **Visual Diff Viewer** - Side-by-side comparison of original vs transformed data
@@ -35,18 +35,19 @@ The playground will be available at **http://localhost:3000**
 
 | Mode | Purpose | Use When |
 |------|---------|----------|
-| **beforeSend** | Transform error events | Scrubbing PII, adding tags, filtering errors |
-| **beforeSendTransaction** | Transform performance data | Filtering health checks, adding context |
-| **beforeBreadcrumb** | Filter navigation/console logs | Reducing noise, scrubbing URLs |
-| **tracesSampler** | Dynamic sampling rates | Cost optimization, critical endpoint prioritization |
-| **Webhooks** | Test webhook integrations | Debugging signature verification |
+| **Before Send** | Transform error events | Scrubbing PII, adding tags, filtering errors |
+| **Fingerprinting** | Control issue grouping | Normalizing dynamic data, custom grouping rules |
+| **Before Send Transaction** | Transform performance data | Filtering health checks, adding context |
+| **Before Breadcrumb** | Filter navigation/console logs | Reducing noise, scrubbing URLs |
+| **Traces Sampler** | Dynamic sampling rates | Cost optimization, critical endpoint prioritization |
+| **Pattern Tester** | Test filter patterns | Validating ignoreErrors/denyUrls |
 | **Config Analyzer** | Validate SDK configuration | Reviewing Sentry.init() setup |
 | **API Query Tester** | Test search queries | Building API integrations |
-| **Pattern Tester** | Test filter patterns | Validating ignoreErrors/denyUrls |
+| **Webhooks** | Test webhook integrations | Debugging signature verification |
 
 ## Mode Overview
 
-### beforeSend Mode
+### Before Send Mode
 
 Transform error events before they are sent to Sentry. Use it to:
 - Scrub PII (emails, IPs, tokens)
@@ -65,7 +66,25 @@ Transform error events before they are sent to Sentry. Use it to:
 }
 ```
 
-### beforeSendTransaction Mode
+### Fingerprinting Mode
+
+Control how Sentry groups errors into issues. This is a convenience mode for testing fingerprinting via beforeSend. Use it to:
+- Normalize dynamic data (user IDs, database instances)
+- Group similar errors together
+- Split overly-broad groupings by context
+
+**Example:**
+```javascript
+(event, hint) => {
+  // Group all database errors together regardless of instance
+  if (event.message?.includes('Database connection failed')) {
+    event.fingerprint = ['database-connection-error'];
+  }
+  return event;
+}
+```
+
+### Before Send Transaction Mode
 
 Transform transaction events before sending. Use it to:
 - Drop health check transactions
@@ -84,7 +103,7 @@ Transform transaction events before sending. Use it to:
 }
 ```
 
-### beforeBreadcrumb Mode
+### Before Breadcrumb Mode
 
 Filter and modify breadcrumbs before they're added to events. Use it to:
 - Drop noisy console logs
@@ -107,7 +126,7 @@ Filter and modify breadcrumbs before they're added to events. Use it to:
 }
 ```
 
-### tracesSampler Mode
+### Traces Sampler Mode
 
 Implement dynamic sampling strategies for performance monitoring. Use it to:
 - Sample critical endpoints at higher rates
@@ -210,25 +229,32 @@ Test ignoreErrors, denyUrls, and allowUrls filter patterns. Use it to:
 
 The playground includes **50+ pre-built examples** organized by mode:
 
-### beforeSend Examples
+### Before Send Examples
 - PII Scrubbing (JavaScript, Python, .NET, Ruby, Rust)
 - Conditional Event Dropping (JavaScript, PHP, Go, Rust)
 - Service Metadata Enrichment (Go, Rust)
 - Custom Tags & Context (JavaScript, Java, Cocoa)
 - Unity Metadata Cleanup (Android)
 
-### beforeSendTransaction Examples
-- Drop Health Checks (JavaScript, Python)
-- Add Environment Context (JavaScript)
-- Filter by Transaction Name (Python)
+### Fingerprinting Examples
+- Custom Fingerprinting (JavaScript)
+- Normalize Database Errors (JavaScript)
+- Normalize API URL Errors (JavaScript)
+- Split by User Type (JavaScript)
 
-### beforeBreadcrumb Examples
+### Before Send Transaction Examples
+- Drop Health Checks (JavaScript, Python, Go)
+- Add Custom Tags (JavaScript)
+- Filter Slow Spans (JavaScript)
+- Scrub Sensitive URLs (JavaScript)
+
+### Before Breadcrumb Examples
 - Filter Console Breadcrumbs (JavaScript)
 - Scrub PII from URLs (JavaScript, Python)
 - Drop HTTP Noise (JavaScript)
 - Categorize Breadcrumbs (JavaScript)
 
-### tracesSampler Examples
+### Traces Sampler Examples
 - Critical Endpoints Sampling (JavaScript)
 - Health Check Filtering (JavaScript)
 - User-Based Sampling (JavaScript)
@@ -254,14 +280,15 @@ Share your configurations securely with colleagues or customers:
 - **[SDK Support](docs/sdk-support.md)** - Available SDKs and versions
 
 ### Mode Guides
-- **[beforeSend Guide](docs/modes/beforeSend.md)** - Error event transformation
-- **[beforeSendTransaction Guide](docs/modes/beforeSendTransaction.md)** - Transaction filtering
-- **[beforeBreadcrumb Guide](docs/modes/beforeBreadcrumb.md)** - Breadcrumb filtering
-- **[tracesSampler Guide](docs/modes/tracesSampler.md)** - Dynamic sampling strategies
-- **[Webhooks Guide](docs/modes/webhooks.md)** - Webhook testing
+- **[Before Send Guide](docs/modes/beforeSend.md)** - Error event transformation
+- **[Fingerprinting Guide](docs/modes/fingerprinting.md)** - Custom issue grouping
+- **[Before Send Transaction Guide](docs/modes/beforeSendTransaction.md)** - Transaction filtering
+- **[Before Breadcrumb Guide](docs/modes/beforeBreadcrumb.md)** - Breadcrumb filtering
+- **[Traces Sampler Guide](docs/modes/tracesSampler.md)** - Dynamic sampling strategies
+- **[Pattern Tester Guide](docs/modes/pattern-tester.md)** - Filter pattern testing
 - **[Config Analyzer Guide](docs/config-analyzer/README.md)** - Configuration analysis
 - **[API Query Tester Guide](docs/api-query-tester/README.md)** - Query testing
-- **[Pattern Tester Guide](docs/modes/pattern-tester.md)** - Filter pattern testing
+- **[Webhooks Guide](docs/modes/webhooks.md)** - Webhook testing
 
 ### Reference
 - **[API Reference](docs/api-reference.md)** - API endpoints and usage
