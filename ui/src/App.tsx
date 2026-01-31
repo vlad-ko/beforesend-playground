@@ -3,6 +3,7 @@ import ModeSelector from './components/ModeSelector';
 import ModeInfo from './components/ModeInfo';
 import BeforeSendPlayground from './components/playgrounds/BeforeSendPlayground';
 import BeforeSendTransactionPlayground from './components/playgrounds/BeforeSendTransactionPlayground';
+import BeforeBreadcrumbPlayground from './components/playgrounds/BeforeBreadcrumbPlayground';
 import WebhookPlayground from './components/playgrounds/WebhookPlayground';
 import ConfigAnalyzerPlayground from './components/playgrounds/ConfigAnalyzerPlayground';
 import ApiQueryTesterPlayground from './components/playgrounds/ApiQueryTesterPlayground';
@@ -30,6 +31,8 @@ function App() {
         return <BeforeSendPlayground />;
       case 'beforeSendTransaction':
         return <BeforeSendTransactionPlayground />;
+      case 'beforeBreadcrumb':
+        return <BeforeBreadcrumbPlayground />;
       case 'webhooks':
         return <WebhookPlayground />;
       case 'configAnalyzer':

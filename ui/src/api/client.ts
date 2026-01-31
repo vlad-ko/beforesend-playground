@@ -29,7 +29,7 @@ export interface SDKsResponse {
   sdks: SDK[];
 }
 
-export type ExampleType = 'beforeSend' | 'beforeSendTransaction';
+export type ExampleType = 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb';
 
 export interface Example {
   id: string;
@@ -43,6 +43,9 @@ export interface Example {
   // beforeSendTransaction examples
   transaction?: Record<string, any>;
   beforeSendTransactionCode?: string;
+  // beforeBreadcrumb examples
+  breadcrumb?: Record<string, any>;
+  beforeBreadcrumbCode?: string;
 }
 
 export interface ExamplesResponse {

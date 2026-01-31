@@ -9,11 +9,13 @@ interface Example {
   name: string;
   description: string;
   sdk: string;
-  type?: 'beforeSend' | 'beforeSendTransaction';  // defaults to 'beforeSend'
+  type?: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb';  // defaults to 'beforeSend'
   event?: Record<string, any>;
   transaction?: Record<string, any>;
+  breadcrumb?: Record<string, any>;
   beforeSendCode?: string;
   beforeSendTransactionCode?: string;
+  beforeBreadcrumbCode?: string;
 }
 
 interface ExamplesResponse {
@@ -68,8 +70,9 @@ function loadExamples(): Example[] {
 
 /**
  * Validate example structure
- * Supports both beforeSend examples (event + beforeSendCode)
- * and beforeSendTransaction examples (transaction + beforeSendTransactionCode)
+ * Supports beforeSend examples (event + beforeSendCode),
+ * beforeSendTransaction examples (transaction + beforeSendTransactionCode),
+ * and beforeBreadcrumb examples (breadcrumb + beforeBreadcrumbCode)
  */
 function isValidExample(example: any): example is Example {
   if (
@@ -92,6 +95,15 @@ function isValidExample(example: any): example is Example {
     );
   }
 
+  // Check for beforeBreadcrumb example
+  if (example.type === 'beforeBreadcrumb') {
+    return (
+      typeof example.breadcrumb === 'object' &&
+      example.breadcrumb !== null &&
+      typeof example.beforeBreadcrumbCode === 'string'
+    );
+  }
+
   // Default: beforeSend example
   return (
     typeof example.event === 'object' &&
@@ -104,7 +116,7 @@ function isValidExample(example: any): example is Example {
  * GET /api/examples
  * Returns list of all available example templates
  * Query params:
- *   - type: 'beforeSend' | 'beforeSendTransaction' (optional, filters by example type)
+ *   - type: 'beforeSend' | 'beforeSendTransaction' | 'beforeBreadcrumb' (optional, filters by example type)
  */
 router.get('/', (req: Request, res: Response<ExamplesResponse>) => {
   try {
@@ -112,7 +124,7 @@ router.get('/', (req: Request, res: Response<ExamplesResponse>) => {
 
     // Filter by type if specified
     const typeFilter = req.query.type as string | undefined;
-    if (typeFilter === 'beforeSend' || typeFilter === 'beforeSendTransaction') {
+    if (typeFilter === 'beforeSend' || typeFilter === 'beforeSendTransaction' || typeFilter === 'beforeBreadcrumb') {
       examples = examples.filter(ex => {
         const exampleType = ex.type || 'beforeSend';  // default to beforeSend
         return exampleType === typeFilter;

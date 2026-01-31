@@ -1,0 +1,18 @@
+{
+  "id": "categorize-breadcrumbs-javascript",
+  "name": "Categorize Breadcrumbs (JavaScript)",
+  "description": "Modify breadcrumb categories and levels for better organization in Sentry",
+  "sdk": "javascript",
+  "type": "beforeBreadcrumb",
+  "breadcrumb": {
+    "type": "default",
+    "category": "console",
+    "level": "log",
+    "timestamp": 1704067200.0,
+    "message": "[PaymentService] Processing payment for order #12345",
+    "data": {
+      "logger": "console"
+    }
+  },
+  "beforeBreadcrumbCode": "(breadcrumb, hint) => {\n  const message = breadcrumb.message || '';\n  \n  // Categorize by service based on message prefix\n  if (message.includes('[PaymentService]')) {\n    breadcrumb.category = 'payment';\n    breadcrumb.level = 'info';\n  } else if (message.includes('[AuthService]')) {\n    breadcrumb.category = 'auth';\n    breadcrumb.level = 'info';\n  } else if (message.includes('[UserService]')) {\n    breadcrumb.category = 'user';\n  }\n  \n  // Upgrade level for error keywords\n  if (message.toLowerCase().includes('error') || message.toLowerCase().includes('failed')) {\n    breadcrumb.level = 'error';\n  } else if (message.toLowerCase().includes('warning') || message.toLowerCase().includes('warn')) {\n    breadcrumb.level = 'warning';\n  }\n  \n  // Clean up message by removing service prefix\n  breadcrumb.message = message.replace(/\\[[^\\]]+\\]\\s*/, '');\n  \n  return breadcrumb;\n}"
+}

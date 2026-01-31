@@ -1,0 +1,19 @@
+{
+  "id": "scrub-pii-from-urls-javascript",
+  "name": "Scrub PII from URLs (JavaScript)",
+  "description": "Remove tokens, user IDs, and email addresses from navigation breadcrumbs",
+  "sdk": "javascript",
+  "type": "beforeBreadcrumb",
+  "breadcrumb": {
+    "type": "default",
+    "category": "navigation",
+    "level": "info",
+    "timestamp": 1704067200.0,
+    "message": "Navigation to profile page",
+    "data": {
+      "from": "/login?email=john@example.com",
+      "to": "/users/12345/profile?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9&session=abc123"
+    }
+  },
+  "beforeBreadcrumbCode": "(breadcrumb, hint) => {\n  // Scrub sensitive data from navigation URLs\n  if (breadcrumb.category === 'navigation') {\n    const scrubUrl = (url) => {\n      if (!url) return url;\n      return url\n        // Remove tokens (JWT or otherwise)\n        .replace(/token=[^&]+/gi, 'token=[REDACTED]')\n        // Remove session IDs\n        .replace(/session=[^&]+/gi, 'session=[REDACTED]')\n        // Remove user IDs from paths\n        .replace(/\\/users\\/\\d+/gi, '/users/[ID]')\n        // Remove email addresses\n        .replace(/email=[^&]+/gi, 'email=[REDACTED]')\n        // Remove any numeric IDs in query params\n        .replace(/id=\\d+/gi, 'id=[REDACTED]');\n    };\n\n    if (breadcrumb.data?.from) {\n      breadcrumb.data.from = scrubUrl(breadcrumb.data.from);\n    }\n    if (breadcrumb.data?.to) {\n      breadcrumb.data.to = scrubUrl(breadcrumb.data.to);\n    }\n  }\n\n  return breadcrumb;\n}"
+}

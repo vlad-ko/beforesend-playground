@@ -1,0 +1,18 @@
+{
+  "id": "filter-console-breadcrumbs-javascript",
+  "name": "Filter Console Breadcrumbs (JavaScript)",
+  "description": "Drop console.log breadcrumbs to reduce noise in error reports",
+  "sdk": "javascript",
+  "type": "beforeBreadcrumb",
+  "breadcrumb": {
+    "type": "default",
+    "category": "console",
+    "level": "log",
+    "timestamp": 1704067200.0,
+    "message": "Debug: User clicked button",
+    "data": {
+      "logger": "console"
+    }
+  },
+  "beforeBreadcrumbCode": "(breadcrumb, hint) => {\n  // Drop all console breadcrumbs\n  if (breadcrumb.category === 'console') {\n    return null;\n  }\n\n  // Optionally: only drop debug/log level, keep warnings and errors\n  // if (breadcrumb.category === 'console' && ['log', 'debug', 'info'].includes(breadcrumb.level)) {\n  //   return null;\n  // }\n\n  return breadcrumb;\n}"
+}

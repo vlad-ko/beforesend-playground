@@ -5,6 +5,7 @@
 export type PlaygroundMode =
   | 'beforeSend'
   | 'beforeSendTransaction'
+  | 'beforeBreadcrumb'
   | 'webhooks'
   | 'configAnalyzer'
   | 'apiQueryTester'
@@ -31,6 +32,13 @@ export const MODES: ModeConfig[] = [
     name: 'beforeSendTransaction',
     description: 'Transform transaction events before they are sent to Sentry',
     helpText: 'The beforeSendTransaction callback is invoked before performance transaction events are sent to Sentry. Use it to modify transaction data, adjust sampling decisions, or filter performance events.',
+    docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
+  },
+  {
+    id: 'beforeBreadcrumb',
+    name: 'beforeBreadcrumb',
+    description: 'Filter and modify breadcrumbs before they are added to events',
+    helpText: 'The beforeBreadcrumb callback is invoked before each breadcrumb is added to the scope. Use it to filter noisy breadcrumbs, scrub PII from console logs or navigation URLs, or modify breadcrumb data.',
     docsUrl: 'https://docs.sentry.io/platform-redirect/?next=/configuration/filtering/',
   },
   {

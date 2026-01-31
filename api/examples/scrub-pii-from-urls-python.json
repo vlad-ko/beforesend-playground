@@ -1,0 +1,19 @@
+{
+  "id": "scrub-pii-from-urls-python",
+  "name": "Scrub PII from URLs (Python)",
+  "description": "Remove tokens, user IDs, and sensitive data from navigation breadcrumbs in Python",
+  "sdk": "python",
+  "type": "beforeBreadcrumb",
+  "breadcrumb": {
+    "type": "default",
+    "category": "navigation",
+    "level": "info",
+    "timestamp": 1704067200.0,
+    "message": "Navigation to profile page",
+    "data": {
+      "from": "/login?email=john@example.com",
+      "to": "/users/12345/profile?api_key=sk_live_abc123&session=xyz789"
+    }
+  },
+  "beforeBreadcrumbCode": "def before_breadcrumb(breadcrumb, hint):\n    import re\n    \n    def scrub_url(url):\n        if not url:\n            return url\n        # Remove tokens and API keys\n        url = re.sub(r'(token|api_key|key|secret)=[^&]+', r'\\1=[REDACTED]', url, flags=re.IGNORECASE)\n        # Remove session IDs\n        url = re.sub(r'session=[^&]+', 'session=[REDACTED]', url, flags=re.IGNORECASE)\n        # Remove user IDs from paths\n        url = re.sub(r'/users/\\d+', '/users/[ID]', url)\n        # Remove email addresses\n        url = re.sub(r'email=[^&]+', 'email=[REDACTED]', url, flags=re.IGNORECASE)\n        return url\n    \n    # Scrub navigation breadcrumbs\n    if breadcrumb.get('category') == 'navigation':\n        data = breadcrumb.get('data', {})\n        if 'from' in data:\n            data['from'] = scrub_url(data['from'])\n        if 'to' in data:\n            data['to'] = scrub_url(data['to'])\n    \n    return breadcrumb"
+}

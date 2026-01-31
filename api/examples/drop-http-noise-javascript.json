@@ -1,0 +1,19 @@
+{
+  "id": "drop-http-noise-javascript",
+  "name": "Drop HTTP Noise (JavaScript)",
+  "description": "Filter out noisy HTTP breadcrumbs from analytics, ads, and monitoring endpoints",
+  "sdk": "javascript",
+  "type": "beforeBreadcrumb",
+  "breadcrumb": {
+    "type": "http",
+    "category": "fetch",
+    "level": "info",
+    "timestamp": 1704067200.0,
+    "data": {
+      "method": "POST",
+      "url": "https://www.google-analytics.com/collect",
+      "status_code": 200
+    }
+  },
+  "beforeBreadcrumbCode": "(breadcrumb, hint) => {\n  // Drop HTTP breadcrumbs for noisy third-party services\n  if (breadcrumb.category === 'fetch' || breadcrumb.category === 'xhr') {\n    const url = breadcrumb.data?.url || '';\n    \n    const noisyPatterns = [\n      // Analytics\n      'google-analytics.com',\n      'analytics.google.com',\n      'segment.io',\n      'mixpanel.com',\n      'amplitude.com',\n      'hotjar.com',\n      \n      // Ads\n      'doubleclick.net',\n      'googlesyndication.com',\n      'googleadservices.com',\n      'facebook.com/tr',\n      \n      // Monitoring (you're already using Sentry!)\n      'newrelic.com',\n      'datadog',\n      \n      // Internal health checks\n      '/health',\n      '/ping',\n      '/metrics'\n    ];\n    \n    if (noisyPatterns.some(pattern => url.includes(pattern))) {\n      return null;\n    }\n  }\n\n  return breadcrumb;\n}"
+}
