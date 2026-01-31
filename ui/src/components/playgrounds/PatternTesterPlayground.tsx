@@ -100,6 +100,16 @@ function parsePattern(pattern: Pattern): RegExp | string {
   }
 }
 
+// Format regex pattern for code generation (ensures /pattern/flags format)
+function formatRegexForCode(value: string): string {
+  // Already has delimiters
+  if (/^\/(.+)\/([gimsuy]*)$/.test(value)) {
+    return value;
+  }
+  // Wrap in delimiters
+  return `/${value}/`;
+}
+
 function testMatch(testCase: string, patterns: Pattern[]): MatchResult {
   for (const pattern of patterns) {
     const parsed = parsePattern(pattern);
@@ -426,14 +436,14 @@ export default function PatternTesterPlayground() {
 {`Sentry.init({
   // ... other options
   ${filterType}: [
-${patterns.map(p => `    ${p.isRegex ? p.value : JSON.stringify(p.value)},`).join('\n')}
+${patterns.map(p => `    ${p.isRegex ? formatRegexForCode(p.value) : JSON.stringify(p.value)},`).join('\n')}
   ],
 });`}
         </pre>
         <button
           onClick={() => {
             const code = `${filterType}: [
-${patterns.map(p => `  ${p.isRegex ? p.value : JSON.stringify(p.value)},`).join('\n')}
+${patterns.map(p => `  ${p.isRegex ? formatRegexForCode(p.value) : JSON.stringify(p.value)},`).join('\n')}
 ]`;
             navigator.clipboard.writeText(code);
           }}
