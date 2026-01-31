@@ -2,6 +2,7 @@
   "id": "android-context-enrichment",
   "name": "Android Context Enrichment",
   "description": "Add Android-specific device context (battery, network, orientation, memory) to events for mobile debugging",
+  "type": "beforeSend",
   "sdk": "android",
   "event": {
     "event_id": "android-context-888",

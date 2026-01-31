@@ -2,6 +2,7 @@
   "id": "go-service-metadata",
   "name": "Go Service Metadata & Infrastructure",
   "description": "Add Go microservice context (service name, version, deployment, Kubernetes pod info) for distributed systems debugging",
+  "type": "beforeSend",
   "sdk": "go",
   "event": {
     "event_id": "go-service-222",

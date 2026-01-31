@@ -2,6 +2,7 @@
   "id": "pii-scrubbing-ruby",
   "name": "PII Scrubbing (Ruby)",
   "description": "Remove personally identifiable information (emails, phone numbers, SSNs) from Ruby events using regex patterns",
+  "type": "beforeSend",
   "sdk": "ruby",
   "event": {
     "event_id": "ruby-pii-456",

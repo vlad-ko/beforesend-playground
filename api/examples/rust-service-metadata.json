@@ -2,6 +2,7 @@
   "id": "rust-service-metadata",
   "name": "Service Metadata Enrichment (Rust)",
   "description": "Add service version, build info, and deployment context to Rust error events",
+  "type": "beforeSend",
   "sdk": "rust",
   "event": {
     "event_id": "rust-meta-789",

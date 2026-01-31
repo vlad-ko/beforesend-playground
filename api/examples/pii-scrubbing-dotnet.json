@@ -2,6 +2,7 @@
   "id": "pii-scrubbing-dotnet",
   "name": "PII Scrubbing (.NET)",
   "description": "Remove personally identifiable information (emails, phone numbers, SSNs) from .NET events using C# regex patterns",
+  "type": "beforeSend",
   "sdk": "dotnet",
   "event": {
     "event_id": "dotnet-pii-123",

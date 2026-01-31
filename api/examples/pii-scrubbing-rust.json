@@ -2,6 +2,7 @@
   "id": "pii-scrubbing-rust",
   "name": "PII Scrubbing (Rust)",
   "description": "Remove sensitive data (emails, API keys, tokens) from Rust error events before sending to Sentry",
+  "type": "beforeSend",
   "sdk": "rust",
   "event": {
     "event_id": "rust-pii-456",

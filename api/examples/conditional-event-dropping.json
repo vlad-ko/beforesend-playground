@@ -2,6 +2,7 @@
   "id": "conditional-event-dropping",
   "name": "Conditional Event Dropping",
   "description": "Filter out noisy or irrelevant errors before sending them to Sentry to reduce quota usage",
+  "type": "beforeSend",
   "sdk": "javascript",
   "event": {
     "event_id": "drop-test-101",
