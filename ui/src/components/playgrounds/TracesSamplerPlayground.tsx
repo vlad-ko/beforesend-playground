@@ -5,10 +5,19 @@ import SdkSelector, { AVAILABLE_SDKS, getLanguageForSdk } from '../SdkSelector';
 import SearchableExampleSelector from '../SearchableExampleSelector';
 import { apiClient, TransformResponse, Example } from '../../api/client';
 
+/**
+ * Determines if an SDK uses snake_case for JSON keys
+ * snake_case SDKs: Python, Ruby, PHP, Rust, Elixir
+ * camelCase SDKs: JavaScript, Go, .NET, Java, Android, Cocoa, React Native
+ */
+function usesSnakeCase(sdk: string): boolean {
+  return ['python', 'ruby', 'php', 'rust', 'elixir'].includes(sdk);
+}
+
 function getDefaultSamplingContext(sdk: string): string {
-  const isPython = sdk === 'python';
+  const snakeCase = usesSnakeCase(sdk);
   return JSON.stringify(
-    isPython
+    snakeCase
       ? {
           transaction_context: {
             name: 'GET /api/payment/process',
@@ -478,8 +487,8 @@ export default function TracesSamplerPlayground() {
           <div className="flex flex-wrap gap-2 mb-3">
             <button
               onClick={() => {
-                const isPython = selectedSdk === 'python';
-                setSamplingContextJson(JSON.stringify(isPython ? {
+                const snakeCase = usesSnakeCase(selectedSdk);
+                setSamplingContextJson(JSON.stringify(snakeCase ? {
                   transaction_context: { name: 'POST /api/checkout', op: 'http.server' },
                   parent_sampled: true
                 } : {
@@ -493,8 +502,8 @@ export default function TracesSamplerPlayground() {
             </button>
             <button
               onClick={() => {
-                const isPython = selectedSdk === 'python';
-                setSamplingContextJson(JSON.stringify(isPython ? {
+                const snakeCase = usesSnakeCase(selectedSdk);
+                setSamplingContextJson(JSON.stringify(snakeCase ? {
                   transaction_context: { name: 'GET /health', op: 'http.server' },
                   parent_sampled: false
                 } : {
@@ -508,8 +517,8 @@ export default function TracesSamplerPlayground() {
             </button>
             <button
               onClick={() => {
-                const isPython = selectedSdk === 'python';
-                setSamplingContextJson(JSON.stringify(isPython ? {
+                const snakeCase = usesSnakeCase(selectedSdk);
+                setSamplingContextJson(JSON.stringify(snakeCase ? {
                   transaction_context: { name: 'GET /api/users', op: 'http.server' },
                   parent_sampled: false
                 } : {
@@ -523,8 +532,8 @@ export default function TracesSamplerPlayground() {
             </button>
             <button
               onClick={() => {
-                const isPython = selectedSdk === 'python';
-                setSamplingContextJson(JSON.stringify(isPython ? {
+                const snakeCase = usesSnakeCase(selectedSdk);
+                setSamplingContextJson(JSON.stringify(snakeCase ? {
                   transaction_context: { name: 'GET /static/logo.png', op: 'http.server' },
                   parent_sampled: false
                 } : {
