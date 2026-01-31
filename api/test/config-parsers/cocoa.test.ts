@@ -244,5 +244,21 @@ describe('CocoaConfigParser', () => {
       expect(result.options.size).toBe(3);
       expect(result.options.get('environment')?.value).toBe('production');
     });
+
+    it('should handle comment after string ending with escaped backslash', () => {
+      const config = `SentrySDK.start { options in
+    options.dsn = "https://test@o0.ingest.sentry.io/0"
+    options.serverName = "C:\\\\Users\\\\" // This is a path comment
+    options.environment = "production"
+}`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      // The serverName value should NOT include the comment
+      expect(result.options.get('serverName')?.value).toBe('C:\\\\Users\\\\');
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
   });
 });

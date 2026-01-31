@@ -253,5 +253,21 @@ end`;
       expect(result.options.size).toBe(3);
       expect(result.options.get('environment')?.value).toBe('production');
     });
+
+    it('should handle comment after string ending with escaped backslash', () => {
+      const config = `Sentry.init do |config|
+  config.dsn = "https://test@o0.ingest.sentry.io/0"
+  config.path = "C:\\\\Users\\\\" # This is a path comment
+  config.environment = "production"
+end`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      // The path value should NOT include the comment
+      expect(result.options.get('path')?.value).toBe('C:\\\\Users\\\\');
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
   });
 });

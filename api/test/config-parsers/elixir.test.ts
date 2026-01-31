@@ -212,4 +212,47 @@ describe('ElixirConfigParser', () => {
       expect(result.errors.length).toBeGreaterThan(0);
     });
   });
+
+  describe('escaped backslash handling', () => {
+    it('should handle strings ending with escaped backslash', () => {
+      const config = `config :sentry,
+  dsn: "https://test@o0.ingest.sentry.io/0",
+  server_name: "C:\\\\Users\\\\",
+  environment: "production"`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+
+    it('should handle escaped quotes inside strings', () => {
+      const config = `config :sentry,
+  dsn: "https://test@o0.ingest.sentry.io/0",
+  release: "version-\\"beta\\"",
+  environment: "production"`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+
+    it('should handle comment after string ending with escaped backslash', () => {
+      const config = `config :sentry,
+  dsn: "https://test@o0.ingest.sentry.io/0",
+  path: "C:\\\\Users\\\\", # This is a path comment
+  environment: "production"`;
+
+      const result = parser.parse(config);
+
+      expect(result.valid).toBe(true);
+      expect(result.options.size).toBe(3);
+      // The path value should NOT include the comment
+      expect(result.options.get('path')?.value).toBe('C:\\\\Users\\\\');
+      expect(result.options.get('environment')?.value).toBe('production');
+    });
+  });
 });
