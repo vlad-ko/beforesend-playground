@@ -1,53 +1,107 @@
+//! Rust SDK Backend for SDK Playground
+//!
+//! This service provides a REST API for executing Rust code transformations
+//! in a sandboxed environment. It supports:
+//!
+//! - **beforeSend**: Transform or drop Sentry events (returns Value or None)
+//! - **tracesSampler**: Return sample rates for transactions (returns f64 0.0-1.0)
+//!
+//! ## Endpoints
+//!
+//! - `POST /transform` - Execute user code against an event
+//! - `POST /validate` - Validate code syntax without execution
+//! - `GET /health` - Health check endpoint
+//!
+//! ## How It Works
+//!
+//! User code is compiled into a temporary Cargo project and executed.
+//! The code is wrapped to support both event transformations and numeric returns:
+//!
+//! ```rust
+//! // beforeSend - return modified event or None to drop
+//! Some(event)  // Keep/modify event
+//! None         // Drop event
+//!
+//! // tracesSampler - return sample rate
+//! 0.5          // 50% sampling
+//! ```
+
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::Value;
 use std::fs;
 use std::process::Command;
 
+/// Request body for the /transform endpoint
 #[derive(Debug, Deserialize)]
 struct TransformRequest {
+    /// The Sentry event to transform
     event: Value,
+    /// User's Rust code to execute
     #[serde(rename = "beforeSendCode")]
     before_send_code: String,
 }
 
+/// Response from the /transform endpoint
 #[derive(Debug, Serialize)]
 struct TransformResponse {
+    /// Whether the transformation succeeded
     success: bool,
+    /// The transformed event, sample rate, or null (if dropped)
+    /// - For beforeSend: the modified event object or null
+    /// - For tracesSampler: a number between 0.0 and 1.0
     #[serde(rename = "transformedEvent", skip_serializing_if = "Option::is_none")]
     transformed_event: Option<Value>,
+    /// Error message if transformation failed
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
+    /// Full error traceback for debugging
     #[serde(skip_serializing_if = "Option::is_none")]
     traceback: Option<String>,
 }
 
+/// Request body for the /validate endpoint
 #[derive(Debug, Deserialize)]
 struct ValidationRequest {
+    /// Code to validate
     code: String,
 }
 
+/// A single validation error
 #[derive(Debug, Serialize)]
 struct ValidationError {
+    /// Line number where error occurred (if available)
     #[serde(skip_serializing_if = "Option::is_none")]
     line: Option<usize>,
+    /// Column number where error occurred (if available)
     #[serde(skip_serializing_if = "Option::is_none")]
     column: Option<usize>,
+    /// Error message
     message: String,
 }
 
+/// Response from the /validate endpoint
 #[derive(Debug, Serialize)]
 struct ValidationResponse {
+    /// Whether the code is valid
     valid: bool,
+    /// List of validation errors
     errors: Vec<ValidationError>,
 }
 
+/// Response from the /health endpoint
 #[derive(Debug, Serialize)]
 struct HealthResponse {
+    /// Service status
     status: String,
+    /// SDK identifier
     sdk: String,
 }
 
+/// Execute user code transformation
+///
+/// Compiles and runs user-provided Rust code in a sandboxed Cargo project.
+/// Supports both beforeSend (event transformation) and tracesSampler (sample rates).
 async fn transform(req: web::Json<TransformRequest>) -> impl Responder {
     // Create a temporary directory for compilation
     let temp_dir = match tempfile::tempdir() {
@@ -75,7 +129,7 @@ async fn transform(req: web::Json<TransformRequest>) -> impl Responder {
         });
     }
 
-    // Serialize event to JSON
+    // Serialize event to JSON (escape for raw string literal)
     let event_json = match serde_json::to_string(&req.event) {
         Ok(json) => json,
         Err(e) => {
@@ -88,7 +142,7 @@ async fn transform(req: web::Json<TransformRequest>) -> impl Responder {
         }
     };
 
-    // Create Cargo.toml
+    // Create Cargo.toml for the temporary project
     let cargo_toml = r#"[package]
 name = "transform"
 version = "0.1.0"
@@ -108,27 +162,105 @@ serde_json = "1.0"
         });
     }
 
-    // Create main.rs with user's beforeSend code
+    // Write event JSON to a separate file to avoid escaping issues
+    // This is cleaner than embedding JSON in a Rust string literal
+    if let Err(e) = fs::write(project_path.join("event.json"), &event_json) {
+        return HttpResponse::InternalServerError().json(TransformResponse {
+            success: false,
+            transformed_event: None,
+            error: Some(format!("Failed to write event.json: {}", e)),
+            traceback: None,
+        });
+    }
+
+    // Create main.rs with user's code
+    //
+    // The generated code supports two return types:
+    // 1. Option<Value> - for beforeSend (Some(event), None to drop)
+    // 2. f64 - for tracesSampler (sample rate 0.0-1.0)
+    //
+    // We use a TransformResult enum to unify these at compile time,
+    // and output JSON that the parent process can parse.
     let main_rs = format!(
-        r##"#[allow(unused_imports)]
+        r##"#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+
 use serde_json::{{json, Value}};
 
+/// Result type that supports both event transforms and sample rates
+enum TransformResult {{
+    Event(Option<Value>),
+    SampleRate(f64),
+}}
+
+impl From<Option<Value>> for TransformResult {{
+    fn from(v: Option<Value>) -> Self {{
+        TransformResult::Event(v)
+    }}
+}}
+
+impl From<Value> for TransformResult {{
+    fn from(v: Value) -> Self {{
+        TransformResult::Event(Some(v))
+    }}
+}}
+
+impl From<f64> for TransformResult {{
+    fn from(v: f64) -> Self {{
+        TransformResult::SampleRate(v)
+    }}
+}}
+
+impl From<f32> for TransformResult {{
+    fn from(v: f32) -> Self {{
+        TransformResult::SampleRate(v as f64)
+    }}
+}}
+
+impl From<i32> for TransformResult {{
+    fn from(v: i32) -> Self {{
+        TransformResult::SampleRate(v as f64)
+    }}
+}}
+
+impl From<i64> for TransformResult {{
+    fn from(v: i64) -> Self {{
+        TransformResult::SampleRate(v as f64)
+    }}
+}}
+
+impl From<()> for TransformResult {{
+    fn from(_: ()) -> Self {{
+        TransformResult::Event(None)
+    }}
+}}
+
 fn main() {{
-    let event_json = r#"{}"#;
-    let mut event: Value = serde_json::from_str(event_json).unwrap();
+    // Read event from file (avoids string escaping issues)
+    let event_json = std::fs::read_to_string("event.json").expect("Failed to read event.json");
+    let mut event: Value = serde_json::from_str(&event_json).expect("Failed to parse event JSON");
 
-    // User's beforeSend code wrapped in a closure to support ? operator
-    let result: Option<Value> = (|| -> Option<Value> {{
+    // Execute user's code and convert result to TransformResult
+    // The .into() call handles type conversion automatically
+    let result: TransformResult = (|| {{
         {}
-    }})();
+    }})().into();
 
+    // Output result as JSON
     match result {{
-        Some(transformed) => println!("{{}}", serde_json::to_string(&transformed).unwrap()),
-        None => println!("null"),
+        TransformResult::Event(Some(transformed)) => {{
+            println!("{{}}", serde_json::to_string(&transformed).unwrap());
+        }}
+        TransformResult::Event(None) => {{
+            println!("null");
+        }}
+        TransformResult::SampleRate(rate) => {{
+            println!("{{}}", rate);
+        }}
     }}
 }}
 "##,
-        event_json,
         req.before_send_code
     );
 
@@ -141,9 +273,9 @@ fn main() {{
         });
     }
 
-    // Try to compile
+    // Compile the user's code
     let compile_output = Command::new("cargo")
-        .args(&["build", "--release", "--quiet"])
+        .args(["build", "--release", "--quiet"])
         .current_dir(project_path)
         .output();
 
@@ -164,13 +296,15 @@ fn main() {{
         return HttpResponse::BadRequest().json(TransformResponse {
             success: false,
             transformed_event: None,
-            error: Some(format!("Failed to compile beforeSend code: {}", error_msg)),
+            error: Some(format!("Compilation error: {}", extract_error_summary(&error_msg))),
             traceback: Some(error_msg),
         });
     }
 
-    // Execute the compiled binary
+    // Execute the compiled binary from the project directory
+    // This is needed so the binary can find event.json
     let exec_output = Command::new(project_path.join("target/release/transform"))
+        .current_dir(project_path)
         .output();
 
     let exec_result = match exec_output {
@@ -190,23 +324,25 @@ fn main() {{
         return HttpResponse::InternalServerError().json(TransformResponse {
             success: false,
             transformed_event: None,
-            error: Some(format!("Transformation error: {}", error_msg)),
+            error: Some(format!("Runtime error: {}", error_msg)),
             traceback: Some(error_msg),
         });
     }
 
-    // Parse output
-    let output_str = String::from_utf8_lossy(&exec_result.stdout).to_string();
-    let transformed_event: Option<Value> = if output_str.trim() == "null" {
+    // Parse output - can be JSON object, "null", or a number
+    let output_str = String::from_utf8_lossy(&exec_result.stdout).trim().to_string();
+
+    let transformed_event: Option<Value> = if output_str == "null" {
         None
     } else {
+        // Try to parse as JSON (handles both objects and numbers)
         match serde_json::from_str(&output_str) {
             Ok(value) => Some(value),
             Err(e) => {
                 return HttpResponse::InternalServerError().json(TransformResponse {
                     success: false,
                     transformed_event: None,
-                    error: Some(format!("Failed to parse result: {}", e)),
+                    error: Some(format!("Failed to parse result '{}': {}", output_str, e)),
                     traceback: None,
                 });
             }
@@ -221,6 +357,21 @@ fn main() {{
     })
 }
 
+/// Extract a concise error summary from Rust compiler output
+fn extract_error_summary(error_msg: &str) -> String {
+    // Find the first "error[E...]:" line for a concise message
+    for line in error_msg.lines() {
+        if line.starts_with("error[E") || line.starts_with("error:") {
+            return line.to_string();
+        }
+    }
+    // Fallback to first non-empty line
+    error_msg.lines().find(|l| !l.trim().is_empty())
+        .unwrap_or("Unknown compilation error")
+        .to_string()
+}
+
+/// Validate code syntax without execution
 async fn validate(req: web::Json<ValidationRequest>) -> impl Responder {
     // Create a temporary directory for validation
     let temp_dir = match tempfile::tempdir() {
@@ -273,13 +424,17 @@ serde_json = "1.0"
         });
     }
 
-    // Create main.rs with user's code wrapped in closure to support ? operator
+    // Create main.rs with user's code for syntax checking
     let main_rs = format!(
-        r#"#[allow(unused_imports)]
+        r#"#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(unused_mut)]
+
 use serde_json::Value;
 
 fn main() {{
-    let _result: Option<Value> = (|| -> Option<Value> {{
+    let mut event: Value = serde_json::json!({{}});
+    let _result = (|| {{
         {}
     }})();
 }}
@@ -298,9 +453,9 @@ fn main() {{
         });
     }
 
-    // Try to compile (just check, don't build)
+    // Check syntax without full compilation
     let check_output = Command::new("cargo")
-        .args(&["check", "--quiet"])
+        .args(["check", "--quiet"])
         .current_dir(project_path)
         .output();
 
@@ -320,45 +475,19 @@ fn main() {{
 
     if !check_result.status.success() {
         let error_msg = String::from_utf8_lossy(&check_result.stderr).to_string();
-
-        // Try to parse line number from error message
-        // Rust errors typically look like: "error: ... --> src/main.rs:5:10"
-        let mut errors = vec![];
-        for line in error_msg.lines() {
-            if line.contains("error") {
-                let parts: Vec<&str> = line.split(":").collect();
-                if parts.len() >= 3 {
-                    if let Some(line_num_str) = parts.iter().rev().nth(1) {
-                        if let Ok(line_num) = line_num_str.trim().parse::<usize>() {
-                            errors.push(ValidationError {
-                                line: Some(line_num),
-                                column: None,
-                                message: error_msg.clone(),
-                            });
-                            break;
-                        }
-                    }
-                }
-                errors.push(ValidationError {
-                    line: None,
-                    column: None,
-                    message: error_msg.clone(),
-                });
-                break;
-            }
-        }
-
-        if errors.is_empty() {
-            errors.push(ValidationError {
-                line: None,
-                column: None,
-                message: error_msg,
-            });
-        }
+        let errors = parse_rust_errors(&error_msg);
 
         return HttpResponse::Ok().json(ValidationResponse {
             valid: false,
-            errors,
+            errors: if errors.is_empty() {
+                vec![ValidationError {
+                    line: None,
+                    column: None,
+                    message: error_msg,
+                }]
+            } else {
+                errors
+            },
         });
     }
 
@@ -368,6 +497,38 @@ fn main() {{
     })
 }
 
+/// Parse Rust compiler errors to extract line/column information
+fn parse_rust_errors(error_msg: &str) -> Vec<ValidationError> {
+    let mut errors = vec![];
+
+    // Rust errors look like: "error[E0308]: ... --> src/main.rs:10:5"
+    for line in error_msg.lines() {
+        if line.contains("error") && line.contains("-->") {
+            // Try to extract line:column from " --> file:line:column"
+            if let Some(pos) = line.find("-->") {
+                let location = &line[pos + 4..];
+                let parts: Vec<&str> = location.split(':').collect();
+                if parts.len() >= 2 {
+                    // Adjust line number to account for wrapper code (8 lines of boilerplate)
+                    let line_num = parts[1].trim().parse::<usize>().ok()
+                        .map(|n| n.saturating_sub(8));
+                    let col_num = parts.get(2).and_then(|c| c.trim().parse::<usize>().ok());
+
+                    errors.push(ValidationError {
+                        line: line_num,
+                        column: col_num,
+                        message: extract_error_summary(error_msg),
+                    });
+                    break;  // Only report first error
+                }
+            }
+        }
+    }
+
+    errors
+}
+
+/// Health check endpoint
 async fn health() -> impl Responder {
     HttpResponse::Ok().json(HealthResponse {
         status: "healthy".to_string(),

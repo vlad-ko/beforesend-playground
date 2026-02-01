@@ -59,6 +59,7 @@ const SDK_CONFIGS = {
   java: { port: 5007, usesSnakeCase: false, fullySupported: false },
   android: { port: 5008, usesSnakeCase: false, fullySupported: false },
   cocoa: { port: 5009, usesSnakeCase: false, fullySupported: false },
+  rust: { port: 5010, usesSnakeCase: false, fullySupported: true },
   elixir: { port: 5011, usesSnakeCase: true, fullySupported: true },
 };
 
@@ -93,6 +94,7 @@ const SIMPLE_BEFORESEND_CODE: Record<string, string> = {
   java: `(event, hint) -> { return event; }`,
   android: `{ event, hint -> event }`,
   cocoa: `{ (event: Event) -> Event? in return event }`,
+  rust: `Some(event)`,
   elixir: `event`,
 };
 
@@ -104,6 +106,7 @@ const MODIFY_EVENT_CODE: Record<string, string> = {
   ruby: `lambda { |event, hint| event[:tags] = { modified: 'true' }; event }`,
   php: `function($event, $hint) { $event['tags'] = ['modified' => 'true']; return $event; }`,
   go: `event["tags"] = map[string]interface{}{"modified": "true"}\nreturn event`,
+  rust: `event["tags"] = json!({"modified": "true"}); Some(event)`,
   elixir: `Map.put(event, :tags, %{modified: "true"})`,
 };
 
@@ -115,6 +118,7 @@ const DROP_EVENT_CODE: Record<string, string> = {
   ruby: `lambda { |event, hint| nil }`,
   php: `function($event, $hint) { return null; }`,
   go: `return nil`,
+  rust: `None`,
   elixir: `nil`,
 };
 
@@ -126,11 +130,12 @@ const TRACES_SAMPLER_CODE: Record<string, string> = {
   ruby: `lambda { |event| 0.5 }`,
   php: `function($event) { return 0.5; }`,
   go: `return 0.5`,
+  rust: `0.5`,
   elixir: `0.5`,
 };
 
 // SDKs that support tracesSampler (returning numbers)
-const TRACES_SAMPLER_SDKS = ['javascript', 'python', 'dotnet', 'ruby', 'php', 'go', 'elixir'];
+const TRACES_SAMPLER_SDKS = ['javascript', 'python', 'dotnet', 'ruby', 'php', 'go', 'rust', 'elixir'];
 
 describe('SDK Backend Integration Tests', () => {
   describe('Health Checks', () => {
