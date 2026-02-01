@@ -4,15 +4,108 @@ import SdkSelector, { getLanguageForSdk } from '../SdkSelector';
 import SearchableConfigExampleSelector from '../SearchableConfigExampleSelector';
 import { apiClient, AnalysisResult, OptionAnalysis, ConfigWarning, ConfigRecommendation, ConfigExample } from '../../api/client';
 
-const DEFAULT_CONFIG = `Sentry.init({
+// SDK-specific default configs that match each parser's expected syntax
+const DEFAULT_CONFIG_JS = `Sentry.init({
   dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
   environment: "production",
   release: "my-app@1.0.0",
   tracesSampleRate: 0.1,
 });`;
 
+const DEFAULT_CONFIG_PYTHON = `sentry_sdk.init(
+    dsn="https://examplePublicKey@o0.ingest.sentry.io/0",
+    environment="production",
+    release="my-app@1.0.0",
+    traces_sample_rate=0.1,
+)`;
+
+const DEFAULT_CONFIG_GO = `sentry.Init(sentry.ClientOptions{
+    Dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
+    Environment: "production",
+    Release: "my-app@1.0.0",
+    TracesSampleRate: 0.1,
+})`;
+
+const DEFAULT_CONFIG_RUST = `sentry::init(sentry::ClientOptions {
+    dsn: Some("https://examplePublicKey@o0.ingest.sentry.io/0".into()),
+    environment: Some("production".into()),
+    release: Some("my-app@1.0.0".into()),
+    traces_sample_rate: 0.1,
+    ..Default::default()
+})`;
+
+const DEFAULT_CONFIG_RUBY = `Sentry.init do |config|
+  config.dsn = "https://examplePublicKey@o0.ingest.sentry.io/0"
+  config.environment = "production"
+  config.release = "my-app@1.0.0"
+  config.traces_sample_rate = 0.1
+end`;
+
+const DEFAULT_CONFIG_PHP = `\\Sentry\\init([
+    'dsn' => 'https://examplePublicKey@o0.ingest.sentry.io/0',
+    'environment' => 'production',
+    'release' => 'my-app@1.0.0',
+    'traces_sample_rate' => 0.1,
+]);`;
+
+const DEFAULT_CONFIG_DOTNET = `SentrySdk.Init(options => {
+    options.Dsn = "https://examplePublicKey@o0.ingest.sentry.io/0";
+    options.Environment = "production";
+    options.Release = "my-app@1.0.0";
+    options.TracesSampleRate = 0.1;
+});`;
+
+const DEFAULT_CONFIG_JAVA = `Sentry.init(options -> {
+    options.setDsn("https://examplePublicKey@o0.ingest.sentry.io/0");
+    options.setEnvironment("production");
+    options.setRelease("my-app@1.0.0");
+    options.setTracesSampleRate(0.1);
+});`;
+
+const DEFAULT_CONFIG_COCOA = `SentrySDK.start { options in
+    options.dsn = "https://examplePublicKey@o0.ingest.sentry.io/0"
+    options.environment = "production"
+    options.releaseName = "my-app@1.0.0"
+    options.tracesSampleRate = 0.1
+}`;
+
+const DEFAULT_CONFIG_ELIXIR = `config :sentry,
+  dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
+  environment_name: :prod,
+  release: "my-app@1.0.0",
+  traces_sample_rate: 0.1`;
+
+// Map SDK names to their default configs
+function getDefaultConfigForSdk(sdk: string): string {
+  switch (sdk) {
+    case 'python':
+      return DEFAULT_CONFIG_PYTHON;
+    case 'go':
+      return DEFAULT_CONFIG_GO;
+    case 'rust':
+      return DEFAULT_CONFIG_RUST;
+    case 'ruby':
+      return DEFAULT_CONFIG_RUBY;
+    case 'php':
+      return DEFAULT_CONFIG_PHP;
+    case 'dotnet':
+      return DEFAULT_CONFIG_DOTNET;
+    case 'java':
+    case 'android':
+      return DEFAULT_CONFIG_JAVA;
+    case 'cocoa':
+      return DEFAULT_CONFIG_COCOA;
+    case 'elixir':
+      return DEFAULT_CONFIG_ELIXIR;
+    case 'javascript':
+    case 'react-native':
+    default:
+      return DEFAULT_CONFIG_JS;
+  }
+}
+
 export default function ConfigAnalyzerPlayground() {
-  const [configCode, setConfigCode] = useState<string>(DEFAULT_CONFIG);
+  const [configCode, setConfigCode] = useState<string>(DEFAULT_CONFIG_JS);
   const [sdk, setSdk] = useState<string>('javascript');
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -29,7 +122,7 @@ export default function ConfigAnalyzerPlayground() {
   };
 
   const handleReset = () => {
-    setConfigCode(DEFAULT_CONFIG);
+    setConfigCode(DEFAULT_CONFIG_JS);
     setSdk('javascript');
     setSelectedExampleName(null);
     setResult(null);
@@ -38,6 +131,12 @@ export default function ConfigAnalyzerPlayground() {
 
   const handleSdkChange = (newSdk: string) => {
     setSdk(newSdk);
+    // Update default config code based on SDK
+    setConfigCode(getDefaultConfigForSdk(newSdk));
+    // Clear any existing results when SDK changes
+    setResult(null);
+    setError(null);
+    setSelectedExampleName(null);
   };
 
   const handleAnalyze = async () => {
