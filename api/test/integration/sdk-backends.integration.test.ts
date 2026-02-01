@@ -59,7 +59,7 @@ const SDK_CONFIGS = {
   java: { port: 5007, usesSnakeCase: false, fullySupported: false },
   android: { port: 5008, usesSnakeCase: false, fullySupported: false },
   cocoa: { port: 5009, usesSnakeCase: false, fullySupported: false },
-  rust: { port: 5010, usesSnakeCase: false, fullySupported: true },
+  rust: { port: 5010, usesSnakeCase: true, fullySupported: true },
   elixir: { port: 5011, usesSnakeCase: true, fullySupported: true },
 };
 
@@ -282,6 +282,13 @@ describe('SDK Backend Integration Tests', () => {
       expect(result.success).toBe(false);
       expect(result.error).toBeTruthy();
     });
+
+    it('rust: should return error for invalid syntax', async () => {
+      const result = await transform('rust', CAMEL_CASE_EVENT, 'let x = {{{ invalid');
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeTruthy();
+    });
   });
 
   describe('Edge Cases', () => {
@@ -307,6 +314,53 @@ describe('SDK Backend Integration Tests', () => {
       );
       expect(result.success).toBe(true);
       expect(result.transformedEvent).toBeTruthy();
+    });
+
+    it('rust: should handle event with special characters', async () => {
+      const event = {
+        event_id: 'test',
+        message: 'Error with "quotes" and backslash \\n newline',
+      };
+      const result = await transform('rust', event, 'Some(event)');
+      expect(result.success).toBe(true);
+      expect(result.transformedEvent).toBeTruthy();
+    });
+
+    it('rust: should handle complex nested event modification', async () => {
+      const event = {
+        event_id: 'test',
+        tags: { existing: 'value' },
+        contexts: { app: { name: 'test-app' } },
+      };
+      const code = `event["tags"]["added"] = json!("new-tag");
+event["extra"] = json!({"rust_processed": true});
+Some(event)`;
+      const result = await transform('rust', event, code);
+      expect(result.success).toBe(true);
+      expect(result.transformedEvent.tags.added).toBe('new-tag');
+      expect(result.transformedEvent.extra.rust_processed).toBe(true);
+    });
+
+    it('rust: tracesSampler should access snake_case transaction_context', async () => {
+      // This test verifies that Rust correctly uses snake_case keys
+      const samplingContext = {
+        transaction_context: {
+          name: 'GET /api/payment/process',
+          op: 'http.server',
+        },
+        parent_sampled: true,
+      };
+      const code = `let tx_name = event.get("transaction_context")
+    .and_then(|v| v.get("name"))
+    .and_then(|n| n.as_str())
+    .unwrap_or("");
+if tx_name.contains("/payment") {
+    return 1.0;
+}
+0.1`;
+      const result = await transform('rust', samplingContext, code);
+      expect(result.success).toBe(true);
+      expect(result.transformedEvent).toBe(1.0);
     });
   });
 });
