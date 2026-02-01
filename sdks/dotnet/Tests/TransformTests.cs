@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
@@ -316,6 +317,125 @@ public class TransformTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.NotNull(result);
         Assert.True(result.Success);
         Assert.NotNull(result.TransformedEvent);
+    }
+
+    // ============================================
+    // TracesSampler Tests - Return numbers instead of events
+    // ============================================
+
+    [Fact]
+    public async Task TracesSamplerReturnsDouble()
+    {
+        // Arrange - tracesSampler returns a sample rate (double)
+        var request = new
+        {
+            @event = new
+            {
+                transactionContext = new
+                {
+                    name = "GET /api/users",
+                    op = "http.server"
+                }
+            },
+            beforeSendCode = "return 0.5;"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/transform", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<TransformResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        // Should return the number 0.5
+        Assert.NotNull(result.TransformedEvent);
+        var sampleRate = ((JsonElement)result.TransformedEvent).GetDouble();
+        Assert.Equal(0.5, sampleRate);
+    }
+
+    [Fact]
+    public async Task TracesSamplerReturnsOne()
+    {
+        // Arrange - 100% sampling for critical endpoints
+        var request = new
+        {
+            @event = new
+            {
+                transactionContext = new
+                {
+                    name = "POST /api/checkout"
+                }
+            },
+            beforeSendCode = "return 1.0;"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/transform", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<TransformResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        var sampleRate = ((JsonElement)result.TransformedEvent!).GetDouble();
+        Assert.Equal(1.0, sampleRate);
+    }
+
+    [Fact]
+    public async Task TracesSamplerReturnsZero()
+    {
+        // Arrange - 0% sampling for health checks
+        var request = new
+        {
+            @event = new
+            {
+                transactionContext = new
+                {
+                    name = "GET /health"
+                }
+            },
+            beforeSendCode = "return 0.0;"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/transform", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<TransformResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        var sampleRate = ((JsonElement)result.TransformedEvent!).GetDouble();
+        Assert.Equal(0.0, sampleRate);
+    }
+
+    [Fact]
+    public async Task TracesSamplerWithInteger()
+    {
+        // Arrange - Integer 1 should be treated as 1.0
+        var request = new
+        {
+            @event = new
+            {
+                transactionContext = new
+                {
+                    name = "GET /api/users"
+                }
+            },
+            beforeSendCode = "return 1;"
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/transform", request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<TransformResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        var sampleRate = ((JsonElement)result.TransformedEvent!).GetDouble();
+        Assert.Equal(1.0, sampleRate);
     }
 }
 

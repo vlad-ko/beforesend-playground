@@ -55,21 +55,24 @@ app.MapPost("/transform", async (TransformRequest request) =>
         // Wrap user code to ensure it returns the modified event
         // This prevents silent data loss when users forget "return ev;"
         // Check for return statement (return followed by whitespace or semicolon)
-        // This is a simple heuristic that avoids matching "return" in strings
-        // Pattern: return followed by space, tab, newline, or semicolon
+        // First, strip comments to avoid false matches (e.g., "// return later")
         var trimmedCode = request.BeforeSendCode.TrimEnd();
-        var hasReturn = System.Text.RegularExpressions.Regex.IsMatch(trimmedCode, @"\breturn[\s;]");
+        var codeWithoutComments = System.Text.RegularExpressions.Regex.Replace(trimmedCode, @"//.*?$", "", System.Text.RegularExpressions.RegexOptions.Multiline);
+        codeWithoutComments = System.Text.RegularExpressions.Regex.Replace(codeWithoutComments, @"/\*.*?\*/", "", System.Text.RegularExpressions.RegexOptions.Singleline);
+        var hasReturn = System.Text.RegularExpressions.Regex.IsMatch(codeWithoutComments, @"\breturn[\s;]");
         var wrappedCode = hasReturn
             ? trimmedCode  // Don't wrap if user has explicit return
             : (trimmedCode.EndsWith(";")
                 ? $"{trimmedCode}(ev)"
                 : $"{trimmedCode};(ev)");
 
-        // Compile the script
-        Script<SentryEvent?> script;
+        // Compile the script with object? return type to support both:
+        // - SentryEvent (beforeSend) - returns modified event or null
+        // - double (tracesSampler) - returns sample rate 0.0-1.0
+        Script<object?> script;
         try
         {
-            script = CSharpScript.Create<SentryEvent?>(
+            script = CSharpScript.Create<object?>(
                 wrappedCode,
                 scriptOptions,
                 globalsType: typeof(ScriptGlobals)
@@ -106,14 +109,24 @@ app.MapPost("/transform", async (TransformRequest request) =>
             // With code wrapping, we always get a return value:
             // - If user forgot return, wrapping adds (ev) so ReturnValue = modified event
             // - If user wrote return, ReturnValue = their explicit return value (including null)
-            var transformedEvent = result.ReturnValue;
+            var returnValue = result.ReturnValue;
 
-            // Convert back to JSON for response
+            // Handle different return types
             object? transformedEventObj = null;
-            if (transformedEvent != null)
+            if (returnValue != null)
             {
-                var transformedJson = JsonSerializer.Serialize(transformedEvent);
-                transformedEventObj = JsonSerializer.Deserialize<JsonObject>(transformedJson);
+                // Check if it's a numeric type (for tracesSampler)
+                if (returnValue is double || returnValue is float || returnValue is int || returnValue is decimal)
+                {
+                    // Return the number directly for tracesSampler
+                    transformedEventObj = Convert.ToDouble(returnValue);
+                }
+                else
+                {
+                    // Assume it's an event object, serialize and deserialize for JSON response
+                    var transformedJson = JsonSerializer.Serialize(returnValue);
+                    transformedEventObj = JsonSerializer.Deserialize<JsonObject>(transformedJson);
+                }
             }
 
             return Results.Json(new {

@@ -47,6 +47,54 @@ docker-compose exec sdk-python pytest
 docker-compose exec ui npm test
 ```
 
+### Integration Tests
+
+Integration tests verify that SDK backends are working correctly by making **real HTTP requests** to the running services. Unlike unit tests that mock the SDK clients, these tests actually execute code on each backend.
+
+**Prerequisites:** All containers must be running!
+
+```bash
+# Start all services first
+docker-compose up -d
+
+# Wait for services to be healthy (about 10-15 seconds)
+docker-compose ps  # Check all services are "Up"
+
+# Run integration tests
+cd api
+npm run test:integration
+
+# Or use the helper script (includes health checks)
+./scripts/run-integration-tests.sh
+
+# Start services AND run tests
+./scripts/run-integration-tests.sh --start-services
+```
+
+**What Integration Tests Cover:**
+
+| Test Suite | Description |
+|------------|-------------|
+| **Health Checks** | Verify each SDK backend is responding |
+| **BeforeSend: Return Event** | Test returning event unchanged |
+| **BeforeSend: Modify Event** | Test modifying event with tags |
+| **BeforeSend: Drop Event** | Test returning null (drop) |
+| **TracesSampler** | Test returning sample rates (0.5) |
+| **Error Handling** | Test invalid syntax returns errors |
+| **Edge Cases** | Test empty events, special characters, async code |
+
+**Test Files:**
+- `api/test/integration/sdk-backends.integration.test.ts` - Main SDK backend tests
+- `api/test/integration/traces-sampler.integration.test.ts` - TracesSampler-specific tests
+- `api/test/integration/examples.integration.test.ts` - Example file validation
+
+**NPM Scripts:**
+```bash
+npm test                 # Unit tests only (no integration)
+npm run test:integration # Integration tests only (requires running services)
+npm run test:all         # All tests (unit + integration)
+```
+
 **Test Coverage Requirements:**
 - Minimum 80% code coverage (enforced)
 - 100% coverage for critical paths (transformation logic)
