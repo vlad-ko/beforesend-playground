@@ -256,8 +256,8 @@ const DEFAULT_TRACES_SAMPLER_COCOA = `{ (context: SamplingContext) -> NSNumber i
     return 0.1 // 10%
 }`;
 
-const DEFAULT_TRACES_SAMPLER_RUST = `// Access transaction context from the sampling context
-let tx_context = event.get("transactionContext")
+const DEFAULT_TRACES_SAMPLER_RUST = `// Access transaction context from the sampling context (snake_case keys)
+let tx_context = event.get("transaction_context")
     .and_then(|v| v.as_object());
 let tx_name = tx_context
     .and_then(|c| c.get("name"))

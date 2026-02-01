@@ -54,6 +54,7 @@ const SIMPLE_RETURN_CODE: Record<string, string> = {
   elixir: `0.5`,  // Elixir can return value directly
   go: `return 0.5`,
   dotnet: `return 0.5;`,
+  rust: `0.5`,  // Rust can return value directly
 };
 
 // Test code that accesses transaction name
@@ -109,13 +110,23 @@ const TRANSACTION_NAME_CODE: Record<string, string> = {
     return 1.0;
   }
   return 0.1;`,
+  rust: `let tx_context = event.get("transaction_context")
+    .and_then(|v| v.as_object());
+let tx_name = tx_context
+    .and_then(|c| c.get("name"))
+    .and_then(|n| n.as_str())
+    .unwrap_or("");
+if tx_name.contains("/payment") {
+    return 1.0;
+}
+0.1`,
 };
 
 // SDKs that support tracesSampler execution
-const EXECUTABLE_SDKS = ['javascript', 'python', 'ruby', 'php', 'elixir', 'go', 'dotnet'];
+const EXECUTABLE_SDKS = ['javascript', 'python', 'ruby', 'php', 'elixir', 'go', 'dotnet', 'rust'];
 
 // SDKs that use snake_case JSON keys
-const SNAKE_CASE_SDKS = ['python', 'ruby', 'php', 'elixir'];
+const SNAKE_CASE_SDKS = ['python', 'ruby', 'php', 'elixir', 'rust'];
 
 function getSamplingContext(sdk: string) {
   return SNAKE_CASE_SDKS.includes(sdk) ? SAMPLING_CONTEXT_SNAKE : SAMPLING_CONTEXT_CAMEL;
