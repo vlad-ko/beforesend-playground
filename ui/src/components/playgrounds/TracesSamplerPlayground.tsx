@@ -19,11 +19,11 @@ function usesSnakeCase(sdk: string): boolean {
  * Some SDK backends are designed for beforeSend (event transformation) only
  * and cannot return numbers for tracesSampler evaluation.
  *
- * Supported: JavaScript, Python, Ruby, PHP, Elixir, React Native, Go, .NET
- * Documentation only: Rust, Java, Android, Cocoa
+ * Supported: JavaScript, Python, Ruby, PHP, Elixir, React Native, Go, .NET, Rust
+ * Documentation only: Java, Android, Cocoa
  */
 function supportsTracesSamplerExecution(sdk: string): boolean {
-  return ['javascript', 'python', 'ruby', 'php', 'elixir', 'react-native', 'go', 'dotnet'].includes(sdk);
+  return ['javascript', 'python', 'ruby', 'php', 'elixir', 'react-native', 'go', 'dotnet', 'rust'].includes(sdk);
 }
 
 function getDefaultSamplingContext(sdk: string): string {
@@ -256,22 +256,31 @@ const DEFAULT_TRACES_SAMPLER_COCOA = `{ (context: SamplingContext) -> NSNumber i
     return 0.1 // 10%
 }`;
 
-const DEFAULT_TRACES_SAMPLER_RUST = `|ctx| {
-    let transaction_name = ctx.operation();
+const DEFAULT_TRACES_SAMPLER_RUST = `// Access transaction context from the sampling context
+let tx_context = event.get("transactionContext")
+    .and_then(|v| v.as_object());
+let tx_name = tx_context
+    .and_then(|c| c.get("name"))
+    .and_then(|n| n.as_str())
+    .unwrap_or("");
 
-    // Always sample payment endpoints (critical)
-    if transaction_name.contains("/payment") {
-        return 1.0; // 100%
-    }
+// Always sample payment endpoints (critical)
+if tx_name.contains("/payment") {
+    return 1.0; // 100%
+}
 
-    // Never sample health checks
-    if transaction_name == "GET /health" {
-        return 0.0; // 0%
-    }
+// Never sample health checks
+if tx_name == "GET /health" {
+    return 0.0; // 0%
+}
 
-    // Default sampling
-    0.1 // 10%
-}`;
+// Lower sampling for static assets
+if tx_name.contains("/static/") {
+    return 0.01; // 1%
+}
+
+// Default sampling
+0.1 // 10%`;
 
 const DEFAULT_TRACES_SAMPLER_ELIXIR = `fn %{transaction_context: transaction_context} ->
   transaction_name = Map.get(transaction_context, :name, "")

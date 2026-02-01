@@ -72,6 +72,8 @@ declare -A SDK_PORTS=(
     ["ruby"]=5004
     ["php"]=5005
     ["go"]=5006
+    ["rust"]=5010
+    ["elixir"]=5011
 )
 
 for sdk in "${!SDK_PORTS[@]}"; do
